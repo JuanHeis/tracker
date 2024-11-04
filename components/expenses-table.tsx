@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Expense, Category } from "@/hooks/useExpenseTracker";
+import { Expense } from "@/hooks/useExpenseTracker";
 
 const className = "text-center ";
 interface ExpensesTableProps {

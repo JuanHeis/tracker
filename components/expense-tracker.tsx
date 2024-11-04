@@ -30,7 +30,6 @@ import { SalaryCard } from "@/components/salary-card";
 import { ExpensesTable } from "@/components/expenses-table";
 import { useExpenseTracker, CATEGORIES } from "@/hooks/useExpenseTracker";
 import IncomeTable from "./income-table";
-import { ExpensesByMonth } from "@/components/charts/expenses-by-month";
 import ChartsContainer from "./charts-container";
 
 export function ExpenseTracker() {
@@ -68,7 +67,6 @@ export function ExpenseTracker() {
     editingExpense,
     handleUpdateExpense,
     editingIncome,
-    setEditingIncome,
     handleEditIncome,
     handleUpdateIncome,
   } = useExpenseTracker();
