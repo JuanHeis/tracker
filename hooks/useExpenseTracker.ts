@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { format, parse, startOfMonth, endOfMonth } from "date-fns";
+import { format, parse, startOfMonth, endOfMonth, getYear } from "date-fns";
 
 // Types
 type Category =
@@ -10,7 +10,9 @@ type Category =
   | "Vacaciones"
   | "Servicios"
   | "Vestimenta"
-  | "Subscripciones";
+  | "Subscripciones"
+  | "Insumos"
+  | "Otros";
 
 interface Expense {
   id: string;
@@ -54,6 +56,8 @@ export const CATEGORIES: Record<Category, { color: string }> = {
   Servicios: { color: "bg-orange-500" },
   Vestimenta: { color: "bg-pink-500" },
   Subscripciones: { color: "bg-indigo-500" },
+  Insumos: { color: "bg-cyan-500" },
+  Otros: { color: "bg-slate-500" },
 };
 
 export function useExpenseTracker() {
@@ -69,6 +73,9 @@ export function useExpenseTracker() {
   const [openExtraIncome, setOpenExtraIncome] = useState(false);
   const [defaultDate, setDefaultDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [defaultIncomeDate, setDefaultIncomeDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedYear, setSelectedYear] = useState(getYear(new Date()).toString());
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingIncome, setEditingIncome] = useState<ExtraIncome | null>(null);
 
   useEffect(() => {
     const loadInitialData = () => {
@@ -97,9 +104,36 @@ export function useExpenseTracker() {
     loadInitialData();
   }, []);
 
+  const getAvailableYears = () => {
+    const years = new Set<string>();
+    const currentYear = getYear(new Date());
+    
+    // Añadir el año actual y el anterior por defecto
+    years.add(currentYear.toString());
+    years.add((currentYear - 1).toString());
+
+    // Añadir años de los datos existentes
+    Object.keys(monthlyData.salaries).forEach(monthKey => {
+      const year = monthKey.split('-')[0];
+      years.add(year);
+    });
+
+    monthlyData.expenses.forEach(expense => {
+      const year = expense.date.split('-')[0];
+      years.add(year);
+    });
+
+    monthlyData.extraIncomes.forEach(income => {
+      const year = income.date.split('-')[0];
+      years.add(year);
+    });
+
+    return Array.from(years).sort().reverse();
+  };
+
   const filteredExpenses = monthlyData.expenses.filter((expense) => {
     const expenseDate = parse(expense.date, "yyyy-MM-dd", new Date());
-    const monthStart = startOfMonth(parse(selectedMonth, "yyyy-MM", new Date()));
+    const monthStart = startOfMonth(parse(`${selectedYear}-${selectedMonth.split('-')[1]}`, "yyyy-MM", new Date()));
     const monthEnd = endOfMonth(monthStart);
     return expenseDate >= monthStart && expenseDate <= monthEnd;
   });
@@ -109,8 +143,10 @@ export function useExpenseTracker() {
     0
   );
 
-  const availableMoney = monthlyData.salaries[selectedMonth]
-    ? monthlyData.salaries[selectedMonth].amount - totalExpenses
+  const getCurrentMonthKey = () => `${selectedYear}-${selectedMonth.split('-')[1]}`;
+
+  const availableMoney = monthlyData.salaries[getCurrentMonthKey()]
+    ? monthlyData.salaries[getCurrentMonthKey()].amount - totalExpenses
     : 0;
 
   const savings = availableMoney > 0 ? availableMoney : 0;
@@ -241,7 +277,7 @@ export function useExpenseTracker() {
 
   const filteredIncomes = monthlyData.extraIncomes.filter((income) => {
     const incomeDate = parse(income.date, "yyyy-MM-dd", new Date());
-    const monthStart = startOfMonth(parse(selectedMonth, "yyyy-MM", new Date()));
+    const monthStart = startOfMonth(parse(`${selectedYear}-${selectedMonth.split('-')[1]}`, "yyyy-MM", new Date()));
     const monthEnd = endOfMonth(monthStart);
     return incomeDate >= monthStart && incomeDate <= monthEnd;
   });
@@ -254,6 +290,83 @@ export function useExpenseTracker() {
   const handleOpenIncomeModal = () => {
     setDefaultIncomeDate(format(new Date(), 'yyyy-MM-dd'));
     setOpenExtraIncome(true);
+  };
+
+  const handleEditExpense = (expenseToEdit: Expense) => {
+    setEditingExpense(expenseToEdit);
+    setOpen(true);
+  };
+
+  const handleUpdateExpense = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    if (!editingExpense) return;
+
+    const updatedExpense = {
+      ...editingExpense,
+      date: formData.get("date") as string,
+      name: formData.get("name") as string,
+      amount: Number(formData.get("amount")),
+      usdRate: Number(formData.get("usdRate")),
+      category: formData.get("category") as Category,
+    };
+
+    const updatedData = {
+      ...monthlyData,
+      expenses: monthlyData.expenses.map((expense) =>
+        expense.id === editingExpense.id ? updatedExpense : expense
+      ),
+    };
+
+    setMonthlyData(updatedData);
+    localStorage.setItem("monthlyData", JSON.stringify(updatedData));
+    setOpen(false);
+    setEditingExpense(null);
+    e.currentTarget.reset();
+  };
+
+  const handleCloseModal = () => {
+    setOpen(false);
+    setEditingExpense(null);
+  };
+
+  const handleEditIncome = (incomeToEdit: ExtraIncome) => {
+    setEditingIncome(incomeToEdit);
+    setOpenExtraIncome(true);
+  };
+
+  const handleUpdateIncome = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    if (!editingIncome) return;
+
+    const updatedIncome = {
+      ...editingIncome,
+      date: formData.get("date") as string,
+      name: formData.get("name") as string,
+      amount: Number(formData.get("amount")),
+      usdRate: Number(formData.get("usdRate")),
+    };
+
+    const updatedData = {
+      ...monthlyData,
+      extraIncomes: monthlyData.extraIncomes.map((income) =>
+        income.id === editingIncome.id ? updatedIncome : income
+      ),
+    };
+
+    setMonthlyData(updatedData);
+    localStorage.setItem("monthlyData", JSON.stringify(updatedData));
+    setOpenExtraIncome(false);
+    setEditingIncome(null);
+    e.currentTarget.reset();
+  };
+
+  const handleCloseIncomeModal = () => {
+    setOpenExtraIncome(false);
+    setEditingIncome(null);
   };
 
   return {
@@ -269,13 +382,13 @@ export function useExpenseTracker() {
     availableMoney,
     savings,
     open,
-    setOpen,
+    setOpen: handleCloseModal,
     defaultDate,
     defaultIncomeDate,
     handleOpenModal,
     handleOpenIncomeModal,
     openExtraIncome,
-    setOpenExtraIncome,
+    setOpenExtraIncome: handleCloseIncomeModal,
     handleAddExpense,
     handleSetSalary,
     handleDeleteExpense,
@@ -283,6 +396,17 @@ export function useExpenseTracker() {
     calculateTotalAvailable,
     handleDeleteIncome,
     filteredIncomes,
+    selectedYear,
+    setSelectedYear,
+    getAvailableYears,
+    editingExpense,
+    setEditingExpense,
+    handleEditExpense,
+    handleUpdateExpense,
+    editingIncome,
+    setEditingIncome,
+    handleEditIncome,
+    handleUpdateIncome,
   };
 }
 

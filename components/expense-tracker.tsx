@@ -30,6 +30,8 @@ import { SalaryCard } from "@/components/salary-card";
 import { ExpensesTable } from "@/components/expenses-table";
 import { useExpenseTracker, CATEGORIES } from "@/hooks/useExpenseTracker";
 import IncomeTable from "./income-table";
+import { ExpensesByMonth } from "@/components/charts/expenses-by-month";
+import ChartsContainer from "./charts-container";
 
 export function ExpenseTracker() {
   const {
@@ -59,6 +61,16 @@ export function ExpenseTracker() {
     handleOpenModal,
     defaultIncomeDate,
     handleOpenIncomeModal,
+    selectedYear,
+    setSelectedYear,
+    getAvailableYears,
+    handleEditExpense,
+    editingExpense,
+    handleUpdateExpense,
+    editingIncome,
+    setEditingIncome,
+    handleEditIncome,
+    handleUpdateIncome,
   } = useExpenseTracker();
 
   return (
@@ -85,25 +97,39 @@ export function ExpenseTracker() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Seleccionar mes" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 12 }, (_, i) => {
-                const date = new Date(new Date().getFullYear(), i, 1);
-                return (
-                  <SelectItem
-                    className="text-primary"
-                    key={i}
-                    value={format(date, "yyyy-MM")}
-                  >
-                    {format(date, "MMMM yyyy")}
+          <div className="flex gap-2">
+            <Select value={selectedYear} onValueChange={setSelectedYear}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Año" />
+              </SelectTrigger>
+              <SelectContent>
+                {getAvailableYears().map((year) => (
+                  <SelectItem key={year} value={year}>
+                    {year}
                   </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Seleccionar mes" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 12 }, (_, i) => {
+                  const date = new Date(Number(selectedYear), i, 1);
+                  return (
+                    <SelectItem
+                      className="text-primary"
+                      key={i}
+                      value={format(date, "yyyy-MM")}
+                    >
+                      {format(date, "MMMM yyyy")}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-[1fr_300px]">
@@ -118,6 +144,7 @@ export function ExpenseTracker() {
                     expenses={filteredExpenses}
                     categories={CATEGORIES}
                     onDeleteExpense={handleDeleteExpense}
+                    onEditExpense={handleEditExpense}
                   />
                 </CardContent>
               </Card>
@@ -126,6 +153,7 @@ export function ExpenseTracker() {
               <IncomeTable
                 incomes={filteredIncomes}
                 onDeleteIncome={handleDeleteIncome}
+                onEditIncome={handleEditIncome}
               />
             </TabsContent>
             <TabsContent value="charts" className="mt-0">
@@ -136,10 +164,8 @@ export function ExpenseTracker() {
                     Visualización de gastos por categoría
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                    Próximamente
-                  </div>
+                <CardContent className="space-y-6">
+                  <ChartsContainer monthlyData={monthlyData} selectedYear={selectedYear} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -178,27 +204,30 @@ export function ExpenseTracker() {
                 <DialogTrigger asChild>
                   <Button onClick={handleOpenModal}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Nuevo Gasto
+                    {editingExpense ? "Editar Gasto" : "Nuevo Gasto"}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Agregar Nuevo Gasto</DialogTitle>
+                    <DialogTitle>
+                      {editingExpense ? "Editar Gasto" : "Agregar Nuevo Gasto"}
+                    </DialogTitle>
                   </DialogHeader>
                   <form
-                    onSubmit={handleAddExpense}
+                    onSubmit={editingExpense ? handleUpdateExpense : handleAddExpense}
                     className="space-y-4"
                     key={open ? "open" : "closed"}
                   >
                     <Input
                       type="date"
                       name="date"
-                      defaultValue={defaultDate}
+                      defaultValue={editingExpense ? editingExpense.date : defaultDate}
                       required
                     />
                     <Input
                       placeholder="Nombre del gasto"
                       name="name"
+                      defaultValue={editingExpense?.name}
                       required
                     />
                     <Input
@@ -206,6 +235,7 @@ export function ExpenseTracker() {
                       placeholder="Monto (ARS)"
                       name="amount"
                       step="0.01"
+                      defaultValue={editingExpense?.amount}
                       required
                     />
                     <Input
@@ -213,9 +243,10 @@ export function ExpenseTracker() {
                       placeholder="Valor USD"
                       name="usdRate"
                       step="0.01"
+                      defaultValue={editingExpense?.usdRate}
                       required
                     />
-                    <Select name="category" required>
+                    <Select name="category" defaultValue={editingExpense?.category} required>
                       <SelectTrigger>
                         <SelectValue placeholder="Categoría" />
                       </SelectTrigger>
@@ -232,8 +263,12 @@ export function ExpenseTracker() {
                       placeholder="Cuotas (opcional)"
                       name="installments"
                       min="1"
+                      defaultValue={editingExpense?.installments?.total}
+                      disabled={!!editingExpense}
                     />
-                    <Button type="submit">Agregar</Button>
+                    <Button type="submit">
+                      {editingExpense ? "Guardar Cambios" : "Agregar"}
+                    </Button>
                   </form>
                 </DialogContent>
               </Dialog>
@@ -242,27 +277,30 @@ export function ExpenseTracker() {
                 <DialogTrigger asChild>
                   <Button variant="outline" onClick={handleOpenIncomeModal}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Nuevo Ingreso Extra
+                    {editingIncome ? "Editar Ingreso" : "Nuevo Ingreso Extra"}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Agregar Nuevo Ingreso Extra</DialogTitle>
+                    <DialogTitle>
+                      {editingIncome ? "Editar Ingreso" : "Agregar Nuevo Ingreso Extra"}
+                    </DialogTitle>
                   </DialogHeader>
                   <form
-                    onSubmit={handleAddExtraIncome}
+                    onSubmit={editingIncome ? handleUpdateIncome : handleAddExtraIncome}
                     className="space-y-4"
                     key={openExtraIncome ? "open" : "closed"}
                   >
-                    <Input 
-                      type="date" 
-                      name="date" 
-                      defaultValue={defaultIncomeDate}
-                      required 
+                    <Input
+                      type="date"
+                      name="date"
+                      defaultValue={editingIncome ? editingIncome.date : defaultIncomeDate}
+                      required
                     />
                     <Input
                       placeholder="Descripción (ej: Regalo, Ahorro)"
                       name="name"
+                      defaultValue={editingIncome?.name}
                       required
                     />
                     <Input
@@ -270,6 +308,7 @@ export function ExpenseTracker() {
                       placeholder="Monto (ARS)"
                       name="amount"
                       step="0.01"
+                      defaultValue={editingIncome?.amount}
                       required
                     />
                     <Input
@@ -277,9 +316,12 @@ export function ExpenseTracker() {
                       placeholder="Valor USD"
                       name="usdRate"
                       step="0.01"
+                      defaultValue={editingIncome?.usdRate}
                       required
                     />
-                    <Button type="submit">Agregar</Button>
+                    <Button type="submit">
+                      {editingIncome ? "Guardar Cambios" : "Agregar"}
+                    </Button>
                   </form>
                 </DialogContent>
               </Dialog>

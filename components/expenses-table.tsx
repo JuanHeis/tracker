@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,41 +12,33 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Expense, Category } from "@/hooks/useExpenseTracker";
 
-interface Expense {
-  id: string;
-  date: string;
-  name: string;
-  amount: number;
-  usdRate: number;
-  category: string;
-  installments?: {
-    total: number;
-    current: number;
-  };
-}
-
+const className = "text-center ";
 interface ExpensesTableProps {
   expenses: Expense[];
   categories: Record<string, { color: string }>;
   onDeleteExpense: (id: string) => void;
+  onEditExpense: (expenseToEdit: Expense) => void;
 }
 
-export function ExpensesTable({ 
-  expenses, 
-  categories, 
-  onDeleteExpense 
+export function ExpensesTable({
+  expenses,
+  categories,
+  onDeleteExpense,
+  onEditExpense,
 }: ExpensesTableProps) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Fecha</TableHead>
-          <TableHead>Nombre</TableHead>
-          <TableHead>Precio (ARS)</TableHead>
-          <TableHead>Precio (USD)</TableHead>
-          <TableHead>Categoría</TableHead>
-          <TableHead>Acciones</TableHead>
+          <TableHead className={className}>Fecha</TableHead>
+          <TableHead className={className}>Nombre</TableHead>
+          <TableHead className={className}>Monto (ARS)</TableHead>
+          <TableHead className={className}>Monto (USD)</TableHead>
+          <TableHead className={className}>USD Exchange</TableHead>
+          <TableHead className={className}>Categoría</TableHead>
+          <TableHead className={className}>Acciones</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -62,37 +54,51 @@ export function ExpensesTable({
         ) : (
           expenses.map((expense) => (
             <TableRow key={expense.id}>
-              <TableCell>
+              <TableCell className={className}>
                 {format(new Date(expense.date), "dd/MM/yyyy")}
               </TableCell>
-              <TableCell>
+              <TableCell className={className}>
                 {expense.name}
                 {expense.installments && (
                   <span className="ml-2 text-sm text-muted-foreground">
-                    ({expense.installments.current}/{expense.installments.total})
+                    ({expense.installments.current}/{expense.installments.total}
+                    )
                   </span>
                 )}
               </TableCell>
-              <TableCell>
+              <TableCell className={className}>
                 ARS {expense.amount.toLocaleString()}
               </TableCell>
-              <TableCell>
+              <TableCell className={className}>
                 USD {(expense.amount / expense.usdRate).toFixed(2)}
               </TableCell>
-              <TableCell>
+              <TableCell className={className}>
+                {expense.usdRate.toFixed(2)}
+              </TableCell>
+              <TableCell className={className}>
                 <Badge className={categories[expense.category].color}>
                   {expense.category}
                 </Badge>
               </TableCell>
-              <TableCell>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onDeleteExpense(expense.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              <TableCell className={className}>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onEditExpense(expense)}
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onDeleteExpense(expense.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))
@@ -100,4 +106,4 @@ export function ExpensesTable({
       </TableBody>
     </Table>
   );
-} 
+}
