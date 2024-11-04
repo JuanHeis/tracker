@@ -12,7 +12,9 @@ type Category =
   | "Vestimenta"
   | "Subscripciones"
   | "Insumos"
-  | "Otros";
+  | "Estudio"
+  | "Otros"
+  | "Gym";
 
 interface Expense {
   id: string;
@@ -58,6 +60,8 @@ export const CATEGORIES: Record<Category, { color: string }> = {
   Subscripciones: { color: "bg-indigo-500" },
   Insumos: { color: "bg-cyan-500" },
   Otros: { color: "bg-slate-500" },
+  Gym: { color: "bg-lime-500" },
+  Estudio: { color: "bg-teal-500" },
 };
 
 export function useExpenseTracker() {
@@ -68,12 +72,20 @@ export function useExpenseTracker() {
     extraIncomes: [],
   });
   const [showSalaryForm, setShowSalaryForm] = useState(true);
-  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
+  const [selectedMonth, setSelectedMonth] = useState(
+    format(new Date(), "yyyy-MM")
+  );
   const [open, setOpen] = useState(false);
   const [openExtraIncome, setOpenExtraIncome] = useState(false);
-  const [defaultDate, setDefaultDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [defaultIncomeDate, setDefaultIncomeDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [selectedYear, setSelectedYear] = useState(getYear(new Date()).toString());
+  const [defaultDate, setDefaultDate] = useState(
+    format(new Date(), "yyyy-MM-dd")
+  );
+  const [defaultIncomeDate, setDefaultIncomeDate] = useState(
+    format(new Date(), "yyyy-MM-dd")
+  );
+  const [selectedYear, setSelectedYear] = useState(
+    getYear(new Date()).toString()
+  );
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [editingIncome, setEditingIncome] = useState<ExtraIncome | null>(null);
 
@@ -107,24 +119,24 @@ export function useExpenseTracker() {
   const getAvailableYears = () => {
     const years = new Set<string>();
     const currentYear = getYear(new Date());
-    
+
     // Añadir el año actual y el anterior por defecto
     years.add(currentYear.toString());
     years.add((currentYear - 1).toString());
 
     // Añadir años de los datos existentes
-    Object.keys(monthlyData.salaries).forEach(monthKey => {
-      const year = monthKey.split('-')[0];
+    Object.keys(monthlyData.salaries).forEach((monthKey) => {
+      const year = monthKey.split("-")[0];
       years.add(year);
     });
 
-    monthlyData.expenses.forEach(expense => {
-      const year = expense.date.split('-')[0];
+    monthlyData.expenses.forEach((expense) => {
+      const year = expense.date.split("-")[0];
       years.add(year);
     });
 
-    monthlyData.extraIncomes.forEach(income => {
-      const year = income.date.split('-')[0];
+    monthlyData.extraIncomes.forEach((income) => {
+      const year = income.date.split("-")[0];
       years.add(year);
     });
 
@@ -133,7 +145,13 @@ export function useExpenseTracker() {
 
   const filteredExpenses = monthlyData.expenses.filter((expense) => {
     const expenseDate = parse(expense.date, "yyyy-MM-dd", new Date());
-    const monthStart = startOfMonth(parse(`${selectedYear}-${selectedMonth.split('-')[1]}`, "yyyy-MM", new Date()));
+    const monthStart = startOfMonth(
+      parse(
+        `${selectedYear}-${selectedMonth.split("-")[1]}`,
+        "yyyy-MM",
+        new Date()
+      )
+    );
     const monthEnd = endOfMonth(monthStart);
     return expenseDate >= monthStart && expenseDate <= monthEnd;
   });
@@ -143,7 +161,8 @@ export function useExpenseTracker() {
     0
   );
 
-  const getCurrentMonthKey = () => `${selectedYear}-${selectedMonth.split('-')[1]}`;
+  const getCurrentMonthKey = () =>
+    `${selectedYear}-${selectedMonth.split("-")[1]}`;
 
   const availableMoney = monthlyData.salaries[getCurrentMonthKey()]
     ? monthlyData.salaries[getCurrentMonthKey()].amount - totalExpenses
@@ -175,12 +194,12 @@ export function useExpenseTracker() {
         newExpenses.push({
           ...baseExpense,
           id: crypto.randomUUID(),
-          date: format(installmentDate, 'yyyy-MM-dd'),
+          date: format(installmentDate, "yyyy-MM-dd"),
           installments: {
             total: installments,
             current: i + 1,
             startDate: baseExpense.date,
-          }
+          },
         });
       }
     } else {
@@ -220,7 +239,9 @@ export function useExpenseTracker() {
   const handleDeleteExpense = (expenseId: string) => {
     const updatedData = {
       ...monthlyData,
-      expenses: monthlyData.expenses.filter((expense) => expense.id !== expenseId),
+      expenses: monthlyData.expenses.filter(
+        (expense) => expense.id !== expenseId
+      ),
     };
     setMonthlyData(updatedData);
     localStorage.setItem("monthlyData", JSON.stringify(updatedData));
@@ -277,18 +298,24 @@ export function useExpenseTracker() {
 
   const filteredIncomes = monthlyData.extraIncomes.filter((income) => {
     const incomeDate = parse(income.date, "yyyy-MM-dd", new Date());
-    const monthStart = startOfMonth(parse(`${selectedYear}-${selectedMonth.split('-')[1]}`, "yyyy-MM", new Date()));
+    const monthStart = startOfMonth(
+      parse(
+        `${selectedYear}-${selectedMonth.split("-")[1]}`,
+        "yyyy-MM",
+        new Date()
+      )
+    );
     const monthEnd = endOfMonth(monthStart);
     return incomeDate >= monthStart && incomeDate <= monthEnd;
   });
 
   const handleOpenModal = () => {
-    setDefaultDate(format(new Date(), 'yyyy-MM-dd'));
+    setDefaultDate(format(new Date(), "yyyy-MM-dd"));
     setOpen(true);
   };
 
   const handleOpenIncomeModal = () => {
-    setDefaultIncomeDate(format(new Date(), 'yyyy-MM-dd'));
+    setDefaultIncomeDate(format(new Date(), "yyyy-MM-dd"));
     setOpenExtraIncome(true);
   };
 
@@ -300,7 +327,7 @@ export function useExpenseTracker() {
   const handleUpdateExpense = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     if (!editingExpense) return;
 
     const updatedExpense = {
@@ -339,7 +366,7 @@ export function useExpenseTracker() {
   const handleUpdateIncome = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     if (!editingIncome) return;
 
     const updatedIncome = {
@@ -410,4 +437,4 @@ export function useExpenseTracker() {
   };
 }
 
-export type { Category, Expense, ExtraIncome, MonthlyData }; 
+export type { Category, Expense, ExtraIncome, MonthlyData };
