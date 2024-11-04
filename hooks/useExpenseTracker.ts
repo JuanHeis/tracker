@@ -311,11 +311,13 @@ export function useExpenseTracker() {
 
   const handleOpenModal = () => {
     setDefaultDate(format(new Date(), "yyyy-MM-dd"));
+    setEditingExpense(null);
     setOpen(true);
   };
 
   const handleOpenIncomeModal = () => {
     setDefaultIncomeDate(format(new Date(), "yyyy-MM-dd"));
+    setEditingIncome(null);
     setOpenExtraIncome(true);
   };
 
@@ -409,13 +411,13 @@ export function useExpenseTracker() {
     availableMoney,
     savings,
     open,
-    setOpen: handleCloseModal,
+    setOpen,
     defaultDate,
     defaultIncomeDate,
     handleOpenModal,
     handleOpenIncomeModal,
     openExtraIncome,
-    setOpenExtraIncome: handleCloseIncomeModal,
+    setOpenExtraIncome,
     handleAddExpense,
     handleSetSalary,
     handleDeleteExpense,
