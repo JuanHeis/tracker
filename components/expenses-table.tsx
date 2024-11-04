@@ -1,6 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
 import { Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,14 +11,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Expense } from "@/hooks/useExpenseTracker";
+import { Expense, Category, CurrencyType } from "@/hooks/useMoneyTracker";
+import { useHydration } from "@/hooks/useHydration";
+import { FormattedDate } from "./formatted-date";
+import { FormattedAmount } from "./formatted-amount";
 
-const className = "text-center ";
 interface ExpensesTableProps {
   expenses: Expense[];
-  categories: Record<string, { color: string }>;
+  categories: Record<Category, { color: string }>;
   onDeleteExpense: (id: string) => void;
-  onEditExpense: (expenseToEdit: Expense) => void;
+  onEditExpense: (expense: Expense) => void;
 }
 
 export function ExpensesTable({
@@ -28,65 +29,86 @@ export function ExpensesTable({
   onDeleteExpense,
   onEditExpense,
 }: ExpensesTableProps) {
+  const isHydrated = useHydration();
+
+  if (!isHydrated) {
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Fecha</TableHead>
+            <TableHead>Nombre</TableHead>
+            <TableHead>Categoría</TableHead>
+            <TableHead className="text-right">Monto</TableHead>
+            <TableHead className="text-right">USD</TableHead>
+            <TableHead className="text-right">Acciones</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell colSpan={6} className="text-center">
+              Cargando...
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    );
+  }
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className={className}>Fecha</TableHead>
-          <TableHead className={className}>Nombre</TableHead>
-          <TableHead className={className}>Monto (ARS)</TableHead>
-          <TableHead className={className}>Monto (USD)</TableHead>
-          <TableHead className={className}>USD Exchange</TableHead>
-          <TableHead className={className}>Categoría</TableHead>
-          <TableHead className={className}>Acciones</TableHead>
+          <TableHead>Fecha</TableHead>
+          <TableHead>Nombre</TableHead>
+          <TableHead>Categoría</TableHead>
+          <TableHead className="text-right">Monto</TableHead>
+          <TableHead className="text-right">USD</TableHead>
+          <TableHead className="text-right">Acciones</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {expenses.length === 0 ? (
           <TableRow>
-            <TableCell
-              colSpan={6}
-              className="text-center text-muted-foreground"
-            >
+            <TableCell colSpan={6} className="text-center">
               No hay gastos cargados este mes
             </TableCell>
           </TableRow>
         ) : (
           expenses.map((expense) => (
             <TableRow key={expense.id}>
-              <TableCell className={className}>
-                {format(new Date(expense.date), "dd/MM/yyyy")}
+              <TableCell>
+                <FormattedDate date={expense.date} />
               </TableCell>
-              <TableCell className={className}>
+              <TableCell>
                 {expense.name}
                 {expense.installments && (
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    ({expense.installments.current}/{expense.installments.total}
-                    )
+                  <span className="ml-2 text-sm text-gray-500">
+                    ({expense.installments.current}/{expense.installments.total})
                   </span>
                 )}
               </TableCell>
-              <TableCell className={className}>
-                ARS {expense.amount.toLocaleString()}
-              </TableCell>
-              <TableCell className={className}>
-                USD {(expense.amount / expense.usdRate).toFixed(2)}
-              </TableCell>
-              <TableCell className={className}>
-                {expense.usdRate.toFixed(2)}
-              </TableCell>
-              <TableCell className={className}>
-                <Badge className={categories[expense.category].color}>
+              <TableCell>
+                <Badge className={categories[expense.category]?.color ?? "bg-background"}>
                   {expense.category}
                 </Badge>
               </TableCell>
-              <TableCell className={className}>
-                <div className="flex gap-2">
+              <TableCell className="text-right">
+                <span className={expense.currencyType === CurrencyType.ARS ? "font-bold" : ""}>
+                  <FormattedAmount value={expense.amount} currency="ARS" />
+                </span>
+              </TableCell>
+              <TableCell className="text-right">
+                <span className={expense.currencyType === CurrencyType.USD ? "font-bold" : ""}>
+                  <FormattedAmount value={expense.amount / expense.usdRate} currency="USD" />
+                </span>
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => onEditExpense(expense)}
-                    className="text-blue-500 hover:text-blue-700"
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -94,7 +116,6 @@ export function ExpensesTable({
                     variant="ghost"
                     size="icon"
                     onClick={() => onDeleteExpense(expense.id)}
-                    className="text-red-500 hover:text-red-700"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

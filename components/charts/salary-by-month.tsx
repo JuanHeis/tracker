@@ -7,7 +7,7 @@ import {
   Tooltip,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { MonthlyData } from "@/hooks/useExpenseTracker";
+import { MonthlyData } from "@/hooks/useMoneyTracker";
 import { format, parse } from "date-fns";
 import { es } from "date-fns/locale";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,7 +18,10 @@ interface SalaryByMonthProps {
   selectedYear: string;
 }
 
-export function SalaryByMonth({ monthlyData, selectedYear }: SalaryByMonthProps) {
+export function SalaryByMonth({
+  monthlyData,
+  selectedYear,
+}: SalaryByMonthProps) {
   const [activeTab, setActiveTab] = useState("ars");
 
   const getMonthlySalaries = () => {
@@ -75,7 +78,9 @@ export function SalaryByMonth({ monthlyData, selectedYear }: SalaryByMonthProps)
             />
             <Tooltip
               formatter={(value: number) => [
-                `${activeTab === "ars" ? "$" : "USD "}${value.toLocaleString()}`,
+                `${
+                  activeTab === "ars" ? "$" : "USD "
+                }${value.toLocaleString()}`,
                 "Salario",
               ]}
               cursor={{ fill: "rgba(0, 0, 0, 0.1)" }}

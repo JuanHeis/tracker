@@ -1,24 +1,21 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { FormattedAmount } from "./formatted-amount";
+import type { MonthlyData } from "@/hooks/useMoneyTracker";
 
 interface SalaryCardProps {
   selectedMonth: string;
-  monthlyData: {
-    salaries: {
-      [key: string]: {
-        amount: number;
-        usdRate: number;
-      };
-    };
-  };
+  monthlyData: MonthlyData;
   showSalaryForm: boolean;
   totalExpenses: number;
   availableMoney: number;
@@ -37,19 +34,28 @@ export function SalaryCard({
   onSalarySubmit,
   onShowFormChange,
 }: SalaryCardProps) {
+  const currentSalary = monthlyData.salaries[selectedMonth];
+
+  useEffect(() => {
+    if (monthlyData.salaries[selectedMonth]) {
+      onShowFormChange(false);
+    } else {
+      onShowFormChange(true);
+    }
+  });
   return (
     <Card className="h-fit">
       <CardHeader>
-        <CardTitle>Mes Actual</CardTitle>
+        <CardTitle>Resumen del Mes</CardTitle>
       </CardHeader>
       <CardContent>
-        {!monthlyData.salaries[selectedMonth] || showSalaryForm ? (
+        {showSalaryForm ? (
           <form onSubmit={onSalarySubmit} className="space-y-4">
             <Input
               type="number"
-              placeholder="Salario (ARS)"
+              placeholder="Salario"
               name="salary"
-              defaultValue={monthlyData.salaries[selectedMonth]?.amount}
+              defaultValue={currentSalary?.amount}
               required
             />
             <Input
@@ -57,62 +63,44 @@ export function SalaryCard({
               placeholder="Valor USD"
               name="usdRate"
               step="0.01"
-              defaultValue={monthlyData.salaries[selectedMonth]?.usdRate}
+              defaultValue={currentSalary?.usdRate}
               required
             />
-            <div className="flex gap-2">
-              <Button type="submit">Guardar</Button>
-              {monthlyData.salaries[selectedMonth] && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onShowFormChange(false)}
-                >
-                  Cancelar
-                </Button>
-              )}
-            </div>
+            <Button type="submit">Guardar</Button>
           </form>
         ) : (
           <div className="space-y-4">
             <div className="flex justify-between">
               <span>Salario:</span>
               <span className="font-medium">
-                ARS {monthlyData.salaries[selectedMonth].amount.toLocaleString()}
+                <FormattedAmount
+                  value={currentSalary?.amount || 0}
+                  currency="ARS"
+                />
               </span>
             </div>
             <div className="flex justify-between">
-              <span>En USD:</span>
-              <span className="font-medium">
-                USD{" "}
-                {(
-                  monthlyData.salaries[selectedMonth].amount /
-                  monthlyData.salaries[selectedMonth].usdRate
-                ).toFixed(2)}
-              </span>
-            </div>
-            <div className="flex justify-between text-red-500">
               <span>Gastos:</span>
-              <span className="font-medium">
-                ARS {totalExpenses.toLocaleString()}
+              <span className="font-medium text-red-500">
+                <FormattedAmount value={totalExpenses} currency="ARS" />
               </span>
             </div>
-            <div className="flex justify-between text-green-500">
+            <div className="flex justify-between">
               <span>Disponible:</span>
               <span className="font-medium">
-                ARS {availableMoney.toLocaleString()}
+                <FormattedAmount value={availableMoney} currency="ARS" />
               </span>
             </div>
             <div className="flex justify-between">
-              <span>Ahorrado:</span>
-              <span className="font-medium">
-                ARS {savings.toLocaleString()}
+              <span>Ahorro:</span>
+              <span className="font-medium text-green-500">
+                <FormattedAmount value={savings} currency="ARS" />
               </span>
             </div>
             <Button
               variant="outline"
-              onClick={() => onShowFormChange(true)}
               className="w-full"
+              onClick={() => onShowFormChange(true)}
             >
               Editar Salario
             </Button>
@@ -121,4 +109,4 @@ export function SalaryCard({
       </CardContent>
     </Card>
   );
-} 
+}

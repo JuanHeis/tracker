@@ -7,7 +7,7 @@ import {
   Tooltip,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { MonthlyData } from "@/hooks/useExpenseTracker";
+import { MonthlyData } from "@/hooks/useMoneyTracker";
 import { format, parse, startOfMonth, endOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -16,7 +16,10 @@ interface ExpensesByMonthProps {
   selectedYear: string;
 }
 
-export function ExpensesByMonth({ monthlyData, selectedYear }: ExpensesByMonthProps) {
+export function ExpensesByMonth({
+  monthlyData,
+  selectedYear,
+}: ExpensesByMonthProps) {
   const getMonthlyExpenses = () => {
     const months = Array.from({ length: 12 }, (_, i) => {
       const date = new Date(Number(selectedYear), i, 1);
