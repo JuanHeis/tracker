@@ -22,7 +22,7 @@ export type Category =
 
 export enum CurrencyType {
   ARS = "ARS",
-  USD = "USD"
+  USD = "USD",
 }
 
 export interface Expense {
@@ -91,15 +91,15 @@ export const CATEGORIES: Record<Category, { color: string }> = {
 function migrateData(data: MonthlyData): MonthlyData {
   return {
     ...data,
-    expenses: data.expenses.map(expense => ({
+    expenses: data.expenses.map((expense) => ({
       ...expense,
       currencyType: expense.currencyType || CurrencyType.ARS,
     })),
-    extraIncomes: data.extraIncomes.map(income => ({
+    extraIncomes: data.extraIncomes.map((income) => ({
       ...income,
       currencyType: income.currencyType || CurrencyType.ARS,
     })),
-    investments: (data.investments || []).map(investment => ({
+    investments: (data.investments || []).map((investment) => ({
       ...investment,
       currencyType: investment.currencyType || CurrencyType.ARS,
     })),
@@ -182,7 +182,8 @@ export function useMoneyTracker() {
     );
 
     return {
-      total: totalInvestments + totalSalaries + totalExtraIncomes - totalExpenses,
+      total:
+        totalInvestments + totalSalaries + totalExtraIncomes - totalExpenses,
       availableForUse:
         totalSalaries + totalExtraIncomes - totalExpenses - totalInvestments,
       blockedInInvestments: totalInvestments,
@@ -205,7 +206,10 @@ export function useMoneyTracker() {
 
   const availableMoney = monthlyData.salaries[getCurrentMonthKey()]
     ? monthlyData.salaries[getCurrentMonthKey()].amount -
-      expensesTracker.totalExpenses
+      expensesTracker.totalExpenses -
+      (monthlyData.investments || [])
+        .filter((inv) => inv.date.startsWith(getCurrentMonthKey()))
+        .reduce((sum, inv) => sum + inv.amount, 0)
     : 0;
 
   const savings = availableMoney > 0 ? availableMoney : 0;

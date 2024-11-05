@@ -27,17 +27,17 @@ export default function IncomeTable({
   onEditIncome,
 }: IncomeTableProps) {
   const isHydrated = useHydration();
-
+  const className = "text-center";
   if (!isHydrated) {
     return (
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Fecha</TableHead>
-            <TableHead>Descripción</TableHead>
-            <TableHead className="text-right">Monto</TableHead>
-            <TableHead className="text-right">USD</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+            <TableHead className={className}>Fecha</TableHead>
+            <TableHead className={className}>Descripción</TableHead>
+            <TableHead className={className}>Monto</TableHead>
+            <TableHead className={className}>USD</TableHead>
+            <TableHead className={className}>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -55,11 +55,11 @@ export default function IncomeTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Fecha</TableHead>
-          <TableHead>Descripción</TableHead>
-          <TableHead className="text-right">Monto</TableHead>
-          <TableHead className="text-right">USD</TableHead>
-          <TableHead className="text-right">Acciones</TableHead>
+          <TableHead className={className}>Fecha</TableHead>
+          <TableHead className={className}>Descripción</TableHead>
+          <TableHead className={className}>Monto</TableHead>
+          <TableHead className={className}>USD</TableHead>
+          <TableHead className={className}>Acciones</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -72,35 +72,48 @@ export default function IncomeTable({
         ) : (
           incomes.map((income) => (
             <TableRow key={income.id}>
-              <TableCell>
+              <TableCell className={className}>
                 <FormattedDate date={income.date} />
               </TableCell>
-              <TableCell>{income.name}</TableCell>
-              <TableCell className="text-right">
-                <span className={income.currencyType === CurrencyType.ARS ? "font-bold" : ""}>
+              <TableCell className={className}>{income.name}</TableCell>
+              <TableCell className={className}>
+                <span
+                  className={
+                    income.currencyType === CurrencyType.ARS ? "font-bold" : ""
+                  }
+                >
                   <FormattedAmount value={income.amount} currency="ARS" />
                 </span>
               </TableCell>
-              <TableCell className="text-right">
-                <span className={income.currencyType === CurrencyType.USD ? "font-bold" : ""}>
-                  <FormattedAmount value={income.amount / income.usdRate} currency="USD" />
+              <TableCell className={className}>
+                <span
+                  className={
+                    income.currencyType === CurrencyType.USD ? "font-bold" : ""
+                  }
+                >
+                  <FormattedAmount
+                    value={income.amount / income.usdRate}
+                    currency="USD"
+                  />
                 </span>
               </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
+              <TableCell className={className}>
+                <div className="flex justify-center gap-2">
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="cursor-pointer text-blue-500 group/edit hover:bg-blue-500 hover:text-white"
                     onClick={() => onEditIncome(income)}
                   >
-                    <Pencil className="h-4 w-4" />
+                    <Pencil className="h-4 w-4 group-hover/edit:scale-125" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="cursor-pointer text-red-500 group/delete hover:bg-red-500 hover:text-white"
                     onClick={() => onDeleteIncome(income.id)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4 group-hover/delete:scale-125" />
                   </Button>
                 </div>
               </TableCell>

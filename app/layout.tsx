@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={nunitoSans.variable}>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans dark">{children}</body>
     </html>
   );
 }

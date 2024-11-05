@@ -96,7 +96,7 @@ export function ExpenseTracker() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-10">
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
@@ -111,13 +111,13 @@ export function ExpenseTracker() {
                 <DollarSign className="mr-2 h-4 w-4" />
                 Ingresos
               </TabsTrigger>
-              <TabsTrigger value="charts">
-                <PieChart className="mr-2 h-4 w-4" />
-                Charts
-              </TabsTrigger>
               <TabsTrigger value="investments">
                 <ChartNoAxesCombined className="mr-2 h-4 w-4" />
                 Inversiones
+              </TabsTrigger>
+              <TabsTrigger value="charts">
+                <PieChart className="mr-2 h-4 w-4" />
+                Charts
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -136,14 +136,14 @@ export function ExpenseTracker() {
             </Select>
             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Seleccionar mes" />
+                <SelectValue className="" placeholder="Seleccionar mes" />
               </SelectTrigger>
               <SelectContent>
                 {Array.from({ length: 12 }, (_, i) => {
                   const date = new Date(Number(selectedYear), i, 1);
                   return (
                     <SelectItem
-                      className="text-primary"
+                      className=""
                       key={i}
                       value={format(date, "yyyy-MM")}
                     >
@@ -187,22 +187,6 @@ export function ExpenseTracker() {
                 </CardContent>
               </Card>
             </TabsContent>
-            <TabsContent value="charts" className="mt-0">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Gráficos</CardTitle>
-                  <CardDescription>
-                    Visualización de gastos por categoría
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <ChartsContainer
-                    monthlyData={monthlyData}
-                    selectedYear={selectedYear}
-                  />
-                </CardContent>
-              </Card>
-            </TabsContent>
             <TabsContent value="investments" className="mt-0">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -215,6 +199,22 @@ export function ExpenseTracker() {
                     investments={filteredInvestments}
                     onEdit={handleEditInvestment}
                     onDelete={handleDeleteInvestment}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="charts" className="mt-0">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Gráficos</CardTitle>
+                  <CardDescription>
+                    Visualización de gastos por categoría
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <ChartsContainer
+                    monthlyData={monthlyData}
+                    selectedYear={selectedYear}
                   />
                 </CardContent>
               </Card>
@@ -232,7 +232,6 @@ export function ExpenseTracker() {
               onSalarySubmit={handleSetSalary}
               onShowFormChange={setShowSalaryForm}
             />
-
             <Card className="h-fit">
               <CardHeader>
                 <CardTitle>Dinero disponible (Todos los meses)</CardTitle>

@@ -13,6 +13,13 @@ import {
 import { FormattedAmount } from "./formatted-amount";
 import type { MonthlyData } from "@/hooks/useMoneyTracker";
 
+import {
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+  Tooltip,
+} from "@/components/ui/tooltip";
+
 interface SalaryCardProps {
   selectedMonth: string;
   monthlyData: MonthlyData;
@@ -30,7 +37,6 @@ export function SalaryCard({
   showSalaryForm,
   totalExpenses,
   availableMoney,
-  savings,
   onSalarySubmit,
   onShowFormChange,
 }: SalaryCardProps) {
@@ -42,71 +48,104 @@ export function SalaryCard({
     } else {
       onShowFormChange(true);
     }
-  });
+  }, [selectedMonth]);
   return (
     <Card className="h-fit">
-      <CardHeader>
-        <CardTitle>Resumen del Mes</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {showSalaryForm ? (
-          <form onSubmit={onSalarySubmit} className="space-y-4">
-            <Input
-              type="number"
-              placeholder="Salario"
-              name="salary"
-              defaultValue={currentSalary?.amount}
-              required
-            />
-            <Input
-              type="number"
-              placeholder="Valor USD"
-              name="usdRate"
-              step="0.01"
-              defaultValue={currentSalary?.usdRate}
-              required
-            />
-            <Button type="submit">Guardar</Button>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex justify-between">
-              <span>Salario:</span>
-              <span className="font-medium">
-                <FormattedAmount
-                  value={currentSalary?.amount || 0}
-                  currency="ARS"
-                />
-              </span>
+      <TooltipProvider>
+        <CardHeader>
+          <CardTitle>Resumen del Mes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {showSalaryForm ? (
+            <form onSubmit={onSalarySubmit} className="space-y-4">
+              <Input
+                type="number"
+                placeholder="Salario"
+                name="salary"
+                defaultValue={currentSalary?.amount}
+                required
+              />
+              <Input
+                type="number"
+                placeholder="Valor USD"
+                name="usdRate"
+                step="0.01"
+                defaultValue={currentSalary?.usdRate}
+                required
+              />
+              <Button type="submit">Guardar</Button>
+            </form>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <span>Salario:</span>
+                <span className="font-medium">
+                  <FormattedAmount
+                    value={currentSalary?.amount || 0}
+                    currency="ARS"
+                  />
+                </span>
+              </div>
+              <Tooltip>
+                <TooltipTrigger className="w-full ">
+                  <div className="flex justify-between w-full ">
+                    <span>Salario (USD):</span>
+                    <span className="font-medium text-green-800">
+                      <FormattedAmount
+                        value={
+                          Number(
+                            (
+                              currentSalary?.amount / currentSalary?.usdRate
+                            ).toFixed(2)
+                          ) || 0
+                        }
+                        currency="USD"
+                      />
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs mb-5">
+                  <p className="font-bold">Salario en dolares</p>
+                  <p>
+                    Salario en pesos / valor del dolar ($
+                    {currentSalary?.usdRate})
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+
+              <div className="flex justify-between w-full">
+                <span>Gastos:</span>
+                <span className="font-medium text-red-500">
+                  <FormattedAmount value={totalExpenses} currency="ARS" />
+                </span>
+              </div>
+
+              <Tooltip>
+                <TooltipTrigger className="w-full ">
+                  <div className="flex justify-between w-full ">
+                    <span className="block shrink-1">Disponible:</span>
+                    <span className="font-medium text-green-500">
+                      <FormattedAmount value={availableMoney} currency="ARS" />
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs mb-5">
+                  <p className="font-bold">Dinero disponible para gastos</p>
+                  <p>Total del mes - gastos del mes - inversiones del mes</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => onShowFormChange(true)}
+              >
+                Editar Salario
+              </Button>
             </div>
-            <div className="flex justify-between">
-              <span>Gastos:</span>
-              <span className="font-medium text-red-500">
-                <FormattedAmount value={totalExpenses} currency="ARS" />
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>Disponible:</span>
-              <span className="font-medium">
-                <FormattedAmount value={availableMoney} currency="ARS" />
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>Ahorro:</span>
-              <span className="font-medium text-green-500">
-                <FormattedAmount value={savings} currency="ARS" />
-              </span>
-            </div>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => onShowFormChange(true)}
-            >
-              Editar Salario
-            </Button>
-          </div>
-        )}
-      </CardContent>
+          )}
+        </CardContent>
+      </TooltipProvider>
     </Card>
   );
 }
