@@ -11,14 +11,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Expense, Category, CurrencyType } from "@/hooks/useMoneyTracker";
+import { Expense, CurrencyType } from "@/hooks/useMoneyTracker";
 import { useHydration } from "@/hooks/useHydration";
 import { FormattedDate } from "./formatted-date";
 import { FormattedAmount } from "./formatted-amount";
+import { cn } from "@/lib/utils";
+import { CATEGORIES } from "@/constants/colors";
 
 interface ExpensesTableProps {
   expenses: Expense[];
-  categories: Record<Category, { color: string }>;
   onDeleteExpense: (id: string) => void;
   onEditExpense: (expense: Expense) => void;
 }
@@ -27,7 +28,6 @@ const className = "text-center";
 
 export function ExpensesTable({
   expenses,
-  categories,
   onDeleteExpense,
   onEditExpense,
 }: ExpensesTableProps) {
@@ -77,72 +77,78 @@ export function ExpensesTable({
             </TableCell>
           </TableRow>
         ) : (
-          expenses.map((expense) => (
-            <TableRow key={expense.id}>
-              <TableCell className={className}>
-                <FormattedDate date={expense.date} />
-              </TableCell>
-              <TableCell className={className}>
-                {expense.name}
-                {expense.installments && (
-                  <span className="ml-2 text-sm text-gray-500">
-                    ({expense.installments.current}/{expense.installments.total}
-                    )
+          expenses.map((expense) => {
+            return (
+              <TableRow key={expense.id}>
+                <TableCell className={className}>
+                  <FormattedDate date={expense.date} />
+                </TableCell>
+                <TableCell className={className}>
+                  {expense.name}
+                  {expense.installments && (
+                    <span className="ml-2 text-sm text-gray-500">
+                      ({expense.installments.current}/
+                      {expense.installments.total})
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className={className}>
+                  <Badge
+                    style={{
+                      backgroundColor: CATEGORIES[expense.category]?.color,
+                    }}
+                  >
+                    {expense.category}
+                  </Badge>
+                </TableCell>
+                <TableCell className={className}>
+                  <span
+                    className={
+                      expense.currencyType === CurrencyType.ARS
+                        ? "font-bold"
+                        : ""
+                    }
+                  >
+                    <FormattedAmount value={expense.amount} currency="ARS" />
                   </span>
-                )}
-              </TableCell>
-              <TableCell className={className}>
-                <Badge
-                  className={
-                    categories[expense.category]?.color ?? "bg-background"
-                  }
-                >
-                  {expense.category}
-                </Badge>
-              </TableCell>
-              <TableCell className={className}>
-                <span
-                  className={
-                    expense.currencyType === CurrencyType.ARS ? "font-bold" : ""
-                  }
-                >
-                  <FormattedAmount value={expense.amount} currency="ARS" />
-                </span>
-              </TableCell>
-              <TableCell className={className}>
-                <span
-                  className={
-                    expense.currencyType === CurrencyType.USD ? "font-bold" : ""
-                  }
-                >
-                  <FormattedAmount
-                    value={expense.amount / expense.usdRate}
-                    currency="USD"
-                  />
-                </span>
-              </TableCell>
-              <TableCell className={className}>
-                <div className="flex justify-center gap-0">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="cursor-pointer text-blue-500 group/edit hover:bg-blue-500 hover:text-white"
-                    onClick={() => onEditExpense(expense)}
+                </TableCell>
+                <TableCell className={className}>
+                  <span
+                    className={
+                      expense.currencyType === CurrencyType.USD
+                        ? "font-bold"
+                        : ""
+                    }
                   >
-                    <Pencil className="h-4 w-4 group-hover/edit:scale-125" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="cursor-pointer text-red-500 group/delete hover:bg-red-500 hover:text-white"
-                    onClick={() => onDeleteExpense(expense.id)}
-                  >
-                    <Trash2 className="h-4 w-4 group-hover/delete:scale-125" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))
+                    <FormattedAmount
+                      value={expense.amount / expense.usdRate}
+                      currency="USD"
+                    />
+                  </span>
+                </TableCell>
+                <TableCell className={className}>
+                  <div className="flex justify-center gap-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="cursor-pointer text-blue-500 group/edit hover:bg-blue-500 hover:text-white"
+                      onClick={() => onEditExpense(expense)}
+                    >
+                      <Pencil className="h-4 w-4 group-hover/edit:scale-125" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="cursor-pointer text-red-500 group/delete hover:bg-red-500 hover:text-white"
+                      onClick={() => onDeleteExpense(expense.id)}
+                    >
+                      <Trash2 className="h-4 w-4 group-hover/delete:scale-125" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })
         )}
       </TableBody>
     </Table>

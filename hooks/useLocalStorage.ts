@@ -2,12 +2,13 @@
 import { useState } from "react";
 
 export function useLocalStorage<T>(
-  key: string, 
+  key: string,
   initialValue: T,
   migrateFn?: (value: T) => T
 ) {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
+      if (typeof window === "undefined") return initialValue;
       const item = window.localStorage.getItem(key);
       if (item) {
         const parsedItem = JSON.parse(item);
@@ -20,9 +21,7 @@ export function useLocalStorage<T>(
     }
   });
 
-  const setValue = (
-    value: T | ((val: T) => T)
-  ) => {
+  const setValue = (value: T | ((val: T) => T)) => {
     try {
       const valueToStore =
         value instanceof Function ? value(storedValue) : value;

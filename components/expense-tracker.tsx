@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/card";
 import { SalaryCard } from "@/components/salary-card";
 import { ExpensesTable } from "@/components/expenses-table";
-import { CATEGORIES } from "@/hooks/useMoneyTracker";
+import { CATEGORIES } from "@/constants/colors";
 import IncomeTable from "./income-table";
 import ChartsContainer from "./charts-container";
 import { InvestmentsTable } from "@/components/investments-table";
@@ -42,6 +42,7 @@ import { InvestmentDialog } from "@/components/investment-dialog";
 import { useMoneyTracker } from "@/hooks/useMoneyTracker";
 import { CurrencyType } from "@/hooks/useMoneyTracker";
 import { TotalAmounts } from "./total-amounts";
+import { ThemeToggle } from "./theme-toggle";
 
 export function ExpenseTracker() {
   const {
@@ -142,17 +143,16 @@ export function ExpenseTracker() {
                 {Array.from({ length: 12 }, (_, i) => {
                   const date = new Date(Number(selectedYear), i, 1);
                   return (
-                    <SelectItem
-                      className=""
-                      key={i}
-                      value={format(date, "yyyy-MM")}
-                    >
+                    <SelectItem key={i} value={format(date, "yyyy-MM")}>
                       {format(date, "MMMM yyyy")}
                     </SelectItem>
                   );
                 })}
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <ThemeToggle />
           </div>
         </div>
 
@@ -166,7 +166,6 @@ export function ExpenseTracker() {
                 <CardContent>
                   <ExpensesTable
                     expenses={filteredExpenses}
-                    categories={CATEGORIES}
                     onDeleteExpense={handleDeleteExpense}
                     onEditExpense={handleEditExpense}
                   />

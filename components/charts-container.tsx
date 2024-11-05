@@ -1,4 +1,4 @@
-import { MonthlyData } from "@/hooks/useExpenseTracker";
+import { MonthlyData } from "@/hooks/useMoneyTracker";
 import { ExpensesByMonth } from "./charts/expenses-by-month";
 import { SalaryByMonth } from "./charts/salary-by-month";
 
@@ -7,7 +7,10 @@ interface ChartsContainerProps {
   selectedYear: string;
 }
 
-export default function ChartsContainer({ monthlyData, selectedYear }: ChartsContainerProps) {
+export default function ChartsContainer({
+  monthlyData,
+  selectedYear,
+}: ChartsContainerProps) {
   return (
     <div className="space-y-8">
       <ExpensesByMonth monthlyData={monthlyData} selectedYear={selectedYear} />

@@ -73,20 +73,7 @@ export interface MonthlyData {
   investments: Investment[];
 }
 
-export const CATEGORIES: Record<Category, { color: string }> = {
-  Alquiler: { color: "bg-red-500" },
-  Supermercado: { color: "bg-blue-500" },
-  Entretenimiento: { color: "bg-green-500" },
-  Salidas: { color: "bg-yellow-500" },
-  Vacaciones: { color: "bg-purple-500" },
-  Servicios: { color: "bg-orange-500" },
-  Vestimenta: { color: "bg-pink-500" },
-  Subscripciones: { color: "bg-indigo-500" },
-  Insumos: { color: "bg-cyan-500" },
-  Otros: { color: "bg-slate-500" },
-  Gym: { color: "bg-lime-500" },
-  Estudio: { color: "bg-teal-500" },
-};
+
 
 function migrateData(data: MonthlyData): MonthlyData {
   return {
