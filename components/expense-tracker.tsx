@@ -6,6 +6,7 @@ import {
   PieChart,
   Table as TableIcon,
   ChartNoAxesCombined,
+  Coins,
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -95,8 +96,8 @@ export function ExpenseTracker() {
   } = useMoneyTracker();
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="mx-auto max-w-7xl space-y-4">
+    <div className=" p-4 ">
+      <div className="mx-auto max-w-7xl space-y-8 ">
         <div className="flex items-center gap-10">
           <Tabs
             value={activeTab}
@@ -105,8 +106,8 @@ export function ExpenseTracker() {
           >
             <TabsList>
               <TabsTrigger value="table">
-                <TableIcon className="mr-2 h-4 w-4" />
-                Tabla
+                <Coins className="mr-2 h-4 w-4" />
+                Gastos
               </TabsTrigger>
               <TabsTrigger value="incomes">
                 <DollarSign className="mr-2 h-4 w-4" />
@@ -122,9 +123,9 @@ export function ExpenseTracker() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-          <div className="flex gap-2">
+          <div className="flex gap-2 ">
             <Select value={selectedYear} onValueChange={setSelectedYear}>
-              <SelectTrigger className="w-[120px]">
+              <SelectTrigger className="w-[120px] bg-background">
                 <SelectValue placeholder="Año" />
               </SelectTrigger>
               <SelectContent>
@@ -136,7 +137,7 @@ export function ExpenseTracker() {
               </SelectContent>
             </Select>
             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] bg-background">
                 <SelectValue className="" placeholder="Seleccionar mes" />
               </SelectTrigger>
               <SelectContent>
@@ -151,12 +152,12 @@ export function ExpenseTracker() {
               </SelectContent>
             </Select>
           </div>
-          <div>
+          <div className="ml-auto">
             <ThemeToggle />
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-[1fr_300px]">
+        <div className="grid gap-8 md:grid-cols-[1fr_300px]">
           <Tabs value={activeTab} className="space-y-4">
             <TabsContent value="table" className="mt-0">
               <Card>
@@ -189,9 +190,7 @@ export function ExpenseTracker() {
             <TabsContent value="investments" className="mt-0">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Inversiones
-                  </CardTitle>
+                  <CardTitle>Inversiones</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <InvestmentsTable

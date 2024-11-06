@@ -1,15 +1,20 @@
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from "recharts";
+import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { MonthlyData } from "@/hooks/useMoneyTracker";
 import { format, parse, startOfMonth, endOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "../ui/chart";
+import { Coins } from "lucide-react";
+
+const chartConfig = {
+  label: "Gastos",
+  icon: Coins,
+} as ChartConfig;
 
 interface ExpensesByMonthProps {
   monthlyData: MonthlyData;
@@ -52,7 +57,7 @@ export function ExpensesByMonth({
         <CardTitle>Gastos por Mes - {selectedYear}</CardTitle>
       </CardHeader>
       <CardContent className="px-0">
-        <ResponsiveContainer width="100%" height={350}>
+        <ChartContainer config={chartConfig}>
           <BarChart data={data}>
             <XAxis
               dataKey="month"
@@ -68,21 +73,28 @@ export function ExpensesByMonth({
               axisLine={false}
               tickFormatter={(value) => `$${value.toLocaleString()}`}
             />
-            <Tooltip
-              formatter={(value: number) => [
-                `$${value.toLocaleString()}`,
-                "Total",
-              ]}
-              cursor={{ fill: "rgba(0, 0, 0, 0.1)" }}
-            />
             <Bar
               dataKey="total"
               fill="currentColor"
               radius={[4, 4, 0, 0]}
               className="fill-primary"
             />
+            <ChartTooltip
+              content={<ChartTooltipContent />}
+              formatter={(value, name) => (
+                <div className="flex min-w-[130px] items-center text-xs text-muted-foreground">
+                  {chartConfig[name as keyof typeof chartConfig]?.label || name}
+                  <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                    <span className="font-normal text-muted-foreground">$</span>
+                    {value.toLocaleString()}
+                  </div>
+                </div>
+              )}
+              cursor={false}
+              defaultIndex={1}
+            />
           </BarChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </CardContent>
     </Card>
   );

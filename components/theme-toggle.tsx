@@ -19,7 +19,7 @@ export function ThemeToggle() {
 
   return (
     <Select value={theme} onValueChange={setTheme}>
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-[180px] bg-background">
         <SelectValue placeholder="Seleccionar tema" />
       </SelectTrigger>
       <SelectContent>

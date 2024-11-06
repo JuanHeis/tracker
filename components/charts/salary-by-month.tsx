@@ -12,11 +12,23 @@ import { format, parse } from "date-fns";
 import { es } from "date-fns/locale";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
+import { Coins } from "lucide-react";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "../ui/chart";
 
 interface SalaryByMonthProps {
   monthlyData: MonthlyData;
   selectedYear: string;
 }
+
+const chartConfig = {
+  label: "Salario",
+  icon: Coins,
+} as ChartConfig;
 
 export function SalaryByMonth({
   monthlyData,
@@ -58,7 +70,7 @@ export function SalaryByMonth({
         </div>
       </CardHeader>
       <CardContent className="px-0">
-        <ResponsiveContainer width="100%" height={350}>
+        <ChartContainer config={chartConfig}>
           <BarChart data={data}>
             <XAxis
               dataKey="month"
@@ -76,23 +88,31 @@ export function SalaryByMonth({
                 `${activeTab === "ars" ? "$" : "USD "}${value.toLocaleString()}`
               }
             />
-            <Tooltip
-              formatter={(value: number) => [
-                `${
-                  activeTab === "ars" ? "$" : "USD "
-                }${value.toLocaleString()}`,
-                "Salario",
-              ]}
-              cursor={{ fill: "rgba(0, 0, 0, 0.1)" }}
-            />
+
             <Bar
               dataKey={activeTab}
               fill="currentColor"
               radius={[4, 4, 0, 0]}
               className="fill-primary"
             />
+            <ChartTooltip
+              content={<ChartTooltipContent />}
+              cursor={false}
+              formatter={(value, name) => (
+                <div className="flex min-w-[130px] items-center text-xs text-muted-foreground">
+                  {chartConfig[name as keyof typeof chartConfig]?.label || name}
+                  <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                    <span className="font-normal text-muted-foreground">
+                      {activeTab === "ars" ? "$ARS" : "$USD"}
+                    </span>
+                    {value.toLocaleString()}
+                  </div>
+                </div>
+              )}
+              defaultIndex={1}
+            />
           </BarChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </CardContent>
     </Card>
   );
