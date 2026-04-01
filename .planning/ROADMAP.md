@@ -12,7 +12,7 @@ This brownfield project starts by fixing 7 critical bugs that make current calcu
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Critical Bug Fixes** - Fix 7 confirmed bugs that produce wrong calculations, broken forms, and corrupted data
+- [x] **Phase 1: Critical Bug Fixes** - Fix 7 confirmed bugs that produce wrong calculations, broken forms, and corrupted data (completed 2026-04-01)
 - [ ] **Phase 2: Investment Model Refactor** - Replace transactional investment model with account-based model (movements, value tracking, finalization)
 - [ ] **Phase 3: Dual Currency Engine** - Implement real ARS/USD separation with per-transaction rates, currency purchases, and exchange gain/loss
 - [ ] **Phase 4: Income & Pay Date** - Rename terminology, add configurable pay date with dual calendar views, and auto-calculated aguinaldo
@@ -179,7 +179,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Critical Bug Fixes | 1/3 | In Progress | - |
+| 1. Critical Bug Fixes | 3/3 | Complete   | 2026-04-01 |
 | 2. Investment Model Refactor | 0/TBD | Not started | - |
 | 3. Dual Currency Engine | 0/TBD | Not started | - |
 | 4. Income & Pay Date | 0/TBD | Not started | - |

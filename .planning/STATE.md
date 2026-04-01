@@ -9,25 +9,25 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 ## Current Position
 
-Phase: 1 of 10 (Critical Bug Fixes)
-Plan: 2 of 3 in current phase
-Status: Executing
-Last activity: 2026-04-01 — Completed 01-02
+Phase: 1 of 10 (Critical Bug Fixes) -- COMPLETE
+Plan: 3 of 3 in current phase
+Status: Phase Complete
+Last activity: 2026-04-01 -- Completed 01-03
 
-Progress: [██░░░░░░░░] 4%
+Progress: [███░░░░░░░] 7%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: ~2 min
-- Total execution time: ~4 min
+- Total plans completed: 3
+- Average duration: ~2.3 min
+- Total execution time: ~7 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-critical-bug-fixes | 01-01 | 2min | 2min |
+| 01-critical-bug-fixes | 01-01, 01-02, 01-03 | 7min | 2.3min |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -49,6 +49,9 @@ Recent decisions affecting current work:
 - 01-01: Used editingInvestment prop directly for edit defaults instead of separate defaultValues prop
 - 01-02: Use date-fns addMonths with end-of-month clamping instead of raw Date.setMonth
 - 01-02: Force form remount via React key prop rather than switching to controlled inputs
+- 01-03: Total field formula changed - investments not added to total (blocked money, not income)
+- 01-03: Validation on expense/income forms only; investment dialog has own component
+- 01-03: Reset clears both monthlyData and lastUsedUsdRate from localStorage
 
 ### Pending Todos
 
@@ -61,5 +64,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-01
-Stopped at: Completed 01-01-PLAN.md
-Resume file: .planning/phases/01-critical-bug-fixes/01-01-SUMMARY.md
+Stopped at: Completed 01-03-PLAN.md (Phase 1 complete)
+Resume file: .planning/phases/01-critical-bug-fixes/01-03-SUMMARY.md
