@@ -25,7 +25,7 @@ export function useInvestmentsTracker(
       name: formData.get("name") as string,
       amount: Number(formData.get("amount")),
       usdRate: Number(formData.get("usdRate")),
-      currencyType: CurrencyType.ARS,
+      currencyType: (formData.get("currencyType") as CurrencyType) || CurrencyType.ARS,
       type: formData.get("type") as Investment["type"],
       status: "Activa",
       expectedEndDate: formData.get("expectedEndDate") as string,
@@ -82,6 +82,7 @@ export function useInvestmentsTracker(
       name: formData.get("name") as string,
       amount: Number(formData.get("amount")),
       usdRate: Number(formData.get("usdRate")),
+      currencyType: (formData.get("currencyType") as CurrencyType) || CurrencyType.ARS,
       type: formData.get("type") as Investment["type"],
       expectedEndDate: formData.get("expectedEndDate") as string,
     };

@@ -8,20 +8,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Investment } from "@/hooks/useMoneyTracker";
+import { CurrencyType, Investment } from "@/hooks/useMoneyTracker";
+import { INVESTMENT_TYPES } from "@/constants/investments";
 
 interface InvestmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  defaultValues?: {
-    date: string;
-    name: string;
-    amount: number;
-    usdRate: number;
-    type: string;
-    expectedEndDate?: string;
-  };
   onClose: () => void;
   onEdit: (investment: Investment) => void;
   defaultInvestmentDate: string;
@@ -34,7 +27,6 @@ export function InvestmentDialog({
   onSubmit,
   onClose,
   onEdit,
-  defaultValues,
   defaultInvestmentDate,
   editingInvestment,
 }: InvestmentDialogProps) {
@@ -43,57 +35,64 @@ export function InvestmentDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {defaultValues ? "Editar Inversión" : "Nueva Inversión"}
+            {editingInvestment ? "Editar Inversión" : "Nueva Inversión"}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <Input
             type="date"
             name="date"
-            defaultValue={defaultInvestmentDate}
+            defaultValue={editingInvestment?.date ?? defaultInvestmentDate}
             required
           />
           <Input
             type="text"
             name="name"
             placeholder="Nombre"
-            defaultValue={defaultValues?.name}
+            defaultValue={editingInvestment?.name}
             required
           />
           <Input
             type="number"
             name="amount"
             placeholder="Monto"
-            defaultValue={defaultValues?.amount}
+            defaultValue={editingInvestment?.amount}
             required
           />
           <Input
             type="number"
             name="usdRate"
             placeholder="Tasa USD"
-            defaultValue={defaultValues?.usdRate}
+            defaultValue={editingInvestment?.usdRate}
             required
           />
-          <Select name="type" defaultValue={defaultValues?.type}>
+          <Select name="type" defaultValue={editingInvestment?.type}>
             <SelectTrigger>
               <SelectValue placeholder="Tipo de inversión" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="FCI">FCI</SelectItem>
-              <SelectItem value="PlazoFijo">Plazo Fijo</SelectItem>
-              <SelectItem value="Crypto">Crypto</SelectItem>
-              <SelectItem value="Acciones">Acciones</SelectItem>
-              <SelectItem value="Otros">Otros</SelectItem>
+              {INVESTMENT_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Input
             type="date"
             name="expectedEndDate"
             placeholder="Fecha estimada de finalización"
-            defaultValue={defaultValues?.expectedEndDate}
+            defaultValue={editingInvestment?.expectedEndDate}
           />
+          <Select name="currencyType" defaultValue={editingInvestment?.currencyType ?? CurrencyType.ARS}>
+            <SelectTrigger>
+              <SelectValue placeholder="Moneda" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={CurrencyType.ARS}>ARS</SelectItem>
+              <SelectItem value={CurrencyType.USD}>USD</SelectItem>
+            </SelectContent>
+          </Select>
           <Button type="submit">
-            {defaultValues ? "Actualizar" : "Agregar"}
+            {editingInvestment ? "Actualizar" : "Agregar"}
           </Button>
         </form>
       </DialogContent>
