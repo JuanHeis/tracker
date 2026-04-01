@@ -8,7 +8,7 @@ progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 8
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Project State
@@ -23,25 +23,25 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 2 of 10 (Investment Model Refactor) -- IN PROGRESS
-Plan: 3 of 5 in current phase (02-03 complete)
+Plan: 4 of 5 in current phase (02-04 complete)
 Status: Executing Phase 2
-Last activity: 2026-04-01 -- Completed 02-03 (Investment Sub-Components)
+Last activity: 2026-04-01 -- Completed 02-04 (InvestmentsTable Rewrite)
 
-Progress: [██████░░░░] 20%
+Progress: [███████░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: ~2.2 min
-- Total execution time: ~11 min
+- Total plans completed: 6
+- Average duration: ~2.0 min
+- Total execution time: ~13 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-critical-bug-fixes | 01-01, 01-02, 01-03 | 7min | 2.3min |
-| 02-investment-model-refactor | 02-01, 02-02, 02-03 | 5min | 1.7min |
+| 02-investment-model-refactor | 02-01, 02-02, 02-03, 02-04 | 7min | 1.8min |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -74,6 +74,8 @@ Recent decisions affecting current work:
 - 02-03: PF fields editor uses click-to-edit pattern inside expanded row for consistent UX
 - [Phase 02]: 02-02: Edit mode locks type and currency (immutable after creation); only name and PF fields editable
 - [Phase 02]: 02-02: onUpdate accepts name/tna/plazoDias instead of type/currencyType (locked after creation)
+- 02-04: Finalization uses intermediary state + confirmation dialog before calling onFinalize
+- 02-04: Added Ganancia/% column to InvestmentRow for 8-column table layout
 
 ### Pending Todos
 
@@ -86,5 +88,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-01
-Stopped at: Completed 02-03-PLAN.md (Investment Sub-Components)
-Resume file: .planning/phases/02-investment-model-refactor/02-04-PLAN.md
+Stopped at: Completed 02-04-PLAN.md (InvestmentsTable Rewrite)
+Resume file: .planning/phases/02-investment-model-refactor/02-05-PLAN.md
