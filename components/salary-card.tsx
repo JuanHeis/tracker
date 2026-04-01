@@ -57,7 +57,7 @@ export function SalaryCard({
         </CardHeader>
         <CardContent>
           {showSalaryForm ? (
-            <form onSubmit={onSalarySubmit} className="space-y-4">
+            <form onSubmit={onSalarySubmit} className="space-y-4" key={`salary-form-${selectedMonth}-${showSalaryForm}`}>
               <Input
                 type="number"
                 placeholder="Salario"

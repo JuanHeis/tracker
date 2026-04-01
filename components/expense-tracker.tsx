@@ -332,7 +332,7 @@ export function ExpenseTracker() {
                         name="installments"
                         min="1"
                         defaultValue={editingExpense?.installments?.total}
-                        disabled={!!editingExpense}
+
                       />
                     </div>
                     <Button type="submit">
