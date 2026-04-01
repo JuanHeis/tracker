@@ -17,6 +17,12 @@ interface InvestmentsTableProps {
   investments: Investment[];
   onEdit: (investment: Investment) => void;
   onDelete: (id: string) => void;
+  // TODO(02-04): These will be consumed when InvestmentsTable is rewritten
+  onAddMovement?: (investmentId: string, movement: { date: string; type: "aporte" | "retiro"; amount: number }) => void;
+  onDeleteMovement?: (investmentId: string, movementId: string) => void;
+  onUpdateValue?: (investmentId: string, newValue: number) => void;
+  onFinalizeInvestment?: (investmentId: string) => void;
+  onUpdatePFFields?: (investmentId: string, fields: { tna?: number; plazoDias?: number; startDate?: string }) => void;
 }
 
 export function InvestmentsTable({

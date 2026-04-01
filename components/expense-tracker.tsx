@@ -118,6 +118,12 @@ export function ExpenseTracker() {
     editingInvestment,
     handleAddInvestment,
     handleUpdateInvestment,
+    // New investment operations (wired for 02-04 InvestmentsTable rewrite)
+    handleAddMovement,
+    handleDeleteMovement,
+    handleUpdateValue,
+    handleFinalizeInvestment,
+    handleUpdatePFFields,
   } = useMoneyTracker();
 
   // Form validation state
@@ -359,6 +365,11 @@ export function ExpenseTracker() {
                     investments={filteredInvestments}
                     onEdit={handleEditInvestment}
                     onDelete={handleDeleteInvestment}
+                    onAddMovement={handleAddMovement}
+                    onDeleteMovement={handleDeleteMovement}
+                    onUpdateValue={handleUpdateValue}
+                    onFinalizeInvestment={handleFinalizeInvestment}
+                    onUpdatePFFields={handleUpdatePFFields}
                   />
                 </CardContent>
               </Card>
