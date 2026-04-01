@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -9,7 +10,11 @@ import {
   SelectValue,
 } from "./ui/select";
 import { CurrencyType, Investment } from "@/hooks/useMoneyTracker";
-import { INVESTMENT_TYPES, type InvestmentType } from "@/constants/investments";
+import {
+  INVESTMENT_TYPES,
+  CURRENCY_ENFORCEMENT,
+  type InvestmentType,
+} from "@/constants/investments";
 
 interface InvestmentDialogProps {
   open: boolean;
@@ -20,14 +25,18 @@ interface InvestmentDialogProps {
     currencyType: CurrencyType;
     initialAmount: number;
     date: string;
+    tna?: number;
+    plazoDias?: number;
   }) => void;
-  onUpdate: (investmentId: string, updates: {
-    name?: string;
-    type?: InvestmentType;
-    currencyType?: CurrencyType;
-  }) => void;
+  onUpdate: (
+    investmentId: string,
+    updates: {
+      name?: string;
+      tna?: number;
+      plazoDias?: number;
+    }
+  ) => void;
   onClose: () => void;
-  onEdit: (investment: Investment) => void;
   defaultInvestmentDate: string;
   editingInvestment: Investment | null;
 }
@@ -38,32 +47,73 @@ export function InvestmentDialog({
   onAdd,
   onUpdate,
   onClose,
-  onEdit,
   defaultInvestmentDate,
   editingInvestment,
 }: InvestmentDialogProps) {
+  const [selectedType, setSelectedType] = useState<InvestmentType | "">(
+    editingInvestment?.type ?? ""
+  );
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyType>(
+    editingInvestment?.currencyType ?? CurrencyType.ARS
+  );
+
+  // Sync state when editingInvestment changes or dialog opens
+  useEffect(() => {
+    if (editingInvestment) {
+      setSelectedType(editingInvestment.type);
+      setSelectedCurrency(editingInvestment.currencyType);
+    } else {
+      setSelectedType("");
+      setSelectedCurrency(CurrencyType.ARS);
+    }
+  }, [editingInvestment, open]);
+
+  // Enforce currency when type changes
+  useEffect(() => {
+    if (selectedType && !editingInvestment) {
+      const enforced = CURRENCY_ENFORCEMENT[selectedType as InvestmentType];
+      if (enforced !== null) {
+        setSelectedCurrency(enforced);
+      }
+    }
+  }, [selectedType, editingInvestment]);
+
+  const isPlazoFijo = selectedType === "Plazo Fijo";
+  const isCurrencyEnforced =
+    selectedType !== "" &&
+    CURRENCY_ENFORCEMENT[selectedType as InvestmentType] !== null;
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
     if (editingInvestment) {
-      onUpdate(editingInvestment.id, {
+      const updates: { name?: string; tna?: number; plazoDias?: number } = {
         name: formData.get("name") as string,
-        type: formData.get("type") as InvestmentType,
-        currencyType: (formData.get("currencyType") as CurrencyType) || CurrencyType.ARS,
-      });
+      };
+      if (editingInvestment.type === "Plazo Fijo") {
+        const tnaVal = formData.get("tna");
+        const plazoVal = formData.get("plazoDias");
+        if (tnaVal) updates.tna = Number(tnaVal);
+        if (plazoVal) updates.plazoDias = Number(plazoVal);
+      }
+      onUpdate(editingInvestment.id, updates);
     } else {
-      onAdd({
+      const data: Parameters<typeof onAdd>[0] = {
         name: formData.get("name") as string,
-        type: formData.get("type") as InvestmentType,
-        currencyType: (formData.get("currencyType") as CurrencyType) || CurrencyType.ARS,
+        type: selectedType as InvestmentType,
+        currencyType: selectedCurrency,
         initialAmount: Number(formData.get("amount")),
         date: formData.get("date") as string,
-      });
+      };
+      if (isPlazoFijo) {
+        data.tna = Number(formData.get("tna"));
+        data.plazoDias = Number(formData.get("plazoDias"));
+      }
+      onAdd(data);
     }
 
     onClose();
-    e.currentTarget.reset();
   };
 
   return (
@@ -71,16 +121,18 @@ export function InvestmentDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {editingInvestment ? "Editar Inversión" : "Nueva Inversión"}
+            {editingInvestment ? "Editar Inversion" : "Nueva Inversion"}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            type="date"
-            name="date"
-            defaultValue={editingInvestment?.createdAt ?? defaultInvestmentDate}
-            required
-          />
+        <form onSubmit={handleSubmit} className="space-y-4" key={open ? "open" : "closed"}>
+          {!editingInvestment && (
+            <Input
+              type="date"
+              name="date"
+              defaultValue={defaultInvestmentDate}
+              required
+            />
+          )}
           <Input
             type="text"
             name="name"
@@ -88,24 +140,37 @@ export function InvestmentDialog({
             defaultValue={editingInvestment?.name}
             required
           />
-          <Input
-            type="number"
-            name="amount"
-            placeholder="Monto"
-            defaultValue={editingInvestment?.currentValue}
-            required
-          />
-          <Select name="type" defaultValue={editingInvestment?.type}>
+          {!editingInvestment && (
+            <Input
+              type="number"
+              name="amount"
+              placeholder="Monto inicial"
+              step="0.01"
+              min="0"
+              required
+            />
+          )}
+          <Select
+            value={selectedType}
+            onValueChange={(val) => setSelectedType(val as InvestmentType)}
+            disabled={!!editingInvestment}
+          >
             <SelectTrigger>
-              <SelectValue placeholder="Tipo de inversión" />
+              <SelectValue placeholder="Tipo de inversion" />
             </SelectTrigger>
             <SelectContent>
               {INVESTMENT_TYPES.map((type) => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
+                <SelectItem key={type} value={type}>
+                  {type}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select name="currencyType" defaultValue={editingInvestment?.currencyType ?? CurrencyType.ARS}>
+          <Select
+            value={selectedCurrency}
+            onValueChange={(val) => setSelectedCurrency(val as CurrencyType)}
+            disabled={!!editingInvestment || isCurrencyEnforced}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Moneda" />
             </SelectTrigger>
@@ -114,7 +179,28 @@ export function InvestmentDialog({
               <SelectItem value={CurrencyType.USD}>USD</SelectItem>
             </SelectContent>
           </Select>
-          <Button type="submit">
+          {isPlazoFijo && (
+            <>
+              <Input
+                type="number"
+                name="tna"
+                placeholder="TNA anual (%)"
+                step="0.01"
+                min="0"
+                defaultValue={editingInvestment?.tna}
+                required
+              />
+              <Input
+                type="number"
+                name="plazoDias"
+                placeholder="Plazo (dias)"
+                min="1"
+                defaultValue={editingInvestment?.plazoDias}
+                required
+              />
+            </>
+          )}
+          <Button type="submit" disabled={selectedType === ""}>
             {editingInvestment ? "Actualizar" : "Agregar"}
           </Button>
         </form>

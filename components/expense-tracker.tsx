@@ -671,7 +671,6 @@ export function ExpenseTracker() {
         onAdd={handleAddInvestment}
         onUpdate={handleUpdateInvestment}
         onClose={handleCloseInvestmentModal}
-        onEdit={handleEditInvestment}
         defaultInvestmentDate={defaultInvestmentDate}
         editingInvestment={editingInvestment}
       />

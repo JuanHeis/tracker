@@ -155,12 +155,12 @@ export function useInvestmentsTracker(
     });
   };
 
-  const handleUpdateInvestment = (investmentId: string, updates: { name?: string; type?: InvestmentType; currencyType?: CurrencyType }) => {
+  const handleUpdateInvestment = (investmentId: string, updates: { name?: string; tna?: number; plazoDias?: number }) => {
     updateInvestment(investmentId, (inv) => ({
       ...inv,
       ...(updates.name !== undefined && { name: updates.name }),
-      ...(updates.type !== undefined && { type: updates.type }),
-      ...(updates.currencyType !== undefined && { currencyType: updates.currencyType }),
+      ...(updates.tna !== undefined && { tna: updates.tna }),
+      ...(updates.plazoDias !== undefined && { plazoDias: updates.plazoDias }),
       lastUpdated: format(new Date(), "yyyy-MM-dd"),
     }));
     setOpenInvestment(false);
