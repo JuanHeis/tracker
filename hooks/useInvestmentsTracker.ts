@@ -70,11 +70,15 @@ export function useInvestmentsTracker(
       type: movement.type,
       amount: movement.amount,
     };
-    updateInvestment(investmentId, (inv) => ({
-      ...inv,
-      movements: [...inv.movements, newMovement],
-      lastUpdated: format(new Date(), "yyyy-MM-dd"),
-    }));
+    updateInvestment(investmentId, (inv) => {
+      const valueAdjustment = movement.type === "aporte" ? movement.amount : -movement.amount;
+      return {
+        ...inv,
+        movements: [...inv.movements, newMovement],
+        currentValue: inv.type === "Plazo Fijo" ? inv.currentValue : inv.currentValue + valueAdjustment,
+        lastUpdated: format(new Date(), "yyyy-MM-dd"),
+      };
+    });
   };
 
   const handleDeleteMovement = (investmentId: string, movementId: string) => {

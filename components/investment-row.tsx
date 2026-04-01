@@ -7,7 +7,7 @@ import { TableRow, TableCell } from "./ui/table";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { InvestmentValueCell } from "./investment-value-cell";
+import { InvestmentValueCell, calculateGainLoss } from "./investment-value-cell";
 import { InvestmentMovements } from "./investment-movements";
 import { useHydration } from "@/hooks/useHydration";
 import { DATE_FORMAT } from "@/constants/date";
@@ -102,12 +102,11 @@ export function InvestmentRow({
         <TableCell className="tabular-nums">
           {isHydrated
             ? (() => {
-                const ganancia = investment.currentValue - capitalInvested;
-                const pct = capitalInvested !== 0 ? (ganancia / capitalInvested) * 100 : 0;
-                const color = ganancia >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
+                const { gainLoss, percentage } = calculateGainLoss(investment);
+                const color = gainLoss >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
                 return (
                   <span className={color}>
-                    {ganancia >= 0 ? "+" : ""}{currencySymbol(investment.currencyType)}{ganancia.toLocaleString()} ({pct.toFixed(1)}%)
+                    {gainLoss >= 0 ? "+" : ""}{currencySymbol(investment.currencyType)}{Math.abs(gainLoss).toLocaleString()} ({percentage.toFixed(1)}%)
                   </span>
                 );
               })()

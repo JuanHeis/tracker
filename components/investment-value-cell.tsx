@@ -3,6 +3,7 @@
 import { useState } from "react";
 import NumberFlow from "@number-flow/react";
 import { differenceInDays } from "date-fns";
+import { Pencil } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
 import { useHydration } from "@/hooks/useHydration";
@@ -28,6 +29,15 @@ export function calculatePFValue(investment: Investment): number {
   );
   const daysToUse = Math.min(elapsedDays, investment.plazoDias);
   return totalInvested * (1 + ((investment.tna / 100) / 365) * daysToUse);
+}
+
+export function calculatePFMaturityValue(investment: Investment): number | null {
+  if (!investment.tna || !investment.plazoDias) return null;
+  const totalInvested = investment.movements.reduce(
+    (sum, m) => (m.type === "aporte" ? sum + m.amount : sum - m.amount),
+    0
+  );
+  return totalInvested * (1 + ((investment.tna / 100) / 365) * investment.plazoDias);
 }
 
 export function calculateGainLoss(investment: Investment) {
@@ -63,6 +73,7 @@ export function InvestmentValueCell({
   const displayValue = isPF
     ? calculatePFValue(investment)
     : investment.currentValue;
+  const maturityValue = isPF ? calculatePFMaturityValue(investment) : null;
 
   const handleSave = () => {
     const parsed = Number(value);
@@ -108,13 +119,14 @@ export function InvestmentValueCell({
               setValue(investment.currentValue);
               setEditing(true);
             }}
-            className="cursor-pointer hover:underline tabular-nums"
+            className="cursor-pointer hover:underline tabular-nums inline-flex items-center gap-1 group"
           >
             {isHydrated ? (
               <>{currencySymbol(investment.currencyType)}<NumberFlow value={displayValue} format={{ style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 2 }} /></>
             ) : (
               `${currencySymbol(investment.currencyType)}${displayValue.toLocaleString()}`
             )}
+            <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-60 transition-opacity" />
           </span>
         )}
         {isValueOutdated(investment) && (
@@ -145,6 +157,11 @@ export function InvestmentValueCell({
           </span>
         )}
       </div>
+      {isPF && maturityValue !== null && isHydrated && (
+        <div className="text-[10px] text-muted-foreground tabular-nums">
+          Al vencimiento: {currencySymbol(investment.currencyType)}{maturityValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+        </div>
+      )}
     </div>
   );
 }
