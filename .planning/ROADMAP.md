@@ -71,12 +71,13 @@ Plans:
   3. User can buy USD from ARS balance (ARS decreases, USD increases, total patrimonio unchanged) or register untracked cash USD with explicit origin
   4. User sees automatic exchange gain/loss calculation comparing purchase rate vs current global rate
   5. All currency-related forms reject zero or negative values for amounts and exchange rates
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [ ] 03-01-PLAN.md — Data model, migration, stop USD->ARS conversion, useCurrencyEngine hook (MON-01, MON-02, MON-03, MON-08)
+- [ ] 03-02-PLAN.md — Dual balance calculation, sidebar UI refactor, table currency display (MON-01, MON-03)
+- [ ] 03-03-PLAN.md — USD purchase dialog, untracked USD, exchange gain/loss UI (MON-04, MON-05, MON-06)
+- [ ] 03-04-PLAN.md — Retroactive rate editing, validation hardening, verification (MON-07, MON-08)
 
 ### Phase 4: Income & Pay Date
 **Goal**: Income system reflects real-world pay timing with flexible calendar views and automatic aguinaldo for employees
