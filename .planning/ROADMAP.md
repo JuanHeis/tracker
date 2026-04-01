@@ -35,11 +35,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User viewing "Total disponible" sees a figure filtered to the selected month, excluding finalized investments
   4. User entering a transaction with USD rate of 0 sees a validation error instead of Infinity/NaN
   5. User creating a 3-installment expense on Jan 31 sees correct end-of-month dates for all installments, can edit installments on existing expenses, and can edit salary with pre-loaded current values
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md — Investment type constants + currency fix (BUG-01, BUG-02)
+- [ ] 01-02-PLAN.md — Form fixes: installment dates, edit, salary pre-load (BUG-05, BUG-06, BUG-07)
+- [ ] 01-03-PLAN.md — Month-filtered calculations, validation, settings reset (BUG-03, BUG-04)
 
 ### Phase 2: Investment Model Refactor
 **Goal**: Investments behave as accounts with movements, real-time value, and performance metrics — not as one-off transactions
