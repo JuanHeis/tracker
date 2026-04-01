@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 1 of 10 (Critical Bug Fixes)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-04-01 — Roadmap created
+Plan: 2 of 3 in current phase
+Status: Executing
+Last activity: 2026-04-01 — Completed 01-02
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 4%
 
 ## Performance Metrics
 
@@ -45,6 +45,8 @@ Recent decisions affecting current work:
 - Roadmap: Investment model refactored before currency work (currency depends on correct investment accounts)
 - Roadmap: Phases 6, 7, 8 are independent features that only depend on Phase 5 (monthly card) being correct
 - Roadmap: Persistence and UX polish deferred to final phase as cross-cutting concerns
+- 01-02: Use date-fns addMonths with end-of-month clamping instead of raw Date.setMonth
+- 01-02: Force form remount via React key prop rather than switching to controlled inputs
 
 ### Pending Todos
 
@@ -57,5 +59,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-01
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-critical-bug-fixes/01-CONTEXT.md
+Stopped at: Completed 01-02-PLAN.md
+Resume file: .planning/phases/01-critical-bug-fixes/01-02-SUMMARY.md

@@ -11,9 +11,9 @@
 - [ ] **BUG-02**: Fix tipos de inversion que no coinciden entre dialog ("FCI","PlazoFijo","Crypto") y types ("Plazo Fijo","Bonos")
 - [ ] **BUG-03**: Fix calculateTotalAvailable() que suma todo sin filtrar por mes ni estado de inversion
 - [ ] **BUG-04**: Fix division por cero cuando usdRate es 0 (muestra Infinity/NaN)
-- [ ] **BUG-05**: Fix fechas de cuotas que se corrompen (gasto 31/01 con 3 cuotas -> cuota 3 cae 28/03 en vez de 31/03)
-- [ ] **BUG-06**: Fix campo de cuotas deshabilitado al editar un gasto existente
-- [ ] **BUG-07**: Fix formulario de sueldo que no pre-carga valores actuales al editar
+- [x] **BUG-05**: Fix fechas de cuotas que se corrompen (gasto 31/01 con 3 cuotas -> cuota 3 cae 28/03 en vez de 31/03)
+- [x] **BUG-06**: Fix campo de cuotas deshabilitado al editar un gasto existente
+- [x] **BUG-07**: Fix formulario de sueldo que no pre-carga valores actuales al editar
 
 ### Inversiones
 
@@ -133,9 +133,9 @@
 | BUG-02 | Phase 1 | Pending |
 | BUG-03 | Phase 1 | Pending |
 | BUG-04 | Phase 1 | Pending |
-| BUG-05 | Phase 1 | Pending |
-| BUG-06 | Phase 1 | Pending |
-| BUG-07 | Phase 1 | Pending |
+| BUG-05 | Phase 1 | Complete |
+| BUG-06 | Phase 1 | Complete |
+| BUG-07 | Phase 1 | Complete |
 | INV-01 | Phase 2 | Pending |
 | INV-02 | Phase 2 | Pending |
 | INV-03 | Phase 2 | Pending |

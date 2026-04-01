@@ -39,7 +39,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [ ] 01-01-PLAN.md — Investment type constants + currency fix (BUG-01, BUG-02)
-- [ ] 01-02-PLAN.md — Form fixes: installment dates, edit, salary pre-load (BUG-05, BUG-06, BUG-07)
+- [x] 01-02-PLAN.md — Form fixes: installment dates, edit, salary pre-load (BUG-05, BUG-06, BUG-07)
 - [ ] 01-03-PLAN.md — Month-filtered calculations, validation, settings reset (BUG-03, BUG-04)
 
 ### Phase 2: Investment Model Refactor
@@ -179,7 +179,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Critical Bug Fixes | 0/TBD | Not started | - |
+| 1. Critical Bug Fixes | 1/3 | In Progress | - |
 | 2. Investment Model Refactor | 0/TBD | Not started | - |
 | 3. Dual Currency Engine | 0/TBD | Not started | - |
 | 4. Income & Pay Date | 0/TBD | Not started | - |
