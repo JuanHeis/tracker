@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-01T15:32:07.707Z"
+last_updated: "2026-04-01T17:23:49.565Z"
 progress:
-  total_phases: 1
+  total_phases: 2
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 8
+  completed_plans: 6
 ---
 
 # Project State
@@ -23,31 +23,32 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 2 of 10 (Investment Model Refactor) -- IN PROGRESS
-Plan: 1 of 5 in current phase (02-01 complete)
+Plan: 3 of 5 in current phase (02-03 complete)
 Status: Executing Phase 2
-Last activity: 2026-04-01 -- Completed 02-01 (Investment Data Model Redesign)
+Last activity: 2026-04-01 -- Completed 02-03 (Investment Sub-Components)
 
-Progress: [████░░░░░░] 10%
+Progress: [██████░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: ~2.3 min
-- Total execution time: ~7 min
+- Total plans completed: 5
+- Average duration: ~2.2 min
+- Total execution time: ~11 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-critical-bug-fixes | 01-01, 01-02, 01-03 | 7min | 2.3min |
-| 02-investment-model-refactor | 02-01 | 3min | 3min |
+| 02-investment-model-refactor | 02-01, 02-02, 02-03 | 5min | 1.7min |
 
 **Recent Trend:**
 - Last 5 plans: -
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 02 P02 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,10 @@ Recent decisions affecting current work:
 - 02-01: CurrencyType enum moved to constants/investments.ts to avoid circular imports, re-exported from useMoneyTracker
 - 02-01: handleUpdateInvestment changed from form-based to data-based API (investmentId + partial updates)
 - 02-01: Investment dialog refactored to handle form data extraction internally
+- 02-03: NumberFlow used with hydration guard - plain toLocaleString fallback during SSR
+- 02-03: PF fields editor uses click-to-edit pattern inside expanded row for consistent UX
+- [Phase 02]: 02-02: Edit mode locks type and currency (immutable after creation); only name and PF fields editable
+- [Phase 02]: 02-02: onUpdate accepts name/tna/plazoDias instead of type/currencyType (locked after creation)
 
 ### Pending Todos
 
@@ -81,5 +86,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-01
-Stopped at: Completed 02-01-PLAN.md (Investment Data Model Redesign)
-Resume file: .planning/phases/02-investment-model-refactor/02-02-PLAN.md
+Stopped at: Completed 02-03-PLAN.md (Investment Sub-Components)
+Resume file: .planning/phases/02-investment-model-refactor/02-04-PLAN.md
