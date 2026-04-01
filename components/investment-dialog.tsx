@@ -9,12 +9,23 @@ import {
   SelectValue,
 } from "./ui/select";
 import { CurrencyType, Investment } from "@/hooks/useMoneyTracker";
-import { INVESTMENT_TYPES } from "@/constants/investments";
+import { INVESTMENT_TYPES, type InvestmentType } from "@/constants/investments";
 
 interface InvestmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  onAdd: (data: {
+    name: string;
+    type: InvestmentType;
+    currencyType: CurrencyType;
+    initialAmount: number;
+    date: string;
+  }) => void;
+  onUpdate: (investmentId: string, updates: {
+    name?: string;
+    type?: InvestmentType;
+    currencyType?: CurrencyType;
+  }) => void;
   onClose: () => void;
   onEdit: (investment: Investment) => void;
   defaultInvestmentDate: string;
@@ -24,12 +35,37 @@ interface InvestmentDialogProps {
 export function InvestmentDialog({
   open,
   onOpenChange,
-  onSubmit,
+  onAdd,
+  onUpdate,
   onClose,
   onEdit,
   defaultInvestmentDate,
   editingInvestment,
 }: InvestmentDialogProps) {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    if (editingInvestment) {
+      onUpdate(editingInvestment.id, {
+        name: formData.get("name") as string,
+        type: formData.get("type") as InvestmentType,
+        currencyType: (formData.get("currencyType") as CurrencyType) || CurrencyType.ARS,
+      });
+    } else {
+      onAdd({
+        name: formData.get("name") as string,
+        type: formData.get("type") as InvestmentType,
+        currencyType: (formData.get("currencyType") as CurrencyType) || CurrencyType.ARS,
+        initialAmount: Number(formData.get("amount")),
+        date: formData.get("date") as string,
+      });
+    }
+
+    onClose();
+    e.currentTarget.reset();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -38,11 +74,11 @@ export function InvestmentDialog({
             {editingInvestment ? "Editar Inversión" : "Nueva Inversión"}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             type="date"
             name="date"
-            defaultValue={editingInvestment?.date ?? defaultInvestmentDate}
+            defaultValue={editingInvestment?.createdAt ?? defaultInvestmentDate}
             required
           />
           <Input
@@ -56,14 +92,7 @@ export function InvestmentDialog({
             type="number"
             name="amount"
             placeholder="Monto"
-            defaultValue={editingInvestment?.amount}
-            required
-          />
-          <Input
-            type="number"
-            name="usdRate"
-            placeholder="Tasa USD"
-            defaultValue={editingInvestment?.usdRate}
+            defaultValue={editingInvestment?.currentValue}
             required
           />
           <Select name="type" defaultValue={editingInvestment?.type}>
@@ -76,12 +105,6 @@ export function InvestmentDialog({
               ))}
             </SelectContent>
           </Select>
-          <Input
-            type="date"
-            name="expectedEndDate"
-            placeholder="Fecha estimada de finalización"
-            defaultValue={editingInvestment?.expectedEndDate}
-          />
           <Select name="currencyType" defaultValue={editingInvestment?.currencyType ?? CurrencyType.ARS}>
             <SelectTrigger>
               <SelectValue placeholder="Moneda" />

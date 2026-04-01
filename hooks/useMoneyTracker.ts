@@ -5,7 +5,10 @@ import { useLocalStorage } from "./useLocalStorage";
 import { useInvestmentsTracker } from "./useInvestmentsTracker";
 import { useIncomes } from "./useIncomes";
 import { useExpensesTracker } from "./useExpensesTracker";
-import { type InvestmentType } from "@/constants/investments";
+import { type InvestmentType, CurrencyType } from "@/constants/investments";
+
+// Re-export CurrencyType from constants so existing consumers don't break
+export { CurrencyType } from "@/constants/investments";
 
 export type Category =
   | "Alquiler"
@@ -20,11 +23,6 @@ export type Category =
   | "Estudio"
   | "Otros"
   | "Gym";
-
-export enum CurrencyType {
-  ARS = "ARS",
-  USD = "USD",
-}
 
 export interface Expense {
   id: string;
@@ -41,16 +39,27 @@ export interface Expense {
   };
 }
 
+export interface InvestmentMovement {
+  id: string;
+  date: string;          // yyyy-MM-dd
+  type: "aporte" | "retiro";
+  amount: number;
+}
+
 export interface Investment {
   id: string;
-  date: string;
   name: string;
-  amount: number;
   type: InvestmentType;
-  status: "Activa" | "Finalizada";
-  expectedEndDate: string;
-  usdRate: number;
   currencyType: CurrencyType;
+  status: "Activa" | "Finalizada";
+  movements: InvestmentMovement[];
+  currentValue: number;
+  lastUpdated: string;   // ISO date string (yyyy-MM-dd)
+  createdAt: string;     // yyyy-MM-dd
+  // PF-specific (optional)
+  tna?: number;          // Annual nominal rate as percentage
+  plazoDias?: number;    // Term in days
+  startDate?: string;    // PF start date for calculation
 }
 
 export interface ExtraIncome {
@@ -87,9 +96,26 @@ function migrateData(data: MonthlyData): MonthlyData {
       ...income,
       currencyType: income.currencyType || CurrencyType.ARS,
     })),
-    investments: (data.investments || []).map((investment) => ({
-      ...investment,
+    investments: (data.investments || []).map((investment: any) => ({
+      id: investment.id,
+      name: investment.name,
+      type: investment.type,
       currencyType: investment.currencyType || CurrencyType.ARS,
+      status: investment.status || "Activa",
+      // Migrate: if no movements array, create initial aporte from old amount
+      movements: investment.movements || [{
+        id: crypto.randomUUID(),
+        date: investment.date || new Date().toISOString().split('T')[0],
+        type: "aporte" as const,
+        amount: investment.amount || 0,
+      }],
+      currentValue: investment.currentValue ?? investment.amount ?? 0,
+      lastUpdated: investment.lastUpdated || investment.date || new Date().toISOString().split('T')[0],
+      createdAt: investment.createdAt || investment.date || new Date().toISOString().split('T')[0],
+      // PF-specific fields pass through if present
+      ...(investment.tna !== undefined && { tna: investment.tna }),
+      ...(investment.plazoDias !== undefined && { plazoDias: investment.plazoDias }),
+      ...(investment.startDate !== undefined && { startDate: investment.startDate }),
     })),
   };
 }
@@ -164,9 +190,13 @@ export function useMoneyTracker() {
       .filter((expense) => expense.date.startsWith(monthKey))
       .reduce((sum, expense) => sum + expense.amount, 0);
 
-    const monthlyActiveInvestments = (monthlyData.investments || [])
-      .filter((inv) => inv.date.startsWith(monthKey) && inv.status === "Activa")
-      .reduce((sum, inv) => sum + inv.amount, 0);
+    const monthlyInvestmentImpact = (monthlyData.investments || [])
+      .filter((inv) => inv.status === "Activa")
+      .flatMap((inv) => inv.movements)
+      .filter((mov) => mov.date.startsWith(monthKey))
+      .reduce((sum, mov) => {
+        return mov.type === "aporte" ? sum + mov.amount : sum - mov.amount;
+      }, 0);
 
     return {
       total: monthlySalary + monthlyExtraIncomes - monthlyExpenses,
@@ -174,8 +204,8 @@ export function useMoneyTracker() {
         monthlySalary +
         monthlyExtraIncomes -
         monthlyExpenses -
-        monthlyActiveInvestments,
-      blockedInInvestments: monthlyActiveInvestments,
+        monthlyInvestmentImpact,
+      blockedInInvestments: monthlyInvestmentImpact,
     };
   };
 
@@ -193,12 +223,18 @@ export function useMoneyTracker() {
     selectedMonth
   );
 
+  const monthlyInvestmentImpact = (monthlyData.investments || [])
+    .filter((inv) => inv.status === "Activa")
+    .flatMap((inv) => inv.movements)
+    .filter((mov) => mov.date.startsWith(getCurrentMonthKey()))
+    .reduce((sum, mov) => {
+      return mov.type === "aporte" ? sum + mov.amount : sum - mov.amount;
+    }, 0);
+
   const availableMoney = monthlyData.salaries[getCurrentMonthKey()]
     ? monthlyData.salaries[getCurrentMonthKey()].amount -
       expensesTracker.totalExpenses -
-      (monthlyData.investments || [])
-        .filter((inv) => inv.date.startsWith(getCurrentMonthKey()))
-        .reduce((sum, inv) => sum + inv.amount, 0)
+      monthlyInvestmentImpact
     : 0;
 
   const savings = availableMoney > 0 ? availableMoney : 0;
@@ -257,5 +293,11 @@ export function useMoneyTracker() {
     handleUpdateInvestment: investmentsTracker.handleUpdateInvestment,
     handleOpenInvestmentModal: investmentsTracker.handleOpenInvestmentModal,
     handleCloseInvestmentModal: investmentsTracker.handleCloseInvestmentModal,
+    // New movement and value operations
+    handleAddMovement: investmentsTracker.handleAddMovement,
+    handleDeleteMovement: investmentsTracker.handleDeleteMovement,
+    handleUpdateValue: investmentsTracker.handleUpdateValue,
+    handleFinalizeInvestment: investmentsTracker.handleFinalizeInvestment,
+    handleUpdatePFFields: investmentsTracker.handleUpdatePFFields,
   };
 }

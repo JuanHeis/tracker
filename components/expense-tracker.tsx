@@ -668,9 +668,8 @@ export function ExpenseTracker() {
       <InvestmentDialog
         open={openInvestment}
         onOpenChange={setOpenInvestment}
-        onSubmit={
-          editingInvestment ? handleUpdateInvestment : handleAddInvestment
-        }
+        onAdd={handleAddInvestment}
+        onUpdate={handleUpdateInvestment}
         onClose={handleCloseInvestmentModal}
         onEdit={handleEditInvestment}
         defaultInvestmentDate={defaultInvestmentDate}

@@ -73,11 +73,11 @@ export function InvestmentsTable({
           {investments.map((investment) => (
             <TableRow key={investment.id}>
               <TableCell>
-                {format(new Date(investment.date), DATE_FORMAT)}
+                {format(new Date(investment.createdAt), DATE_FORMAT)}
               </TableCell>
               <TableCell>{investment.name}</TableCell>
               <TableCell>{investment.type}</TableCell>
-              <TableCell>${investment.amount.toLocaleString()}</TableCell>
+              <TableCell>${investment.currentValue.toLocaleString()}</TableCell>
               <TableCell>{investment.status}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
