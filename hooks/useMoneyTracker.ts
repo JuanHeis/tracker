@@ -5,6 +5,7 @@ import { useLocalStorage } from "./useLocalStorage";
 import { useInvestmentsTracker } from "./useInvestmentsTracker";
 import { useIncomes } from "./useIncomes";
 import { useExpensesTracker } from "./useExpensesTracker";
+import { type InvestmentType } from "@/constants/investments";
 
 export type Category =
   | "Alquiler"
@@ -45,7 +46,7 @@ export interface Investment {
   date: string;
   name: string;
   amount: number;
-  type: "Plazo Fijo" | "Acciones" | "Bonos" | "Otros";
+  type: InvestmentType;
   status: "Activa" | "Finalizada";
   expectedEndDate: string;
   usdRate: number;
