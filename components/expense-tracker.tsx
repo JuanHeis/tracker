@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Plus,
   DollarSign,
@@ -7,11 +8,14 @@ import {
   Table as TableIcon,
   ChartNoAxesCombined,
   Coins,
+  Settings,
 } from "lucide-react";
 import { format } from "date-fns";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -24,6 +28,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +54,21 @@ import { useMoneyTracker } from "@/hooks/useMoneyTracker";
 import { CurrencyType } from "@/hooks/useMoneyTracker";
 import { TotalAmounts } from "./total-amounts";
 import { ThemeToggle } from "./theme-toggle";
+import { cn } from "@/lib/utils";
+
+function validateField(
+  name: string,
+  value: string
+): string | undefined {
+  const num = parseFloat(value);
+  if (name === "amount") {
+    if (isNaN(num) || num <= 0) return "El monto debe ser mayor a 0";
+  }
+  if (name === "usdRate") {
+    if (isNaN(num) || num <= 0) return "La cotizacion USD debe ser mayor a 0";
+  }
+  return undefined;
+}
 
 export function ExpenseTracker() {
   const {
@@ -95,6 +120,90 @@ export function ExpenseTracker() {
     handleUpdateInvestment,
   } = useMoneyTracker();
 
+  // Form validation state
+  const [expenseErrors, setExpenseErrors] = useState<Record<string, string>>({});
+  const [incomeErrors, setIncomeErrors] = useState<Record<string, string>>({});
+
+  // Settings dialog state
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
+
+  // Last used USD rate from localStorage
+  const [lastUsedUsdRate, setLastUsedUsdRate] = useState<string>("");
+
+  useEffect(() => {
+    const stored = localStorage.getItem("lastUsedUsdRate");
+    if (stored) setLastUsedUsdRate(stored);
+  }, []);
+
+  // Reset errors when dialogs close
+  useEffect(() => {
+    if (!open) setExpenseErrors({});
+  }, [open]);
+
+  useEffect(() => {
+    if (!openExtraIncome) setIncomeErrors({});
+  }, [openExtraIncome]);
+
+  const handleExpenseBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const error = validateField(name, value);
+    setExpenseErrors((prev) => {
+      const next = { ...prev };
+      if (error) next[name] = error;
+      else delete next[name];
+      return next;
+    });
+  };
+
+  const handleIncomeBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const error = validateField(name, value);
+    setIncomeErrors((prev) => {
+      const next = { ...prev };
+      if (error) next[name] = error;
+      else delete next[name];
+      return next;
+    });
+  };
+
+  const handleExpenseSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const formData = new FormData(e.currentTarget);
+    const usdRate = parseFloat(formData.get("usdRate") as string);
+    if (usdRate > 0) {
+      localStorage.setItem("lastUsedUsdRate", String(usdRate));
+      setLastUsedUsdRate(String(usdRate));
+    }
+    if (editingExpense) {
+      handleUpdateExpense(e);
+    } else {
+      handleAddExpense(e);
+    }
+  };
+
+  const handleIncomeSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const formData = new FormData(e.currentTarget);
+    const usdRate = parseFloat(formData.get("usdRate") as string);
+    if (usdRate > 0) {
+      localStorage.setItem("lastUsedUsdRate", String(usdRate));
+      setLastUsedUsdRate(String(usdRate));
+    }
+    if (editingIncome) {
+      handleUpdateIncome(e);
+    } else {
+      handleAddExtraIncome(e);
+    }
+  };
+
+  const handleResetAllData = () => {
+    localStorage.removeItem("monthlyData");
+    localStorage.removeItem("lastUsedUsdRate");
+    window.location.reload();
+  };
+
+  const expenseHasErrors = Object.keys(expenseErrors).length > 0;
+  const incomeHasErrors = Object.keys(incomeErrors).length > 0;
+
   return (
     <div className=" p-4 ">
       <div className="mx-auto max-w-7xl space-y-8 ">
@@ -126,7 +235,7 @@ export function ExpenseTracker() {
           <div className="flex gap-2 ">
             <Select value={selectedYear} onValueChange={setSelectedYear}>
               <SelectTrigger className="w-[120px] bg-background">
-                <SelectValue placeholder="Año" />
+                <SelectValue placeholder="Ano" />
               </SelectTrigger>
               <SelectContent>
                 {getAvailableYears().map((year) => (
@@ -152,7 +261,60 @@ export function ExpenseTracker() {
               </SelectContent>
             </Select>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <Dialog
+              open={settingsOpen}
+              onOpenChange={(open) => {
+                setSettingsOpen(open);
+                if (!open) setConfirmReset(false);
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Settings className="h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Configuracion</DialogTitle>
+                  <DialogDescription>
+                    Opciones generales de la aplicacion
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  {!confirmReset ? (
+                    <Button
+                      variant="destructive"
+                      onClick={() => setConfirmReset(true)}
+                    >
+                      Borrar todos los datos
+                    </Button>
+                  ) : (
+                    <div className="space-y-3 rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950">
+                      <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                        Estas seguro? Esto eliminara todos tus datos financieros.
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setConfirmReset(false)}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={handleResetAllData}
+                        >
+                          Confirmar
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
             <ThemeToggle />
           </div>
         </div>
@@ -204,9 +366,9 @@ export function ExpenseTracker() {
             <TabsContent value="charts" className="mt-0">
               <Card>
                 <CardHeader>
-                  <CardTitle>Gráficos</CardTitle>
+                  <CardTitle>Graficos</CardTitle>
                   <CardDescription>
-                    Visualización de gastos por categoría
+                    Visualizacion de gastos por categoria
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -258,9 +420,7 @@ export function ExpenseTracker() {
                     </DialogTitle>
                   </DialogHeader>
                   <form
-                    onSubmit={
-                      editingExpense ? handleUpdateExpense : handleAddExpense
-                    }
+                    onSubmit={handleExpenseSubmit}
                     className="space-y-4"
                     key={open ? "open" : "closed"}
                   >
@@ -279,22 +439,45 @@ export function ExpenseTracker() {
                       required
                     />
                     <div className="grid grid-cols-3 gap-2">
-                      <Input
-                        type="number"
-                        placeholder="Monto"
-                        name="amount"
-                        step="0.01"
-                        defaultValue={editingExpense?.amount}
-                        required
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Valor USD"
-                        name="usdRate"
-                        step="0.01"
-                        defaultValue={editingExpense?.usdRate}
-                        required
-                      />
+                      <div>
+                        <Input
+                          type="number"
+                          placeholder="Monto"
+                          name="amount"
+                          step="0.01"
+                          defaultValue={editingExpense?.amount}
+                          onBlur={handleExpenseBlur}
+                          className={cn(expenseErrors.amount && "border-red-500")}
+                          required
+                        />
+                        {expenseErrors.amount && (
+                          <p className="mt-1 text-xs text-red-500">
+                            {expenseErrors.amount}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <Input
+                          type="number"
+                          placeholder="Valor USD"
+                          name="usdRate"
+                          step="0.01"
+                          defaultValue={
+                            editingExpense?.usdRate ??
+                            (lastUsedUsdRate || undefined)
+                          }
+                          onBlur={handleExpenseBlur}
+                          className={cn(
+                            expenseErrors.usdRate && "border-red-500"
+                          )}
+                          required
+                        />
+                        {expenseErrors.usdRate && (
+                          <p className="mt-1 text-xs text-red-500">
+                            {expenseErrors.usdRate}
+                          </p>
+                        )}
+                      </div>
                       <Select
                         name="currencyType"
                         defaultValue={
@@ -316,7 +499,7 @@ export function ExpenseTracker() {
                         defaultValue={editingExpense?.category}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Categoría" />
+                          <SelectValue placeholder="Categoria" />
                         </SelectTrigger>
                         <SelectContent>
                           {Object.keys(CATEGORIES).map((category) => (
@@ -332,12 +515,30 @@ export function ExpenseTracker() {
                         name="installments"
                         min="1"
                         defaultValue={editingExpense?.installments?.total}
-
                       />
                     </div>
-                    <Button type="submit">
-                      {editingExpense ? "Guardar Cambios" : "Agregar"}
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span tabIndex={0} className="inline-block">
+                            <Button
+                              type="submit"
+                              disabled={expenseHasErrors}
+                              className={cn(
+                                expenseHasErrors && "pointer-events-none"
+                              )}
+                            >
+                              {editingExpense ? "Guardar Cambios" : "Agregar"}
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        {expenseHasErrors && (
+                          <TooltipContent>
+                            <p>Corrige los campos marcados en rojo</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   </form>
                 </DialogContent>
               </Dialog>
@@ -358,9 +559,7 @@ export function ExpenseTracker() {
                     </DialogTitle>
                   </DialogHeader>
                   <form
-                    onSubmit={
-                      editingIncome ? handleUpdateIncome : handleAddExtraIncome
-                    }
+                    onSubmit={handleIncomeSubmit}
                     className="space-y-4"
                     key={openExtraIncome ? "open" : "closed"}
                   >
@@ -373,28 +572,51 @@ export function ExpenseTracker() {
                       required
                     />
                     <Input
-                      placeholder="Descripción (ej: Regalo, Ahorro)"
+                      placeholder="Descripcion (ej: Regalo, Ahorro)"
                       name="name"
                       defaultValue={editingIncome?.name}
                       required
                     />
                     <div className="grid grid-cols-3 gap-2">
-                      <Input
-                        type="number"
-                        placeholder="Monto"
-                        name="amount"
-                        step="0.01"
-                        defaultValue={editingIncome?.amount}
-                        required
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Valor USD"
-                        name="usdRate"
-                        step="0.01"
-                        defaultValue={editingIncome?.usdRate}
-                        required
-                      />
+                      <div>
+                        <Input
+                          type="number"
+                          placeholder="Monto"
+                          name="amount"
+                          step="0.01"
+                          defaultValue={editingIncome?.amount}
+                          onBlur={handleIncomeBlur}
+                          className={cn(incomeErrors.amount && "border-red-500")}
+                          required
+                        />
+                        {incomeErrors.amount && (
+                          <p className="mt-1 text-xs text-red-500">
+                            {incomeErrors.amount}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <Input
+                          type="number"
+                          placeholder="Valor USD"
+                          name="usdRate"
+                          step="0.01"
+                          defaultValue={
+                            editingIncome?.usdRate ??
+                            (lastUsedUsdRate || undefined)
+                          }
+                          onBlur={handleIncomeBlur}
+                          className={cn(
+                            incomeErrors.usdRate && "border-red-500"
+                          )}
+                          required
+                        />
+                        {incomeErrors.usdRate && (
+                          <p className="mt-1 text-xs text-red-500">
+                            {incomeErrors.usdRate}
+                          </p>
+                        )}
+                      </div>
                       <Select
                         name="currencyType"
                         defaultValue={
@@ -410,15 +632,34 @@ export function ExpenseTracker() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <Button type="submit">
-                      {editingIncome ? "Guardar Cambios" : "Agregar"}
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span tabIndex={0} className="inline-block">
+                            <Button
+                              type="submit"
+                              disabled={incomeHasErrors}
+                              className={cn(
+                                incomeHasErrors && "pointer-events-none"
+                              )}
+                            >
+                              {editingIncome ? "Guardar Cambios" : "Agregar"}
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        {incomeHasErrors && (
+                          <TooltipContent>
+                            <p>Corrige los campos marcados en rojo</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   </form>
                 </DialogContent>
               </Dialog>
               <Button variant="outline" onClick={handleOpenInvestmentModal}>
                 <Plus className="mr-2 h-4 w-4" />
-                Inversión
+                Inversion
               </Button>
             </div>
           </div>
