@@ -368,7 +368,7 @@ export function ExpenseTracker() {
                     onAddMovement={handleAddMovement}
                     onDeleteMovement={handleDeleteMovement}
                     onUpdateValue={handleUpdateValue}
-                    onFinalizeInvestment={handleFinalizeInvestment}
+                    onFinalize={handleFinalizeInvestment}
                     onUpdatePFFields={handleUpdatePFFields}
                   />
                 </CardContent>
