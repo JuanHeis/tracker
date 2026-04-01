@@ -121,7 +121,7 @@ export function ExpensesTable({
                     }
                   >
                     <FormattedAmount
-                      value={expense.amount / expense.usdRate}
+                      value={expense.usdRate > 0 ? expense.amount / expense.usdRate : 0}
                       currency="USD"
                     />
                   </span>

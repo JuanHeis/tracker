@@ -92,7 +92,7 @@ export default function IncomeTable({
                   }
                 >
                   <FormattedAmount
-                    value={income.amount / income.usdRate}
+                    value={income.usdRate > 0 ? income.amount / income.usdRate : 0}
                     currency="USD"
                   />
                 </span>

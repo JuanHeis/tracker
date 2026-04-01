@@ -49,7 +49,7 @@ export function SalaryByMonth({
           locale: es,
         }),
         ars: salary?.amount || 0,
-        usd: salary ? salary.amount / salary.usdRate : 0,
+        usd: salary && salary.usdRate > 0 ? salary.amount / salary.usdRate : 0,
       };
     });
   };

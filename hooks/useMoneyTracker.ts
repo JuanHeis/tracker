@@ -152,29 +152,30 @@ export function useMoneyTracker() {
     `${selectedYear}-${selectedMonth.split("-")[1]}`;
 
   const calculateTotalAvailable = () => {
-    const totalSalaries = Object.values(monthlyData.salaries).reduce(
-      (sum, salary) => sum + salary.amount,
-      0
-    );
-    const totalExtraIncomes = monthlyData.extraIncomes.reduce(
-      (sum, income) => sum + income.amount,
-      0
-    );
-    const totalExpenses = monthlyData.expenses.reduce(
-      (sum, expense) => sum + expense.amount,
-      0
-    );
-    const totalInvestments = (monthlyData.investments || []).reduce(
-      (sum, investment) => sum + investment.amount,
-      0
-    );
+    const monthKey = getCurrentMonthKey();
+
+    const monthlySalary = monthlyData.salaries[monthKey]?.amount || 0;
+
+    const monthlyExtraIncomes = monthlyData.extraIncomes
+      .filter((income) => income.date.startsWith(monthKey))
+      .reduce((sum, income) => sum + income.amount, 0);
+
+    const monthlyExpenses = monthlyData.expenses
+      .filter((expense) => expense.date.startsWith(monthKey))
+      .reduce((sum, expense) => sum + expense.amount, 0);
+
+    const monthlyActiveInvestments = (monthlyData.investments || [])
+      .filter((inv) => inv.date.startsWith(monthKey) && inv.status === "Activa")
+      .reduce((sum, inv) => sum + inv.amount, 0);
 
     return {
-      total:
-        totalInvestments + totalSalaries + totalExtraIncomes - totalExpenses,
+      total: monthlySalary + monthlyExtraIncomes - monthlyExpenses,
       availableForUse:
-        totalSalaries + totalExtraIncomes - totalExpenses - totalInvestments,
-      blockedInInvestments: totalInvestments,
+        monthlySalary +
+        monthlyExtraIncomes -
+        monthlyExpenses -
+        monthlyActiveInvestments,
+      blockedInInvestments: monthlyActiveInvestments,
     };
   };
 

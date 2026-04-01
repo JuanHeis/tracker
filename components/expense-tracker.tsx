@@ -232,7 +232,7 @@ export function ExpenseTracker() {
             />
             <Card className="h-fit">
               <CardHeader>
-                <CardTitle>Dinero disponible (Todos los meses)</CardTitle>
+                <CardTitle>Disponible este mes</CardTitle>
               </CardHeader>
               <TotalAmounts
                 availableForUse={calculateTotalAvailable().availableForUse}

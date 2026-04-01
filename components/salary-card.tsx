@@ -93,11 +93,13 @@ export function SalaryCard({
                     <span className="font-medium text-green-800">
                       <FormattedAmount
                         value={
-                          Number(
-                            (
-                              currentSalary?.amount / currentSalary?.usdRate
-                            ).toFixed(2)
-                          ) || 0
+                          currentSalary?.usdRate && currentSalary.usdRate > 0
+                            ? Number(
+                                (
+                                  currentSalary.amount / currentSalary.usdRate
+                                ).toFixed(2)
+                              )
+                            : 0
                         }
                         currency="USD"
                       />
