@@ -190,8 +190,9 @@ export function useMoneyTracker() {
       .filter((expense) => expense.date.startsWith(monthKey))
       .reduce((sum, expense) => sum + expense.amount, 0);
 
+    // All investment movements affect liquidity regardless of status
+    // (finalization retiros must still add back to available money)
     const monthlyInvestmentImpact = (monthlyData.investments || [])
-      .filter((inv) => inv.status === "Activa")
       .flatMap((inv) => inv.movements)
       .filter((mov) => mov.date.startsWith(monthKey))
       .reduce((sum, mov) => {
@@ -223,8 +224,8 @@ export function useMoneyTracker() {
     selectedMonth
   );
 
+  // All movements affect liquidity regardless of investment status
   const monthlyInvestmentImpact = (monthlyData.investments || [])
-    .filter((inv) => inv.status === "Activa")
     .flatMap((inv) => inv.movements)
     .filter((mov) => mov.date.startsWith(getCurrentMonthKey()))
     .reduce((sum, mov) => {

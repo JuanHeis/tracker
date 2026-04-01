@@ -15,6 +15,7 @@ import {
 } from "./ui/select";
 import { DATE_FORMAT } from "@/constants/date";
 import type { Investment } from "@/hooks/useMoneyTracker";
+import { currencySymbol } from "@/constants/investments";
 
 interface InvestmentMovementsProps {
   investment: Investment;
@@ -149,7 +150,7 @@ export function InvestmentMovements({
                     {movement.type === "aporte" ? "Aporte" : "Retiro"}
                   </Badge>
                   <span className="tabular-nums font-medium">
-                    ${movement.amount.toLocaleString()}
+                    {currencySymbol(investment.currencyType)}{movement.amount.toLocaleString()}
                   </span>
                 </div>
                 <Button

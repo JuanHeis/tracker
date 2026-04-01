@@ -12,6 +12,7 @@ import { InvestmentMovements } from "./investment-movements";
 import { useHydration } from "@/hooks/useHydration";
 import { DATE_FORMAT } from "@/constants/date";
 import type { Investment } from "@/hooks/useMoneyTracker";
+import { currencySymbol } from "@/constants/investments";
 
 interface InvestmentRowProps {
   investment: Investment;
@@ -90,7 +91,7 @@ export function InvestmentRow({
         </TableCell>
         <TableCell>{investment.type}</TableCell>
         <TableCell className="tabular-nums">
-          {isHydrated ? `$${capitalInvested.toLocaleString()}` : "---"}
+          {isHydrated ? `${currencySymbol(investment.currencyType)}${capitalInvested.toLocaleString()}` : "---"}
         </TableCell>
         <TableCell onClick={(e) => e.stopPropagation()}>
           <InvestmentValueCell
@@ -106,7 +107,7 @@ export function InvestmentRow({
                 const color = ganancia >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
                 return (
                   <span className={color}>
-                    {ganancia >= 0 ? "+" : ""}${ganancia.toLocaleString()} ({pct.toFixed(1)}%)
+                    {ganancia >= 0 ? "+" : ""}{currencySymbol(investment.currencyType)}{ganancia.toLocaleString()} ({pct.toFixed(1)}%)
                   </span>
                 );
               })()

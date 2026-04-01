@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Investment } from "@/hooks/useMoneyTracker";
+import { currencySymbol } from "@/constants/investments";
 import {
   Table,
   TableBody,
@@ -142,7 +143,7 @@ export function InvestmentsTable({
               Finalizar {finalizingInvestment?.name}?
             </DialogTitle>
             <DialogDescription>
-              Se creara un retiro por ${finalizingInvestment?.currentValue.toLocaleString()} y la inversion pasara a Finalizada. Esta accion no se puede deshacer.
+              Se creara un retiro por {finalizingInvestment ? currencySymbol(finalizingInvestment.currencyType) : "$"}{finalizingInvestment?.currentValue.toLocaleString()} y la inversion pasara a Finalizada. Esta accion no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

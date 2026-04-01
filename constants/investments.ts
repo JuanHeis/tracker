@@ -12,3 +12,7 @@ export const CURRENCY_ENFORCEMENT: Record<InvestmentType, CurrencyType | null> =
   "FCI": null,       // User choice
   "Acciones": null,   // User choice
 };
+
+export function currencySymbol(currencyType: CurrencyType): string {
+  return currencyType === CurrencyType.USD ? "US$" : "$";
+}

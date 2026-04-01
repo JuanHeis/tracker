@@ -7,6 +7,7 @@ import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
 import { useHydration } from "@/hooks/useHydration";
 import type { Investment } from "@/hooks/useMoneyTracker";
+import { currencySymbol } from "@/constants/investments";
 
 interface InvestmentValueCellProps {
   investment: Investment;
@@ -96,9 +97,9 @@ export function InvestmentValueCell({
         ) : isPF ? (
           <span className="tabular-nums">
             {isHydrated ? (
-              <NumberFlow value={displayValue} format={{ style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 2 }} />
+              <>{currencySymbol(investment.currencyType)}<NumberFlow value={displayValue} format={{ style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 2 }} /></>
             ) : (
-              displayValue.toLocaleString()
+              `${currencySymbol(investment.currencyType)}${displayValue.toLocaleString()}`
             )}
           </span>
         ) : (
@@ -110,9 +111,9 @@ export function InvestmentValueCell({
             className="cursor-pointer hover:underline tabular-nums"
           >
             {isHydrated ? (
-              <NumberFlow value={displayValue} format={{ style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 2 }} />
+              <>{currencySymbol(investment.currencyType)}<NumberFlow value={displayValue} format={{ style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 2 }} /></>
             ) : (
-              displayValue.toLocaleString()
+              `${currencySymbol(investment.currencyType)}${displayValue.toLocaleString()}`
             )}
           </span>
         )}
@@ -129,8 +130,8 @@ export function InvestmentValueCell({
       >
         {isHydrated ? (
           <>
-            {gainLoss >= 0 ? "+" : ""}
-            <NumberFlow value={gainLoss} format={{ style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 2 }} />
+            {gainLoss >= 0 ? "+" : ""}{currencySymbol(investment.currencyType)}
+            <NumberFlow value={Math.abs(gainLoss)} format={{ style: "decimal", minimumFractionDigits: 0, maximumFractionDigits: 2 }} />
             {" ("}
             {gainLoss >= 0 ? "+" : ""}
             <NumberFlow value={percentage} format={{ style: "decimal", minimumFractionDigits: 1, maximumFractionDigits: 1 }} />
@@ -138,8 +139,8 @@ export function InvestmentValueCell({
           </>
         ) : (
           <span>
-            {gainLoss >= 0 ? "+" : ""}
-            {gainLoss.toLocaleString()} ({gainLoss >= 0 ? "+" : ""}
+            {gainLoss >= 0 ? "+" : ""}{currencySymbol(investment.currencyType)}
+            {Math.abs(gainLoss).toLocaleString()} ({gainLoss >= 0 ? "+" : ""}
             {percentage.toFixed(1)}%)
           </span>
         )}
