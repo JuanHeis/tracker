@@ -1,7 +1,8 @@
 "use client";
 import { useState } from 'react';
-import { format, parse, startOfMonth, endOfMonth } from 'date-fns';
-import {  CurrencyType, type Investment, type MonthlyData } from './useMoneyTracker';
+import { format } from 'date-fns';
+import { type Investment, type InvestmentMovement, type MonthlyData } from './useMoneyTracker';
+import { CurrencyType, type InvestmentType } from '@/constants/investments';
 
 
 export function useInvestmentsTracker(
@@ -16,19 +17,44 @@ export function useInvestmentsTracker(
     format(new Date(), "yyyy-MM-dd")
   );
 
-  const handleAddInvestment = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  // Helper to update a single investment in monthlyData
+  const updateInvestment = (investmentId: string, updater: (inv: Investment) => Investment) => {
+    updateMonthlyData({
+      ...monthlyData,
+      investments: (monthlyData.investments || []).map((inv) =>
+        inv.id === investmentId ? updater(inv) : inv
+      ),
+    });
+  };
+
+  const handleAddInvestment = (investmentData: {
+    name: string;
+    type: InvestmentType;
+    currencyType: CurrencyType;
+    initialAmount: number;
+    date: string;
+    tna?: number;
+    plazoDias?: number;
+  }) => {
+    const now = investmentData.date;
     const newInvestment: Investment = {
       id: crypto.randomUUID(),
-      date: formData.get("date") as string,
-      name: formData.get("name") as string,
-      amount: Number(formData.get("amount")),
-      usdRate: Number(formData.get("usdRate")),
-      currencyType: (formData.get("currencyType") as CurrencyType) || CurrencyType.ARS,
-      type: formData.get("type") as Investment["type"],
+      name: investmentData.name,
+      type: investmentData.type,
+      currencyType: investmentData.currencyType,
       status: "Activa",
-      expectedEndDate: formData.get("expectedEndDate") as string,
+      movements: [{
+        id: crypto.randomUUID(),
+        date: now,
+        type: "aporte",
+        amount: investmentData.initialAmount,
+      }],
+      currentValue: investmentData.initialAmount,
+      lastUpdated: now,
+      createdAt: now,
+      ...(investmentData.tna !== undefined && { tna: investmentData.tna }),
+      ...(investmentData.plazoDias !== undefined && { plazoDias: investmentData.plazoDias }),
+      ...(investmentData.type === "Plazo Fijo" && { startDate: now }),
     };
 
     updateMonthlyData({
@@ -37,13 +63,71 @@ export function useInvestmentsTracker(
     });
   };
 
-  const filteredInvestments = (monthlyData.investments || []).filter((investment) => {
-    const investmentDate = parse(investment.date, "yyyy-MM-dd", new Date());
-    const monthStart = startOfMonth(
-      parse(`${selectedYear}-${selectedMonth.split("-")[1]}`, "yyyy-MM", new Date())
-    );
-    const monthEnd = endOfMonth(monthStart);
-    return investmentDate >= monthStart && investmentDate <= monthEnd;
+  const handleAddMovement = (investmentId: string, movement: { date: string; type: "aporte" | "retiro"; amount: number }) => {
+    const newMovement: InvestmentMovement = {
+      id: crypto.randomUUID(),
+      date: movement.date,
+      type: movement.type,
+      amount: movement.amount,
+    };
+    updateInvestment(investmentId, (inv) => ({
+      ...inv,
+      movements: [...inv.movements, newMovement],
+      lastUpdated: format(new Date(), "yyyy-MM-dd"),
+    }));
+  };
+
+  const handleDeleteMovement = (investmentId: string, movementId: string) => {
+    updateInvestment(investmentId, (inv) => ({
+      ...inv,
+      movements: inv.movements.filter((m) => m.id !== movementId),
+      lastUpdated: format(new Date(), "yyyy-MM-dd"),
+    }));
+  };
+
+  const handleUpdateValue = (investmentId: string, newValue: number) => {
+    updateInvestment(investmentId, (inv) => ({
+      ...inv,
+      currentValue: newValue,
+      lastUpdated: format(new Date(), "yyyy-MM-dd"),
+    }));
+  };
+
+  const handleFinalizeInvestment = (investmentId: string) => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    updateInvestment(investmentId, (inv) => ({
+      ...inv,
+      status: "Finalizada" as const,
+      movements: [...inv.movements, {
+        id: crypto.randomUUID(),
+        date: today,
+        type: "retiro" as const,
+        amount: inv.currentValue,
+      }],
+      currentValue: 0,
+      lastUpdated: today,
+    }));
+  };
+
+  const handleUpdatePFFields = (investmentId: string, fields: { tna?: number; plazoDias?: number; startDate?: string }) => {
+    updateInvestment(investmentId, (inv) => {
+      if (inv.type !== "Plazo Fijo") return inv;
+      return {
+        ...inv,
+        ...(fields.tna !== undefined && { tna: fields.tna }),
+        ...(fields.plazoDias !== undefined && { plazoDias: fields.plazoDias }),
+        ...(fields.startDate !== undefined && { startDate: fields.startDate }),
+        lastUpdated: format(new Date(), "yyyy-MM-dd"),
+      };
+    });
+  };
+
+  // Return ALL investments, sorted: active first (by createdAt desc), then finalized (by createdAt desc)
+  const filteredInvestments = [...(monthlyData.investments || [])].sort((a, b) => {
+    if (a.status === "Activa" && b.status !== "Activa") return -1;
+    if (a.status !== "Activa" && b.status === "Activa") return 1;
+    // Within same status, sort by createdAt descending
+    return b.createdAt.localeCompare(a.createdAt);
   });
 
   const handleOpenInvestmentModal = () => {
@@ -71,32 +155,16 @@ export function useInvestmentsTracker(
     });
   };
 
-  const handleUpdateInvestment = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!editingInvestment) return;
-
-    const formData = new FormData(e.currentTarget);
-    const updatedInvestment = {
-      ...editingInvestment,
-      date: formData.get("date") as string,
-      name: formData.get("name") as string,
-      amount: Number(formData.get("amount")),
-      usdRate: Number(formData.get("usdRate")),
-      currencyType: (formData.get("currencyType") as CurrencyType) || CurrencyType.ARS,
-      type: formData.get("type") as Investment["type"],
-      expectedEndDate: formData.get("expectedEndDate") as string,
-    };
-
-    updateMonthlyData({
-      ...monthlyData,
-      investments: (monthlyData.investments || []).map((investment) =>
-        investment.id === editingInvestment.id ? updatedInvestment : investment
-      ),
-    });
-
+  const handleUpdateInvestment = (investmentId: string, updates: { name?: string; type?: InvestmentType; currencyType?: CurrencyType }) => {
+    updateInvestment(investmentId, (inv) => ({
+      ...inv,
+      ...(updates.name !== undefined && { name: updates.name }),
+      ...(updates.type !== undefined && { type: updates.type }),
+      ...(updates.currencyType !== undefined && { currencyType: updates.currencyType }),
+      lastUpdated: format(new Date(), "yyyy-MM-dd"),
+    }));
     setOpenInvestment(false);
     setEditingInvestment(null);
-    e.currentTarget.reset();
   };
 
   return {
@@ -111,5 +179,11 @@ export function useInvestmentsTracker(
     handleEditInvestment,
     handleDeleteInvestment,
     handleUpdateInvestment,
+    // New movement and value operations
+    handleAddMovement,
+    handleDeleteMovement,
+    handleUpdateValue,
+    handleFinalizeInvestment,
+    handleUpdatePFFields,
   };
-} 
+}
