@@ -8,7 +8,7 @@ progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -22,26 +22,26 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 ## Current Position
 
-Phase: 2 of 10 (Investment Model Refactor) -- IN PROGRESS
-Plan: 4 of 5 in current phase (02-04 complete)
-Status: Executing Phase 2
-Last activity: 2026-04-01 -- Completed 02-04 (InvestmentsTable Rewrite)
+Phase: 2 of 10 (Investment Model Refactor) -- COMPLETE
+Plan: 5 of 5 in current phase (02-05 complete)
+Status: Phase 2 Complete
+Last activity: 2026-04-01 -- Completed 02-05 (End-to-End Verification)
 
-Progress: [███████░░░] 25%
+Progress: [████████░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: ~2.0 min
-- Total execution time: ~13 min
+- Total plans completed: 8
+- Average duration: ~2.5 min
+- Total execution time: ~22 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-critical-bug-fixes | 01-01, 01-02, 01-03 | 7min | 2.3min |
-| 02-investment-model-refactor | 02-01, 02-02, 02-03, 02-04 | 7min | 1.8min |
+| 02-investment-model-refactor | 02-01, 02-02, 02-03, 02-04, 02-05 | 15min | 3.0min |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -76,6 +76,8 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-02: onUpdate accepts name/tna/plazoDias instead of type/currencyType (locked after creation)
 - 02-04: Finalization uses intermediary state + confirmation dialog before calling onFinalize
 - 02-04: Added Ganancia/% column to InvestmentRow for 8-column table layout
+- 02-05: Pencil icon always visible (not hover-only) for click-to-edit discoverability
+- 02-05: PF auto-calculated value shown directly in Valor Actual column
 
 ### Pending Todos
 
@@ -88,5 +90,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-01
-Stopped at: Completed 02-04-PLAN.md (InvestmentsTable Rewrite)
-Resume file: .planning/phases/02-investment-model-refactor/02-05-PLAN.md
+Stopped at: Completed 02-05-PLAN.md (End-to-End Verification) -- Phase 2 COMPLETE
+Resume file: Next phase (03)
