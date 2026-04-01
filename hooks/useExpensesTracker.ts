@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { format, parse, startOfMonth, endOfMonth } from "date-fns";
+import { format, parse, startOfMonth, endOfMonth, addMonths, getDate, setDate } from "date-fns";
 import type { Expense, MonthlyData, Category } from "./useMoneyTracker";
 import { CurrencyType } from "./useMoneyTracker";
 
@@ -41,9 +41,14 @@ export function useExpensesTracker(
     let newExpenses: Expense[] = [];
 
     if (installments > 1) {
+      const startDate = new Date(baseExpense.date);
+      const originalDay = getDate(startDate);
+
       for (let i = 0; i < installments; i++) {
-        const installmentDate = new Date(baseExpense.date);
-        installmentDate.setMonth(installmentDate.getMonth() + i);
+        const targetMonth = addMonths(startDate, i);
+        const lastDay = getDate(endOfMonth(targetMonth));
+        const safeDay = Math.min(originalDay, lastDay);
+        const installmentDate = setDate(targetMonth, safeDay);
 
         newExpenses.push({
           ...baseExpense,
