@@ -98,6 +98,20 @@ export function InvestmentRow({
             onUpdateValue={onUpdateValue}
           />
         </TableCell>
+        <TableCell className="tabular-nums">
+          {isHydrated
+            ? (() => {
+                const ganancia = investment.currentValue - capitalInvested;
+                const pct = capitalInvested !== 0 ? (ganancia / capitalInvested) * 100 : 0;
+                const color = ganancia >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
+                return (
+                  <span className={color}>
+                    {ganancia >= 0 ? "+" : ""}${ganancia.toLocaleString()} ({pct.toFixed(1)}%)
+                  </span>
+                );
+              })()
+            : "---"}
+        </TableCell>
         <TableCell className="text-sm text-muted-foreground">
           {isPF
             ? "Auto"
