@@ -22,12 +22,12 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 ## Current Position
 
-Phase: 2 of 10 (Investment Model Refactor) -- PLANNED
-Plan: 0 of 5 in current phase
-Status: Planning Complete — Ready for execution
-Last activity: 2026-04-01 -- Phase 2 planning complete
+Phase: 2 of 10 (Investment Model Refactor) -- IN PROGRESS
+Plan: 1 of 5 in current phase (02-01 complete)
+Status: Executing Phase 2
+Last activity: 2026-04-01 -- Completed 02-01 (Investment Data Model Redesign)
 
-Progress: [███░░░░░░░] 7%
+Progress: [████░░░░░░] 10%
 
 ## Performance Metrics
 
@@ -41,6 +41,7 @@ Progress: [███░░░░░░░] 7%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-critical-bug-fixes | 01-01, 01-02, 01-03 | 7min | 2.3min |
+| 02-investment-model-refactor | 02-01 | 3min | 3min |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -65,6 +66,9 @@ Recent decisions affecting current work:
 - 01-03: Total field formula changed - investments not added to total (blocked money, not income)
 - 01-03: Validation on expense/income forms only; investment dialog has own component
 - 01-03: Reset clears both monthlyData and lastUsedUsdRate from localStorage
+- 02-01: CurrencyType enum moved to constants/investments.ts to avoid circular imports, re-exported from useMoneyTracker
+- 02-01: handleUpdateInvestment changed from form-based to data-based API (investmentId + partial updates)
+- 02-01: Investment dialog refactored to handle form data extraction internally
 
 ### Pending Todos
 
@@ -77,5 +81,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-01
-Stopped at: Phase 2 planning complete, ready for execution
-Resume file: .planning/phases/02-investment-model-refactor/02-01-PLAN.md
+Stopped at: Completed 02-01-PLAN.md (Investment Data Model Redesign)
+Resume file: .planning/phases/02-investment-model-refactor/02-02-PLAN.md

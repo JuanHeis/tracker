@@ -17,7 +17,7 @@
 
 ### Inversiones
 
-- [ ] **INV-01**: User puede crear inversion como cuenta con nombre, tipo, moneda base y status
+- [x] **INV-01**: User puede crear inversion como cuenta con nombre, tipo, moneda base y status
 - [ ] **INV-02**: User puede registrar aportes (movements positivos) que restan del liquido del mes
 - [ ] **INV-03**: User puede registrar retiros (movements negativos) que vuelven al liquido del mes
 - [ ] **INV-04**: User puede actualizar el valor actual de una inversion inline (sin modal)
@@ -25,7 +25,7 @@
 - [ ] **INV-06**: User ve ganancia/perdida y rendimiento % por cada inversion (currentValue vs total invertido)
 - [ ] **INV-07**: User ve aviso "valor desactualizado" si lastUpdated > 7 dias
 - [ ] **INV-08**: Plazo Fijo auto-calcula valor actual segun tasa y dias transcurridos (solo ARS)
-- [ ] **INV-09**: Crypto siempre en USD, FCI en ARS o USD segun eleccion, Acciones segun mercado
+- [x] **INV-09**: Crypto siempre en USD, FCI en ARS o USD segun eleccion, Acciones segun mercado
 - [ ] **INV-10**: Tabla de inversiones muestra: nombre, tipo, capital invertido, valor actual, ganancia, %, ultima actualizacion, acciones
 
 ### Moneda Dual
@@ -136,7 +136,7 @@
 | BUG-05 | Phase 1 | Complete |
 | BUG-06 | Phase 1 | Complete |
 | BUG-07 | Phase 1 | Complete |
-| INV-01 | Phase 2 | Pending |
+| INV-01 | Phase 2 | Complete |
 | INV-02 | Phase 2 | Pending |
 | INV-03 | Phase 2 | Pending |
 | INV-04 | Phase 2 | Pending |
@@ -144,7 +144,7 @@
 | INV-06 | Phase 2 | Pending |
 | INV-07 | Phase 2 | Pending |
 | INV-08 | Phase 2 | Pending |
-| INV-09 | Phase 2 | Pending |
+| INV-09 | Phase 2 | Complete |
 | INV-10 | Phase 2 | Pending |
 | MON-01 | Phase 3 | Pending |
 | MON-02 | Phase 3 | Pending |
