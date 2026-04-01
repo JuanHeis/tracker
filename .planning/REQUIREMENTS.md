@@ -7,8 +7,8 @@
 
 ### Bug Fixes
 
-- [ ] **BUG-01**: Fix inversiones que siempre se guardan como ARS ignorando moneda original
-- [ ] **BUG-02**: Fix tipos de inversion que no coinciden entre dialog ("FCI","PlazoFijo","Crypto") y types ("Plazo Fijo","Bonos")
+- [x] **BUG-01**: Fix inversiones que siempre se guardan como ARS ignorando moneda original
+- [x] **BUG-02**: Fix tipos de inversion que no coinciden entre dialog ("FCI","PlazoFijo","Crypto") y types ("Plazo Fijo","Bonos")
 - [ ] **BUG-03**: Fix calculateTotalAvailable() que suma todo sin filtrar por mes ni estado de inversion
 - [ ] **BUG-04**: Fix division por cero cuando usdRate es 0 (muestra Infinity/NaN)
 - [x] **BUG-05**: Fix fechas de cuotas que se corrompen (gasto 31/01 con 3 cuotas -> cuota 3 cae 28/03 en vez de 31/03)
@@ -129,8 +129,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | Phase 1 | Pending |
-| BUG-02 | Phase 1 | Pending |
+| BUG-01 | Phase 1 | Complete |
+| BUG-02 | Phase 1 | Complete |
 | BUG-03 | Phase 1 | Pending |
 | BUG-04 | Phase 1 | Pending |
 | BUG-05 | Phase 1 | Complete |
