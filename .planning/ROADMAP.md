@@ -52,12 +52,14 @@ Plans:
   3. User sees per-investment gain/loss amount and percentage, plus a "value outdated" warning when last updated over 7 days ago
   4. User creating a Plazo Fijo sees auto-calculated current value based on rate and elapsed days; Crypto forces USD, FCI allows ARS/USD, Acciones follow market currency
   5. Investment table displays: name, type, capital invested, current value, gain/loss, percentage, last updated, and action buttons
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
+- [ ] 02-01-PLAN.md — Data model redesign, migration, hook refactor (INV-01, INV-09)
+- [ ] 02-02-PLAN.md — Investment dialog with PF fields and currency enforcement (INV-01, INV-08, INV-09)
+- [ ] 02-03-PLAN.md — Sub-components: expandable row, movements, value cell with NumberFlow (INV-02, INV-03, INV-04, INV-06, INV-07, INV-08)
+- [ ] 02-04-PLAN.md — Rewrite investments table, finalization dialog, full wiring (INV-02, INV-03, INV-04, INV-05, INV-10)
+- [ ] 02-05-PLAN.md — Integration fixes and human verification (INV-05, INV-06, INV-07, INV-08, INV-10)
 
 ### Phase 3: Dual Currency Engine
 **Goal**: User has real separated ARS and USD balances with accurate exchange tracking — not just visual conversion
@@ -180,7 +182,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Critical Bug Fixes | 3/3 | Complete   | 2026-04-01 |
-| 2. Investment Model Refactor | 0/TBD | Not started | - |
+| 2. Investment Model Refactor | 0/5 | Not started | - |
 | 3. Dual Currency Engine | 0/TBD | Not started | - |
 | 4. Income & Pay Date | 0/TBD | Not started | - |
 | 5. Monthly Card Redesign | 0/TBD | Not started | - |
