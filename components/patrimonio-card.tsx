@@ -20,6 +20,10 @@ interface PatrimonioCardProps {
   usdBalance: number;
   arsInvestments: number;
   usdInvestments: number;
+  arsLoansGiven: number;
+  usdLoansGiven: number;
+  arsDebts: number;
+  usdDebts: number;
   globalUsdRate: number;
 }
 
@@ -28,6 +32,10 @@ export function PatrimonioCard({
   usdBalance,
   arsInvestments,
   usdInvestments,
+  arsLoansGiven,
+  usdLoansGiven,
+  arsDebts,
+  usdDebts,
   globalUsdRate,
 }: PatrimonioCardProps) {
   const isHydrated = useHydration();
@@ -44,10 +52,14 @@ export function PatrimonioCard({
 
   const patrimonio =
     globalUsdRate > 0
-      ? arsBalance +
-        usdBalance * globalUsdRate +
-        arsInvestments +
-        usdInvestments * globalUsdRate
+      ? arsBalance
+        + usdBalance * globalUsdRate
+        + arsInvestments
+        + usdInvestments * globalUsdRate
+        + arsLoansGiven
+        + usdLoansGiven * globalUsdRate
+        - arsDebts
+        - usdDebts * globalUsdRate
       : 0;
 
   return (
@@ -109,6 +121,44 @@ export function PatrimonioCard({
                 </TooltipContent>
               </Tooltip>
             </div>
+            {(arsLoansGiven > 0 || usdLoansGiven > 0) && (
+              <div className="flex justify-between">
+                <span>Prestamos dados:</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="font-medium text-green-500 dark:text-green-400 cursor-help">
+                      {formatArs(arsLoansGiven + usdLoansGiven * globalUsdRate)}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Dinero prestado pendiente de cobro</p>
+                    {arsLoansGiven > 0 && <p>ARS: {formatArs(arsLoansGiven)}</p>}
+                    {usdLoansGiven > 0 && (
+                      <p>USD: US$ {usdLoansGiven.toLocaleString()} x ${globalUsdRate.toLocaleString()} = {formatArs(usdLoansGiven * globalUsdRate)}</p>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            )}
+            {(arsDebts > 0 || usdDebts > 0) && (
+              <div className="flex justify-between">
+                <span>Deudas:</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="font-medium text-red-500 dark:text-red-400 cursor-help">
+                      - {formatArs(arsDebts + usdDebts * globalUsdRate)}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Dinero adeudado pendiente de pago</p>
+                    {arsDebts > 0 && <p>ARS: {formatArs(arsDebts)}</p>}
+                    {usdDebts > 0 && (
+                      <p>USD: US$ {usdDebts.toLocaleString()} x ${globalUsdRate.toLocaleString()} = {formatArs(usdDebts * globalUsdRate)}</p>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            )}
             <hr className="border-border" />
             {globalUsdRate > 0 ? (
               <Tooltip>
@@ -124,6 +174,12 @@ export function PatrimonioCard({
                   <p>Liquido USD: US$ {usdBalance.toLocaleString()} x ${globalUsdRate.toLocaleString()} = {formatArs(usdBalance * globalUsdRate)}</p>
                   <p className="text-blue-400">Inv. ARS: {formatArs(arsInvestments)}</p>
                   <p className="text-blue-400">Inv. USD: US$ {usdInvestments.toLocaleString()} x ${globalUsdRate.toLocaleString()} = {formatArs(usdInvestments * globalUsdRate)}</p>
+                  {(arsLoansGiven > 0 || usdLoansGiven > 0) && (
+                    <p className="text-green-400">Prestamos: {formatArs(arsLoansGiven)}{usdLoansGiven > 0 ? ` + US$ ${usdLoansGiven.toLocaleString()} x $${globalUsdRate.toLocaleString()} = ${formatArs(arsLoansGiven + usdLoansGiven * globalUsdRate)}` : ""}</p>
+                  )}
+                  {(arsDebts > 0 || usdDebts > 0) && (
+                    <p className="text-red-400">Deudas: - {formatArs(arsDebts)}{usdDebts > 0 ? ` - US$ ${usdDebts.toLocaleString()} x $${globalUsdRate.toLocaleString()} = - ${formatArs(arsDebts + usdDebts * globalUsdRate)}` : ""}</p>
+                  )}
                   <hr className="my-1 border-border" />
                   <p className="font-bold">= {formatArs(patrimonio)}</p>
                 </TooltipContent>
