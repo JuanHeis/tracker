@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Dual Currency Engine** - Implement real ARS/USD separation with per-transaction rates, currency purchases, and exchange gain/loss (completed 2026-04-02)
 - [ ] **Phase 4: Income & Pay Date** - Rename terminology, add configurable pay date with dual calendar views, and auto-calculated aguinaldo
 - [ ] **Phase 5: Monthly Card Redesign** - Rebuild the monthly summary card with correct formulas, clear desglose, and patrimonio calculation
-- [ ] **Phase 6: Recurring Expenses** - Define, auto-generate, pause/cancel, and track payment of recurring expenses
+- [x] **Phase 6: Recurring Expenses** - Define, auto-generate, pause/cancel, and track payment of recurring expenses (completed 2026-04-02)
 - [ ] **Phase 7: Loans** - Register loans given and debts owed, track as assets/liabilities, mark as collected/paid
 - [ ] **Phase 8: Budgets** - Set category spending limits with progress bars and proximity alerts
 - [ ] **Phase 9: Transfers & Adjustments** - Register inter-account transfers and manual balance adjustments
@@ -189,7 +189,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 3. Dual Currency Engine | 4/4 | Complete   | 2026-04-02 |
 | 4. Income & Pay Date | 0/TBD | Not started | - |
 | 5. Monthly Card Redesign | 0/TBD | Not started | - |
-| 6. Recurring Expenses | 2/3 | In Progress|  |
+| 6. Recurring Expenses | 3/3 | Complete   | 2026-04-02 |
 | 7. Loans | 0/TBD | Not started | - |
 | 8. Budgets | 0/TBD | Not started | - |
 | 9. Transfers & Adjustments | 0/TBD | Not started | - |
