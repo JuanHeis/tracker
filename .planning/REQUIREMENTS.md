@@ -67,10 +67,10 @@
 
 ### Prestamos
 
-- [ ] **PREST-01**: User puede registrar "le preste $X a [persona]" con fecha y monto
-- [ ] **PREST-02**: User puede registrar "debo $X a [persona]" con fecha y monto
-- [ ] **PREST-03**: Prestamo dado cuenta como activo, deuda cuenta como pasivo en patrimonio
-- [ ] **PREST-04**: User puede marcar prestamo como cobrado (vuelve al liquido) o deuda como pagada (sale del liquido)
+- [x] **PREST-01**: User puede registrar "le preste $X a [persona]" con fecha y monto
+- [x] **PREST-02**: User puede registrar "debo $X a [persona]" con fecha y monto
+- [x] **PREST-03**: Prestamo dado cuenta como activo, deuda cuenta como pasivo en patrimonio
+- [x] **PREST-04**: User puede marcar prestamo como cobrado (vuelve al liquido) o deuda como pagada (sale del liquido)
 
 ### Presupuestos
 
@@ -171,10 +171,10 @@
 | REC-02 | Phase 6 | Complete |
 | REC-03 | Phase 6 | Complete |
 | REC-04 | Phase 6 | Complete |
-| PREST-01 | Phase 7 | Pending |
-| PREST-02 | Phase 7 | Pending |
-| PREST-03 | Phase 7 | Pending |
-| PREST-04 | Phase 7 | Pending |
+| PREST-01 | Phase 7 | Complete |
+| PREST-02 | Phase 7 | Complete |
+| PREST-03 | Phase 7 | Complete |
+| PREST-04 | Phase 7 | Complete |
 | PRES-01 | Phase 8 | Complete |
 | PRES-02 | Phase 8 | Complete |
 | PRES-03 | Phase 8 | Complete |

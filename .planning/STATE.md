@@ -144,6 +144,11 @@ Recent decisions affecting current work:
 - 06-03: Paid/unpaid toggle placed inside name column (before name text) to keep table compact at 6 columns
 - [Phase 08]: Lazy snapshot pattern: only create monthly limit snapshot when expenses exist in budgeted categories
 - [Phase 08]: USD-to-ARS conversion uses expense.amount * expense.usdRate consistent with codebase patterns
+- 07-01: Remaining balance always computed (amount - sum(payments)), never stored as field
+- 07-01: Auto-status transition: Cobrado when preste fully collected, Pagado when debo fully paid
+- 07-01: Only persona, note, date editable after creation -- amount, currency, type immutable
+- 07-01: Forgiven loans (Perdonado) excluded from patrimonio assets, past payments preserved
+- 07-01: ARS loan impacts scoped by isInArsRange, USD loan impacts cumulative (all time)
 
 ### Pending Todos
 
