@@ -77,8 +77,14 @@ export function ExpenseTracker() {
     activeTab,
     setActiveTab,
     monthlyData,
-    showSalaryForm,
-    setShowSalaryForm,
+    // Salary history
+    salaryHistory,
+    incomeConfig,
+    setIncomeConfig,
+    addSalaryEntry,
+    updateSalaryEntry,
+    deleteSalaryEntry,
+    getSalaryForMonth,
     selectedMonth,
     setSelectedMonth,
     filteredExpenses,
@@ -90,7 +96,7 @@ export function ExpenseTracker() {
     openExtraIncome,
     setOpenExtraIncome,
     handleAddExpense,
-    handleSetSalary,
+    handleSetSalary, // kept for legacy compat if needed
     handleDeleteExpense,
     handleAddExtraIncome,
     calculateDualBalances,
@@ -413,14 +419,18 @@ export function ExpenseTracker() {
             <SalaryCard
               selectedMonth={selectedMonth}
               monthlyData={monthlyData}
-              showSalaryForm={showSalaryForm}
               totalExpenses={totalExpenses}
               availableMoney={availableMoney}
               savings={savings}
               globalUsdRate={globalUsdRate}
               onSetGlobalUsdRate={setGlobalUsdRate}
-              onSalarySubmit={handleSetSalary}
-              onShowFormChange={setShowSalaryForm}
+              incomeConfig={incomeConfig}
+              onUpdateIncomeConfig={setIncomeConfig}
+              salaryHistory={salaryHistory.entries}
+              onAddSalaryEntry={addSalaryEntry}
+              onUpdateSalaryEntry={updateSalaryEntry}
+              onDeleteSalaryEntry={deleteSalaryEntry}
+              currentMonthSalary={getSalaryForMonth(selectedMonth, monthlyData.salaryOverrides || {})}
             />
             <Card className="h-fit">
               <CardHeader>
