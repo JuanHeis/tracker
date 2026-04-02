@@ -191,6 +191,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 5. Monthly Card Redesign | 0/TBD | Not started | - |
 | 6. Recurring Expenses | 3/3 | Complete   | 2026-04-02 |
 | 7. Loans | 0/TBD | Not started | - |
-| 8. Budgets | 0/TBD | Not started | - |
+| 8. Budgets | 1/2 | In Progress|  |
 | 9. Transfers & Adjustments | 0/TBD | Not started | - |
 | 10. Persistence & UX Polish | 0/TBD | Not started | - |

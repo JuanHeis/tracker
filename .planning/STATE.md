@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-02T16:38:31Z"
+last_updated: "2026-04-02T16:40:20.324Z"
 progress:
-  total_phases: 7
+  total_phases: 9
   completed_phases: 7
-  total_plans: 22
-  completed_plans: 22
+  total_plans: 29
+  completed_plans: 25
 ---
 
 # Project State
@@ -18,14 +18,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** Reflejar la realidad financiera exacta del usuario en todo momento — nunca perderse un peso ni un dolar.
-**Current focus:** Phase 6: Recurring Expenses (Complete)
+**Current focus:** Phase 8: Budgets
 
 ## Current Position
 
-Phase: 6 of 10 (Recurring Expenses) -- COMPLETE
-Plan: 3 of 3 in current phase (06-03 complete)
-Status: Phase 6 Complete
-Last activity: 2026-04-02 -- Completed 06-03 (Expenses Table Integration)
+Phase: 8 of 10 (Budgets)
+Plan: 1 of 3 in current phase (08-01 complete)
+Status: Executing Phase 8
+Last activity: 2026-04-02 -- Completed 08-01 (Budget Data Layer)
 
 Progress: [██████████████████████] 66%
 
@@ -66,6 +66,7 @@ Progress: [██████████████████████] 6
 | Phase 06 P01 | 2min | 2 tasks | 3 files |
 | Phase 06 P02 | 3min | 2 tasks | 3 files |
 | Phase 06 P03 | 1min | 2 tasks | 2 files |
+| Phase 08 P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -139,6 +140,8 @@ Recent decisions affecting current work:
 - 06-02: Status badges use custom color classes (green/amber/outline) for clear visual distinction
 - 06-02: Canceled rows use opacity-50 with no action buttons for clear inactive state
 - 06-03: Paid/unpaid toggle placed inside name column (before name text) to keep table compact at 6 columns
+- [Phase 08]: Lazy snapshot pattern: only create monthly limit snapshot when expenses exist in budgeted categories
+- [Phase 08]: USD-to-ARS conversion uses expense.amount * expense.usdRate consistent with codebase patterns
 
 ### Pending Todos
 
@@ -151,5 +154,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 06-03-PLAN.md (Expenses Table Integration) -- Phase 6 Complete
-Resume file: Next phase
+Stopped at: Completed 08-01-PLAN.md (Budget Data Layer)
+Resume file: Continue with 08-02-PLAN.md
