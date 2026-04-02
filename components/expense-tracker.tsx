@@ -9,6 +9,7 @@ import {
   ChartNoAxesCombined,
   Coins,
   Settings,
+  ArrowLeftRight,
 } from "lucide-react";
 import { format, lastDayOfMonth } from "date-fns";
 import {
@@ -55,6 +56,8 @@ import { InvestmentDialog } from "@/components/investment-dialog";
 import { useMoneyTracker } from "@/hooks/useMoneyTracker";
 import { CurrencyType } from "@/hooks/useMoneyTracker";
 import type { ViewMode } from "@/hooks/usePayPeriod";
+import { TransferDialog } from "@/components/transfer-dialog";
+import { MovementsTable } from "@/components/movements-table";
 import { UsdPurchaseDialog } from "./usd-purchase-dialog";
 import { ExchangeSummary } from "./exchange-summary";
 import { ThemeToggle } from "./theme-toggle";
@@ -152,6 +155,10 @@ export function ExpenseTracker() {
     // View mode
     viewMode,
     setViewMode,
+    // Transfers
+    handleAddTransfer,
+    handleDeleteTransfer,
+    filteredTransfers,
   } = useMoneyTracker();
 
   // Aguinaldo computed props (dependiente only)
@@ -180,6 +187,9 @@ export function ExpenseTracker() {
 
   // USD purchase dialog state
   const [usdPurchaseOpen, setUsdPurchaseOpen] = useState(false);
+
+  // Transfer dialog state
+  const [openTransferDialog, setOpenTransferDialog] = useState(false);
 
   // Form validation state
   const [expenseErrors, setExpenseErrors] = useState<Record<string, string>>({});
@@ -272,7 +282,7 @@ export function ExpenseTracker() {
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            className="w-[400px]"
+            className="w-auto"
           >
             <TabsList>
               <TabsTrigger value="table">
@@ -290,6 +300,10 @@ export function ExpenseTracker() {
               <TabsTrigger value="charts">
                 <PieChart className="mr-2 h-4 w-4" />
                 Charts
+              </TabsTrigger>
+              <TabsTrigger value="movements">
+                <ArrowLeftRight className="h-4 w-4 mr-1" />
+                Movimientos
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -449,6 +463,24 @@ export function ExpenseTracker() {
                   <ChartsContainer
                     monthlyData={monthlyData}
                     selectedYear={selectedYear}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="movements" className="mt-0">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle>Movimientos</CardTitle>
+                  <Button size="sm" onClick={() => setOpenTransferDialog(true)}>
+                    <ArrowLeftRight className="h-4 w-4 mr-1" />
+                    Nuevo movimiento
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <MovementsTable
+                    transfers={filteredTransfers}
+                    onDeleteTransfer={handleDeleteTransfer}
+                    globalUsdRate={globalUsdRate}
                   />
                 </CardContent>
               </Card>
@@ -783,6 +815,13 @@ export function ExpenseTracker() {
         onOpenChange={setUsdPurchaseOpen}
         onBuyUsd={handleBuyUsd}
         onRegisterUntracked={handleRegisterUntrackedUsd}
+        defaultDate={defaultDate}
+        globalUsdRate={globalUsdRate}
+      />
+      <TransferDialog
+        open={openTransferDialog}
+        onOpenChange={setOpenTransferDialog}
+        onAddTransfer={handleAddTransfer}
         defaultDate={defaultDate}
         globalUsdRate={globalUsdRate}
       />
