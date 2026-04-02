@@ -21,7 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: Loans** - Register loans given and debts owed, track as assets/liabilities, mark as collected/paid (completed 2026-04-02)
 - [x] **Phase 8: Budgets** - Set category spending limits with progress bars and proximity alerts (completed 2026-04-02)
 - [ ] **Phase 9: Transfers & Adjustments** - Register inter-account transfers and manual balance adjustments
-- [ ] **Phase 10: Persistence & UX Polish** - JSON export/import with validation, consistent financial terminology, and form validations
+- [x] **Phase 10: Persistence & UX Polish** - JSON export/import with validation, consistent financial terminology, and form validations (completed 2026-04-02)
 
 ## Phase Details
 
@@ -195,4 +195,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Loans | 3/3 | Complete   | 2026-04-02 |
 | 8. Budgets | 2/2 | Complete   | 2026-04-02 |
 | 9. Transfers & Adjustments | 0/TBD | Not started | - |
-| 10. Persistence & UX Polish | 2/3 | In Progress|  |
+| 10. Persistence & UX Polish | 3/3 | Complete   | 2026-04-02 |

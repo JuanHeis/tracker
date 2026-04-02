@@ -91,7 +91,7 @@
 
 ### UX General
 
-- [ ] **UX-01**: Terminologia estandar de finanzas personales en toda la app (patrimonio, liquido, etc.)
+- [x] **UX-01**: Terminologia estandar de finanzas personales en toda la app (patrimonio, liquido, etc.)
 - [x] **UX-02**: Formularios validan monto > 0 y cotizacion USD > 0
 
 ## v2 Requirements
@@ -183,7 +183,7 @@
 | AJUST-01 | Phase 9 | Complete |
 | PERS-01 | Phase 10 | Complete |
 | PERS-02 | Phase 10 | Complete |
-| UX-01 | Phase 10 | Pending |
+| UX-01 | Phase 10 | Complete |
 | UX-02 | Phase 10 | Complete |
 
 **Coverage:**
