@@ -168,6 +168,7 @@ export function ExpenseTracker() {
     recurringExpenses,
     addRecurring,
     updateRecurringStatus,
+    toggleExpensePaid,
   } = useMoneyTracker();
 
   // Aguinaldo computed props (dependiente only)
@@ -432,6 +433,7 @@ export function ExpenseTracker() {
                     onDeleteExpense={handleDeleteExpense}
                     onEditExpense={handleEditExpense}
                     onUpdateUsdRate={handleUpdateUsdRate}
+                    onTogglePaid={toggleExpensePaid}
                   />
                 </CardContent>
               </Card>
