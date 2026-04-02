@@ -470,8 +470,12 @@ export function ExpenseTracker() {
           <Tabs value={activeTab} className="space-y-4">
             <TabsContent value="table" className="mt-0">
               <Card>
-                <CardHeader className="flex flex-row items-start justify-between">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle>Gastos del Mes</CardTitle>
+                  <Button size="sm" onClick={handleOpenModal}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Gasto
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   <ExpensesTable
@@ -486,8 +490,12 @@ export function ExpenseTracker() {
             </TabsContent>
             <TabsContent value="incomes" className="mt-0">
               <Card>
-                <CardHeader className="flex flex-row items-start justify-between">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle>Otros ingresos del Mes</CardTitle>
+                  <Button size="sm" onClick={handleOpenIncomeModal}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Ingreso
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   <IncomeTable
@@ -503,6 +511,16 @@ export function ExpenseTracker() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle>Inversiones</CardTitle>
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={handleOpenInvestmentModal}>
+                      <Plus className="h-4 w-4 mr-1" />
+                      Inversion
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setUsdPurchaseOpen(true)}>
+                      <DollarSign className="h-4 w-4 mr-1" />
+                      Comprar/Registrar USD
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <InvestmentsTable
@@ -652,274 +670,247 @@ export function ExpenseTracker() {
               exchangeGainLoss={calculateExchangeGainLoss()}
               onDelete={handleDeleteUsdPurchase}
             />
-
-            <div className="flex flex-col gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setUsdPurchaseOpen(true)}
-              >
-                <DollarSign className="mr-2 h-4 w-4" />
-                Comprar/Registrar USD
-              </Button>
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={handleOpenModal}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    {editingExpense ? "Editar Gasto" : "Gasto"}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>
-                      {editingExpense ? "Editar Gasto" : "Agregar Nuevo Gasto"}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={handleExpenseSubmit}
-                    className="space-y-4"
-                    key={open ? "open" : "closed"}
-                  >
-                    <Input
-                      type="date"
-                      name="date"
-                      defaultValue={
-                        editingExpense ? editingExpense.date : defaultDate
-                      }
-                      required
-                    />
-                    <Input
-                      placeholder="Nombre del gasto"
-                      name="name"
-                      defaultValue={editingExpense?.name}
-                      required
-                    />
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <Input
-                          type="number"
-                          placeholder="Monto"
-                          name="amount"
-                          step="0.01"
-                          defaultValue={editingExpense?.amount}
-                          onBlur={handleExpenseBlur}
-                          className={cn(expenseErrors.amount && "border-red-500")}
-                          required
-                        />
-                        {expenseErrors.amount && (
-                          <p className="mt-1 text-xs text-red-500">
-                            {expenseErrors.amount}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <Input
-                          type="number"
-                          placeholder="Valor USD"
-                          name="usdRate"
-                          step="0.01"
-                          defaultValue={
-                            editingExpense?.usdRate ??
-                            (lastUsedUsdRate || undefined)
-                          }
-                          onBlur={handleExpenseBlur}
-                          className={cn(
-                            expenseErrors.usdRate && "border-red-500"
-                          )}
-                          required
-                        />
-                        {expenseErrors.usdRate && (
-                          <p className="mt-1 text-xs text-red-500">
-                            {expenseErrors.usdRate}
-                          </p>
-                        )}
-                      </div>
-                      <Select
-                        name="currencyType"
-                        defaultValue={
-                          editingExpense?.currencyType || CurrencyType.ARS
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Moneda" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={CurrencyType.ARS}>ARS</SelectItem>
-                          <SelectItem value={CurrencyType.USD}>USD</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex gap-2">
-                      <Select
-                        name="category"
-                        defaultValue={editingExpense?.category}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Categoria" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.keys(CATEGORIES).map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Input
-                        type="number"
-                        placeholder="Cuotas (opcional)"
-                        name="installments"
-                        min="1"
-                        defaultValue={editingExpense?.installments?.total}
-                      />
-                    </div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span tabIndex={0} className="inline-block">
-                            <Button
-                              type="submit"
-                              disabled={expenseHasErrors}
-                              className={cn(
-                                expenseHasErrors && "pointer-events-none"
-                              )}
-                            >
-                              {editingExpense ? "Guardar Cambios" : "Agregar"}
-                            </Button>
-                          </span>
-                        </TooltipTrigger>
-                        {expenseHasErrors && (
-                          <TooltipContent>
-                            <p>Corrige los campos marcados en rojo</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </TooltipProvider>
-                  </form>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={openExtraIncome} onOpenChange={setOpenExtraIncome}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" onClick={handleOpenIncomeModal}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    {editingIncome ? "Editar Ingreso" : "Otros ingresos"}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>
-                      {editingIncome
-                        ? "Editar Ingreso"
-                        : "Agregar Nuevo Ingreso"}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={handleIncomeSubmit}
-                    className="space-y-4"
-                    key={openExtraIncome ? "open" : "closed"}
-                  >
-                    <Input
-                      type="date"
-                      name="date"
-                      defaultValue={
-                        editingIncome ? editingIncome.date : defaultIncomeDate
-                      }
-                      required
-                    />
-                    <Input
-                      placeholder="Descripcion (ej: Regalo, Ahorro)"
-                      name="name"
-                      defaultValue={editingIncome?.name}
-                      required
-                    />
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <Input
-                          type="number"
-                          placeholder="Monto"
-                          name="amount"
-                          step="0.01"
-                          defaultValue={editingIncome?.amount}
-                          onBlur={handleIncomeBlur}
-                          className={cn(incomeErrors.amount && "border-red-500")}
-                          required
-                        />
-                        {incomeErrors.amount && (
-                          <p className="mt-1 text-xs text-red-500">
-                            {incomeErrors.amount}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <Input
-                          type="number"
-                          placeholder="Valor USD"
-                          name="usdRate"
-                          step="0.01"
-                          defaultValue={
-                            editingIncome?.usdRate ??
-                            (lastUsedUsdRate || undefined)
-                          }
-                          onBlur={handleIncomeBlur}
-                          className={cn(
-                            incomeErrors.usdRate && "border-red-500"
-                          )}
-                          required
-                        />
-                        {incomeErrors.usdRate && (
-                          <p className="mt-1 text-xs text-red-500">
-                            {incomeErrors.usdRate}
-                          </p>
-                        )}
-                      </div>
-                      <Select
-                        name="currencyType"
-                        defaultValue={
-                          editingIncome?.currencyType || CurrencyType.ARS
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Moneda" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={CurrencyType.ARS}>ARS</SelectItem>
-                          <SelectItem value={CurrencyType.USD}>USD</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span tabIndex={0} className="inline-block">
-                            <Button
-                              type="submit"
-                              disabled={incomeHasErrors}
-                              className={cn(
-                                incomeHasErrors && "pointer-events-none"
-                              )}
-                            >
-                              {editingIncome ? "Guardar Cambios" : "Agregar"}
-                            </Button>
-                          </span>
-                        </TooltipTrigger>
-                        {incomeHasErrors && (
-                          <TooltipContent>
-                            <p>Corrige los campos marcados en rojo</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </TooltipProvider>
-                  </form>
-                </DialogContent>
-              </Dialog>
-              <Button variant="outline" onClick={handleOpenInvestmentModal}>
-                <Plus className="mr-2 h-4 w-4" />
-                Inversion
-              </Button>
-            </div>
           </div>
         </div>
       </div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingExpense ? "Editar Gasto" : "Agregar Nuevo Gasto"}
+            </DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={handleExpenseSubmit}
+            className="space-y-4"
+            key={open ? "open" : "closed"}
+          >
+            <Input
+              type="date"
+              name="date"
+              defaultValue={
+                editingExpense ? editingExpense.date : defaultDate
+              }
+              required
+            />
+            <Input
+              placeholder="Nombre del gasto"
+              name="name"
+              defaultValue={editingExpense?.name}
+              required
+            />
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <Input
+                  type="number"
+                  placeholder="Monto"
+                  name="amount"
+                  step="0.01"
+                  defaultValue={editingExpense?.amount}
+                  onBlur={handleExpenseBlur}
+                  className={cn(expenseErrors.amount && "border-red-500")}
+                  required
+                />
+                {expenseErrors.amount && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {expenseErrors.amount}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Input
+                  type="number"
+                  placeholder="Valor USD"
+                  name="usdRate"
+                  step="0.01"
+                  defaultValue={
+                    editingExpense?.usdRate ??
+                    (lastUsedUsdRate || undefined)
+                  }
+                  onBlur={handleExpenseBlur}
+                  className={cn(
+                    expenseErrors.usdRate && "border-red-500"
+                  )}
+                  required
+                />
+                {expenseErrors.usdRate && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {expenseErrors.usdRate}
+                  </p>
+                )}
+              </div>
+              <Select
+                name="currencyType"
+                defaultValue={
+                  editingExpense?.currencyType || CurrencyType.ARS
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Moneda" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={CurrencyType.ARS}>ARS</SelectItem>
+                  <SelectItem value={CurrencyType.USD}>USD</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2">
+              <Select
+                name="category"
+                defaultValue={editingExpense?.category}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(CATEGORIES).map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                type="number"
+                placeholder="Cuotas (opcional)"
+                name="installments"
+                min="1"
+                defaultValue={editingExpense?.installments?.total}
+              />
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="inline-block">
+                    <Button
+                      type="submit"
+                      disabled={expenseHasErrors}
+                      className={cn(
+                        expenseHasErrors && "pointer-events-none"
+                      )}
+                    >
+                      {editingExpense ? "Guardar Cambios" : "Agregar"}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {expenseHasErrors && (
+                  <TooltipContent>
+                    <p>Corrige los campos marcados en rojo</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={openExtraIncome} onOpenChange={setOpenExtraIncome}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingIncome
+                ? "Editar Ingreso"
+                : "Agregar Nuevo Ingreso"}
+            </DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={handleIncomeSubmit}
+            className="space-y-4"
+            key={openExtraIncome ? "open" : "closed"}
+          >
+            <Input
+              type="date"
+              name="date"
+              defaultValue={
+                editingIncome ? editingIncome.date : defaultIncomeDate
+              }
+              required
+            />
+            <Input
+              placeholder="Descripcion (ej: Regalo, Ahorro)"
+              name="name"
+              defaultValue={editingIncome?.name}
+              required
+            />
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <Input
+                  type="number"
+                  placeholder="Monto"
+                  name="amount"
+                  step="0.01"
+                  defaultValue={editingIncome?.amount}
+                  onBlur={handleIncomeBlur}
+                  className={cn(incomeErrors.amount && "border-red-500")}
+                  required
+                />
+                {incomeErrors.amount && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {incomeErrors.amount}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Input
+                  type="number"
+                  placeholder="Valor USD"
+                  name="usdRate"
+                  step="0.01"
+                  defaultValue={
+                    editingIncome?.usdRate ??
+                    (lastUsedUsdRate || undefined)
+                  }
+                  onBlur={handleIncomeBlur}
+                  className={cn(
+                    incomeErrors.usdRate && "border-red-500"
+                  )}
+                  required
+                />
+                {incomeErrors.usdRate && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {incomeErrors.usdRate}
+                  </p>
+                )}
+              </div>
+              <Select
+                name="currencyType"
+                defaultValue={
+                  editingIncome?.currencyType || CurrencyType.ARS
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Moneda" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={CurrencyType.ARS}>ARS</SelectItem>
+                  <SelectItem value={CurrencyType.USD}>USD</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="inline-block">
+                    <Button
+                      type="submit"
+                      disabled={incomeHasErrors}
+                      className={cn(
+                        incomeHasErrors && "pointer-events-none"
+                      )}
+                    >
+                      {editingIncome ? "Guardar Cambios" : "Agregar"}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {incomeHasErrors && (
+                  <TooltipContent>
+                    <p>Corrige los campos marcados en rojo</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          </form>
+        </DialogContent>
+      </Dialog>
       <InvestmentDialog
         open={openInvestment}
         onOpenChange={setOpenInvestment}
