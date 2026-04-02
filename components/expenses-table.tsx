@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, Pencil, Check, X } from "lucide-react";
+import { Trash2, Pencil, Check, X, Repeat, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ interface ExpensesTableProps {
   onDeleteExpense: (id: string) => void;
   onEditExpense: (expense: Expense) => void;
   onUpdateUsdRate: (expenseId: string, newRate: number) => void;
+  onTogglePaid?: (expenseId: string) => void;
 }
 
 const className = "text-center";
@@ -90,6 +91,7 @@ export function ExpensesTable({
   onDeleteExpense,
   onEditExpense,
   onUpdateUsdRate,
+  onTogglePaid,
 }: ExpensesTableProps) {
   const isHydrated = useHydration();
   const [editingRateId, setEditingRateId] = useState<string | null>(null);
@@ -146,13 +148,34 @@ export function ExpensesTable({
                   <FormattedDate date={expense.date} />
                 </TableCell>
                 <TableCell className={className}>
-                  {expense.name}
-                  {expense.installments && (
-                    <span className="ml-2 text-sm text-gray-500">
-                      ({expense.installments.current}/
-                      {expense.installments.total})
-                    </span>
-                  )}
+                  <div className="flex items-center justify-center gap-1">
+                    {expense.recurringId && onTogglePaid && (
+                      <button
+                        onClick={() => onTogglePaid(expense.id)}
+                        className="inline-flex items-center justify-center p-1 rounded hover:bg-muted"
+                        title={expense.isPaid ? "Marcar como pendiente" : "Marcar como pagado"}
+                      >
+                        {expense.isPaid ? (
+                          <Check className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-amber-500" />
+                        )}
+                      </button>
+                    )}
+                    <span>{expense.name}</span>
+                    {expense.recurringId && (
+                      <Badge variant="outline" className="ml-1 text-xs">
+                        <Repeat className="h-3 w-3 mr-1" />
+                        Recurrente
+                      </Badge>
+                    )}
+                    {expense.installments && (
+                      <span className="ml-2 text-sm text-gray-500">
+                        ({expense.installments.current}/
+                        {expense.installments.total})
+                      </span>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className={className}>
                   <Badge
