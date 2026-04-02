@@ -8,7 +8,7 @@ progress:
   total_phases: 3
   completed_phases: 3
   total_plans: 16
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -23,11 +23,11 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 4 of 10 (Income & Pay Date) -- IN PROGRESS
-Plan: 2 of 4 in current phase (04-01, 04-02 complete)
+Plan: 3 of 4 in current phase (04-01, 04-02, 04-03 complete)
 Status: Executing Phase 4
-Last activity: 2026-04-02 -- Completed 04-02 (Salary Card Refactor)
+Last activity: 2026-04-02 -- Completed 04-03 (Aguinaldo Auto-Calculation)
 
-Progress: [█████████████] 46%
+Progress: [██████████████] 50%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [█████████████] 46%
 | Phase 03 P04 | 4min | 2 tasks | 6 files |
 | Phase 04 P01 | 3min | 2 tasks | 6 files |
 | Phase 04 P02 | 2min | 2 tasks | 2 files |
+| Phase 04 P03 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,8 @@ Recent decisions affecting current work:
 - 04-02: Employment type uses two-button toggle (not dropdown) for quick switching
 - 04-02: Pencil icons always visible with muted+hover:blue, delete icons muted+hover:red
 - 04-02: Salary timeline shows "Desde {MMM yyyy}" format using date-fns/es locale
+- 04-03: Aguinaldo override management in useMoneyTracker (not useSalaryHistory) since overrides live in monthlyData
+- 04-03: Aguinaldo preview uses partial semester data (Jan-May for June, Jul-Nov for December)
 
 ### Pending Todos
 
@@ -114,5 +117,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 04-02-PLAN.md (Salary Card Refactor)
-Resume file: 04-03-PLAN.md
+Stopped at: Completed 04-03-PLAN.md (Aguinaldo Auto-Calculation)
+Resume file: 04-04-PLAN.md
