@@ -53,6 +53,8 @@ import { InvestmentDialog } from "@/components/investment-dialog";
 import { useMoneyTracker } from "@/hooks/useMoneyTracker";
 import { CurrencyType } from "@/hooks/useMoneyTracker";
 import { TotalAmounts } from "./total-amounts";
+import { UsdPurchaseDialog } from "./usd-purchase-dialog";
+import { ExchangeSummary } from "./exchange-summary";
 import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
 
@@ -126,7 +128,15 @@ export function ExpenseTracker() {
     handleUpdateValue,
     handleFinalizeInvestment,
     handleUpdatePFFields,
+    // USD purchase operations
+    handleBuyUsd,
+    handleRegisterUntrackedUsd,
+    handleDeleteUsdPurchase,
+    calculateExchangeGainLoss,
   } = useMoneyTracker();
+
+  // USD purchase dialog state
+  const [usdPurchaseOpen, setUsdPurchaseOpen] = useState(false);
 
   // Form validation state
   const [expenseErrors, setExpenseErrors] = useState<Record<string, string>>({});
@@ -420,7 +430,21 @@ export function ExpenseTracker() {
               />
             </Card>
 
+            <ExchangeSummary
+              usdPurchases={monthlyData.usdPurchases || []}
+              globalUsdRate={globalUsdRate}
+              exchangeGainLoss={calculateExchangeGainLoss()}
+              onDelete={handleDeleteUsdPurchase}
+            />
+
             <div className="flex flex-col gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setUsdPurchaseOpen(true)}
+              >
+                <DollarSign className="mr-2 h-4 w-4" />
+                Comprar/Registrar USD
+              </Button>
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <Button onClick={handleOpenModal}>
@@ -688,6 +712,13 @@ export function ExpenseTracker() {
         onClose={handleCloseInvestmentModal}
         defaultInvestmentDate={defaultInvestmentDate}
         editingInvestment={editingInvestment}
+      />
+      <UsdPurchaseDialog
+        open={usdPurchaseOpen}
+        onOpenChange={setUsdPurchaseOpen}
+        onBuyUsd={handleBuyUsd}
+        onRegisterUntracked={handleRegisterUntrackedUsd}
+        defaultDate={defaultDate}
       />
     </div>
   );
