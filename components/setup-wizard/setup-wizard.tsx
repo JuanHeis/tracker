@@ -7,6 +7,7 @@ import { WizardStepWelcome } from "./wizard-step-welcome";
 import { WizardStepBalance } from "./wizard-step-balance";
 import { WizardStepUsd } from "./wizard-step-usd";
 import { WizardStepIncome } from "./wizard-step-income";
+import { WizardStepInvestments } from "./wizard-step-investments";
 import { WizardStepSummary } from "./wizard-step-summary";
 import { cn } from "@/lib/utils";
 
@@ -66,7 +67,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     // importData calls window.location.reload() on success
   };
 
-  const TOTAL_STEPS = 4;
+  const TOTAL_STEPS = 5;
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
@@ -129,6 +130,16 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
           />
         )}
         {currentStep === 4 && (
+          <WizardStepInvestments
+            investments={wizardData.investments}
+            onChange={(investments) => setWizardData({ ...wizardData, investments })}
+            errors={errors}
+            onNext={handleNext}
+            onBack={goBack}
+            onSkip={handleSkip}
+          />
+        )}
+        {currentStep === 5 && (
           <WizardStepSummary
             data={wizardData}
             onConfirm={handleConfirm}

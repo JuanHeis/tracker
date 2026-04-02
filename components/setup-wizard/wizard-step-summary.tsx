@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { WizardData } from "@/hooks/useSetupWizard";
+import { currencySymbol } from "@/constants/investments";
 
 interface WizardStepSummaryProps {
   data: WizardData;
@@ -99,6 +100,33 @@ export function WizardStepSummary({
             variant="outline"
             size="sm"
             onClick={() => onEdit(3)}
+          >
+            Editar
+          </Button>
+        </div>
+
+        {/* Investments */}
+        <div className="flex items-center justify-between rounded-lg border p-3">
+          <div>
+            <p className="text-sm font-medium">Inversiones</p>
+            {data.investments.length > 0 ? (
+              <div className="flex flex-col gap-1 mt-1">
+                {data.investments.map((inv, i) => (
+                  <p key={i} className="text-sm">
+                    {inv.type} - {inv.name}:{" "}
+                    {currencySymbol(inv.currencyType)}{" "}
+                    {inv.amount.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
+                  </p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-lg text-muted-foreground">Sin inversiones cargadas</p>
+            )}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(4)}
           >
             Editar
           </Button>
