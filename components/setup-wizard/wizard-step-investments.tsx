@@ -38,7 +38,7 @@ interface WizardStepInvestmentsProps {
 }
 
 export function WizardStepInvestments({
-  investments,
+  investments = [],
   onChange,
   errors,
   onNext,

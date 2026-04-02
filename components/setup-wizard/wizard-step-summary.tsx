@@ -109,9 +109,9 @@ export function WizardStepSummary({
         <div className="flex items-center justify-between rounded-lg border p-3">
           <div>
             <p className="text-sm font-medium">Inversiones</p>
-            {data.investments.length > 0 ? (
+            {(data.investments ?? []).length > 0 ? (
               <div className="flex flex-col gap-1 mt-1">
-                {data.investments.map((inv, i) => (
+                {(data.investments ?? []).map((inv, i) => (
                   <p key={i} className="text-sm">
                     {inv.type} - {inv.name}:{" "}
                     {currencySymbol(inv.currencyType)}{" "}
