@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 Phase: Not started (defining requirements)
 Plan: —
 Status: Defining requirements
-Last activity: 2026-04-02 — Milestone v1.1 started
+Last activity: 2026-04-02 - Completed quick task 1: Reorganize UI layout - move action buttons as CTAs into category tables
 
 ## Performance Metrics
 
@@ -169,6 +169,12 @@ None yet.
 ### Blockers/Concerns
 
 - Brownfield project: data migration from current localStorage schema must preserve existing user data at each refactor phase
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | Reorganize UI layout - move action buttons as CTAs into category tables | 2026-04-02 | 10c9861 | [1-reorganize-ui-layout-move-action-buttons](./quick/1-reorganize-ui-layout-move-action-buttons/) |
 
 ## Session Continuity
 
