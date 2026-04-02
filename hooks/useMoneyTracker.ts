@@ -9,6 +9,7 @@ import { useCurrencyEngine } from "./useCurrencyEngine";
 import { useTransfers } from "./useTransfers";
 import { useSalaryHistory, calculateAguinaldo, getAguinaldoPreview } from "./useSalaryHistory";
 import { useRecurringExpenses } from "./useRecurringExpenses";
+import { useBudgetTracker } from "./useBudgetTracker";
 import { usePayPeriod, getFilterDateRange } from "./usePayPeriod";
 import { type InvestmentType, CurrencyType } from "@/constants/investments";
 
@@ -493,6 +494,13 @@ export function useMoneyTracker() {
     payDay
   );
 
+  const budgetTracker = useBudgetTracker(
+    monthlyData.expenses,
+    `${selectedYear}-${selectedMonth.split("-")[1]}`,
+    viewMode,
+    payDay
+  );
+
   const investmentsTracker = useInvestmentsTracker(
     monthlyData,
     setMonthlyData,
@@ -668,6 +676,16 @@ export function useMoneyTracker() {
     addRecurring: recurringTracker.addRecurring,
     updateRecurringStatus: recurringTracker.updateStatus,
     toggleExpensePaid,
+
+    // Budget functions
+    budgetData: budgetTracker.budgetData,
+    budgetProgress: budgetTracker.budgetProgress,
+    totalBudgeted: budgetTracker.totalBudgeted,
+    totalSpent: budgetTracker.totalSpent,
+    addBudget: budgetTracker.addBudget,
+    updateBudget: budgetTracker.updateBudget,
+    deleteBudget: budgetTracker.deleteBudget,
+    categoriesWithoutBudget: budgetTracker.categoriesWithoutBudget,
 
     // Funciones de useCurrencyEngine
     globalUsdRate: currencyEngine.globalUsdRate,
