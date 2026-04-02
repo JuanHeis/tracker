@@ -91,8 +91,10 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md — Terminology rename + data model migration + salary resolution (ING-01, ING-06)
+- [ ] 04-02-PLAN.md — Employment config UI + salary history timeline in salary card (ING-02, ING-06, ING-08)
+- [ ] 04-03-PLAN.md — Aguinaldo auto-calculation + display + override (ING-07, ING-08)
+- [ ] 04-04-PLAN.md — Pay period views + segmented control + pendiente de cobro (ING-03, ING-04, ING-05)
 
 ### Phase 5: Monthly Card Redesign
 **Goal**: The monthly summary card gives the user an accurate, understandable snapshot of their financial situation
