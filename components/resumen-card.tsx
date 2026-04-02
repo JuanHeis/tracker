@@ -186,7 +186,7 @@ export function ResumenCard({
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>50% del mejor sueldo del semestre (<FormattedAmount value={aguinaldoInfo.bestSalary} currency="$" />)</p>
+                        <p>50% del mejor ingreso fijo del semestre (<FormattedAmount value={aguinaldoInfo.bestSalary} currency="$" />)</p>
                       </TooltipContent>
                     </Tooltip>
                     <Button
