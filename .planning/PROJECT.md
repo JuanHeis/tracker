@@ -124,9 +124,19 @@ Reflejar la realidad financiera exacta del usuario en todo momento — nunca per
 - Cálculo automático de impuestos (monotributo, ganancias) — demasiado complejo y varía por situación
 - Sincronización multi-dispositivo — sin backend, solo export/import
 
+## Current Milestone: v1.1 — Setup Wizard & Manual
+
+**Goal:** Permitir al usuario configurar su situación financiera inicial con un wizard paso a paso y documentar cómo usar la app.
+
+**Target features:**
+- Wizard multi-step de primera vez (ARS líquido, USD + cotización, inversiones existentes, resumen)
+- Auto-detección de primera vez (sin datos → mostrar wizard)
+- Re-ejecutable desde Configuración
+- Manual de uso como archivo de referencia (MANUAL.md)
+
 ## Context
 
-**Estado actual:** App funcional en Next.js con bugs críticos en cálculos. El modelo de inversiones es transaccional (debería ser tipo cuenta). Los totales mezclan meses y estados. La terminología confunde. La UX no refleja la realidad financiera.
+**Estado actual:** App completa con todas las features de v1.0 (inversiones, dual ARS/USD, ingresos, gastos recurrentes, préstamos, presupuestos, transferencias, export/import). Falta onboarding — el usuario nuevo no tiene forma guiada de cargar su situación inicial.
 
 **Stack:** Next.js, TypeScript, localStorage. UI con componentes propios sobre fondo oscuro con gradiente.
 
@@ -160,4 +170,4 @@ Reflejar la realidad financiera exacta del usuario en todo momento — nunca per
 | localStorage + export/import | Sin backend, pero con backup manual en JSON | — Pending |
 
 ---
-*Last updated: 2026-04-01 after initialization*
+*Last updated: 2026-04-02 — milestone v1.1 started*

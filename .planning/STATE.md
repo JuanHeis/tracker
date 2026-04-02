@@ -1,33 +1,31 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: unknown
-last_updated: "2026-04-02T17:42:43.173Z"
+milestone: v1.1
+milestone_name: Setup Wizard & Manual
+status: defining-requirements
+last_updated: "2026-04-02"
 progress:
-  total_phases: 10
-  completed_phases: 10
-  total_plans: 32
-  completed_plans: 32
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-01)
+See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Reflejar la realidad financiera exacta del usuario en todo momento — nunca perderse un peso ni un dolar.
-**Current focus:** Phase 10: Persistence & UX Polish
+**Current focus:** v1.1 — Setup Wizard & Manual
 
 ## Current Position
 
-Phase: 10 of 10 (Persistence & UX Polish)
-Plan: 3 of 3 in current phase (10-03 complete)
-Status: Phase 10 Complete - All phases done
-Last activity: 2026-04-02 -- Completed 10-03 (Terminology Audit)
-
-Progress: [██████████████████████████████] 100%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-02 — Milestone v1.1 started
 
 ## Performance Metrics
 
