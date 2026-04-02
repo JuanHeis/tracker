@@ -13,4 +13,8 @@ export const CATEGORIES: Record<Category, { color: string }> = {
   Otros: { color: " rgb(100 116 139)" },
   Gym: { color: "rgb(132 204 22)" },
   Estudio: { color: "rgb(20 184 166)" },
+  Seguros: { color: "rgb(244 63 94)" },
+  Impuestos: { color: "rgb(217 70 239)" },
+  Transporte: { color: "rgb(14 165 233)" },
+  Salud: { color: "rgb(16 185 129)" },
 };

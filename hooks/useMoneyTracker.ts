@@ -26,7 +26,11 @@ export type Category =
   | "Insumos"
   | "Estudio"
   | "Otros"
-  | "Gym";
+  | "Gym"
+  | "Seguros"
+  | "Impuestos"
+  | "Transporte"
+  | "Salud";
 
 export interface Expense {
   id: string;
@@ -41,6 +45,8 @@ export interface Expense {
     current: number;
     startDate: string;
   };
+  recurringId?: string;
+  isPaid?: boolean;
 }
 
 export interface InvestmentMovement {
@@ -179,7 +185,7 @@ function migrateData(data: MonthlyData): MonthlyData {
     usdPurchases: (data as any).usdPurchases || [],
     salaryOverrides: (data as any).salaryOverrides || {},
     aguinaldoOverrides: (data as any).aguinaldoOverrides || {},
-    _migrationVersion: 5,
+    _migrationVersion: 6,
   };
 
   // Migration v5: Initialize transfers array
