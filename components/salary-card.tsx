@@ -40,6 +40,12 @@ interface SalaryCardProps {
   onUpdateSalaryEntry: (id: string, updates: Partial<SalaryEntry>) => void;
   onDeleteSalaryEntry: (id: string) => void;
   currentMonthSalary: SalaryResolution;
+  // Aguinaldo
+  aguinaldoAmount: number | null; // null if not June/December or independiente
+  aguinaldoInfo: { bestSalary: number; isOverride: boolean } | null;
+  aguinaldoPreview: { estimatedAmount: number; bestSalary: number; targetMonth: string } | null;
+  onSetAguinaldoOverride: (monthKey: string, amount: number) => void;
+  onClearAguinaldoOverride: (monthKey: string) => void;
 }
 
 export function SalaryCard({
@@ -56,6 +62,11 @@ export function SalaryCard({
   onUpdateSalaryEntry,
   onDeleteSalaryEntry,
   currentMonthSalary,
+  aguinaldoAmount,
+  aguinaldoInfo,
+  aguinaldoPreview,
+  onSetAguinaldoOverride,
+  onClearAguinaldoOverride,
 }: SalaryCardProps) {
   // USD rate editing
   const [editingRate, setEditingRate] = useState(false);
@@ -70,6 +81,10 @@ export function SalaryCard({
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [entryAmountInput, setEntryAmountInput] = useState("");
   const [entryRateInput, setEntryRateInput] = useState("");
+
+  // Aguinaldo editing
+  const [editingAguinaldo, setEditingAguinaldo] = useState(false);
+  const [aguinaldoInput, setAguinaldoInput] = useState("");
 
   // Add new salary entry
   const [showAddForm, setShowAddForm] = useState(false);
@@ -141,6 +156,30 @@ export function SalaryCard({
       setNewEntryAmount("");
       setNewEntryRate("");
       setNewEntryDate(selectedMonth);
+    }
+  };
+
+  // Aguinaldo editing handlers
+  const handleStartEditAguinaldo = () => {
+    setAguinaldoInput(aguinaldoAmount != null ? String(aguinaldoAmount) : "");
+    setEditingAguinaldo(true);
+  };
+
+  const handleSubmitAguinaldo = () => {
+    const val = parseFloat(aguinaldoInput);
+    if (!isNaN(val) && val >= 0) {
+      onSetAguinaldoOverride(selectedMonth, val);
+    }
+    setEditingAguinaldo(false);
+  };
+
+  // Format target month name for preview banner
+  const formatMonthName = (monthKey: string): string => {
+    try {
+      const parsed = parse(monthKey, "yyyy-MM", new Date());
+      return format(parsed, "MMMM", { locale: es });
+    } catch {
+      return monthKey;
     }
   };
 
@@ -270,6 +309,17 @@ export function SalaryCard({
               </div>
             </div>
 
+            {/* Aguinaldo preview banner (May/November, dependiente only) */}
+            {aguinaldoPreview && (
+              <div className="rounded-md bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-3 text-sm text-blue-800 dark:text-blue-200">
+                Aguinaldo estimado en {formatMonthName(aguinaldoPreview.targetMonth)}:{" "}
+                <span className="font-medium">
+                  <FormattedAmount value={aguinaldoPreview.estimatedAmount} currency="$" />
+                </span>
+                {" "}(50% de <FormattedAmount value={aguinaldoPreview.bestSalary} currency="$" />)
+              </div>
+            )}
+
             <hr className="border-border" />
 
             {/* Current month salary display */}
@@ -285,6 +335,80 @@ export function SalaryCard({
                 )}
               </span>
             </div>
+
+            {/* Aguinaldo line (June/December, dependiente only) */}
+            {aguinaldoAmount != null && aguinaldoInfo && (
+              <div className="flex items-center justify-between">
+                <span className="text-green-600 dark:text-green-400 text-sm">
+                  Aguinaldo {aguinaldoInfo.isOverride ? "(ajuste)" : "(auto)"}:
+                </span>
+                {editingAguinaldo ? (
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      value={aguinaldoInput}
+                      onChange={(e) => setAguinaldoInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleSubmitAguinaldo();
+                        }
+                        if (e.key === "Escape") setEditingAguinaldo(false);
+                      }}
+                      className="h-7 w-24 text-sm"
+                      autoFocus
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={handleSubmitAguinaldo}
+                    >
+                      <Check className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => setEditingAguinaldo(false)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="font-medium text-green-600 dark:text-green-400 cursor-help">
+                          <FormattedAmount value={aguinaldoAmount} currency="$" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>50% del mejor sueldo del semestre (<FormattedAmount value={aguinaldoInfo.bestSalary} currency="$" />)</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-muted-foreground hover:text-blue-500"
+                      onClick={handleStartEditAguinaldo}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    {aguinaldoInfo.isOverride && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs text-muted-foreground hover:text-blue-500 px-1"
+                        onClick={() => onClearAguinaldoOverride(selectedMonth)}
+                      >
+                        reset
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="flex justify-between w-full">
               <span>Gastos:</span>

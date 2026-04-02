@@ -134,6 +134,11 @@ export function ExpenseTracker() {
     handleUpdateValue,
     handleFinalizeInvestment,
     handleUpdatePFFields,
+    // Aguinaldo operations
+    setAguinaldoOverride,
+    clearAguinaldoOverride,
+    getAguinaldoForMonth,
+    getAguinaldoPreviewForMonth,
     // USD purchase operations
     handleBuyUsd,
     handleRegisterUntrackedUsd,
@@ -143,6 +148,14 @@ export function ExpenseTracker() {
     handleUpdateUsdRate,
     handleUpdateIncomeUsdRate,
   } = useMoneyTracker();
+
+  // Aguinaldo computed props (dependiente only)
+  const aguinaldoData = incomeConfig.employmentType === "dependiente"
+    ? getAguinaldoForMonth(selectedMonth)
+    : null;
+  const aguinaldoPreviewData = incomeConfig.employmentType === "dependiente"
+    ? getAguinaldoPreviewForMonth(selectedMonth)
+    : null;
 
   // USD purchase dialog state
   const [usdPurchaseOpen, setUsdPurchaseOpen] = useState(false);
@@ -431,6 +444,15 @@ export function ExpenseTracker() {
               onUpdateSalaryEntry={updateSalaryEntry}
               onDeleteSalaryEntry={deleteSalaryEntry}
               currentMonthSalary={getSalaryForMonth(selectedMonth, monthlyData.salaryOverrides || {})}
+              aguinaldoAmount={aguinaldoData?.amount ?? null}
+              aguinaldoInfo={
+                aguinaldoData
+                  ? { bestSalary: aguinaldoData.bestSalary, isOverride: aguinaldoData.isOverride }
+                  : null
+              }
+              aguinaldoPreview={aguinaldoPreviewData}
+              onSetAguinaldoOverride={setAguinaldoOverride}
+              onClearAguinaldoOverride={clearAguinaldoOverride}
             />
             <Card className="h-fit">
               <CardHeader>
