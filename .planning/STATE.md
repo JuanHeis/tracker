@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 Phase: 11 of 13 (Core Setup Wizard)
 Plan: 1 of 2 completed in current phase
 Status: Executing
-Last activity: 2026-04-02 - Completed 11-01 useSetupWizard hook
+Last activity: 2026-04-02 - Completed quick task 3: Cuando una tab no este seleccionada quitale el nombre
 
 Progress: [█████░░░░░] 50% (v1.1 - 1/2 plans in phase 11)
 
@@ -68,6 +68,12 @@ None yet.
 - Wizard must write _migrationVersion: current to avoid migration corruption on wizard-generated data
 - sessionStorage draft persistence needs testing on mobile Safari private browsing
 - Re-run balance merge semantics deferred to Phase 12 planning (reset approach simplifies this)
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 3 | Cuando una tab no este seleccionada quitale el nombre. si esta active que tenga icon y texto | 2026-04-02 | 6f99a61 | [3-cuando-una-tab-no-este-seleccionada-quit](./quick/3-cuando-una-tab-no-este-seleccionada-quit/) |
 
 ## Session Continuity
 
