@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** Reflejar la realidad financiera exacta del usuario en todo momento — nunca perderse un peso ni un dolar.
-**Current focus:** Phase 4: Income & Pay Date
+**Current focus:** Phase 5: Monthly Card Redesign
 
 ## Current Position
 
-Phase: 4 of 10 (Income & Pay Date) -- COMPLETE
-Plan: 4 of 4 in current phase (04-01, 04-02, 04-03, 04-04 complete)
-Status: Phase 4 Complete
-Last activity: 2026-04-02 -- Completed 04-04 (Pay Period Views)
+Phase: 5 of 10 (Monthly Card Redesign)
+Plan: 1 of 2 in current phase (05-01 complete)
+Status: Executing Phase 5
+Last activity: 2026-04-02 -- Completed 05-01 (Card Components)
 
-Progress: [██████████████] 50%
+Progress: [███████████████] 55%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [██████████████] 50%
 | Phase 04 P02 | 2min | 2 tasks | 2 files |
 | Phase 04 P03 | 3min | 2 tasks | 4 files |
 | Phase 04 P04 | 4min | 2 tasks | 6 files |
+| Phase 05 P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,9 @@ Recent decisions affecting current work:
 - 04-04: Segmented control placed alongside month/year selectors using existing Tabs component
 - 04-04: Balance calculation uses getFilterDateRange for ARS scoping; USD remains cumulative
 - 04-04: Pendiente de cobro banner only in mes view, current month, before pay date
+- 05-01: Resumen card income amounts colored green matching INGRESOS section header semantics
+- 05-01: Patrimonio card Liquido USD uses neutral color (not green) per CARD-05 semantic decision
+- 05-01: Aportes inversiones displayed as negative with blue text in Resumen card
 
 ### Pending Todos
 
@@ -121,5 +125,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 04-04-PLAN.md (Pay Period Views) - Phase 4 Complete
-Resume file: Phase 5 planning
+Stopped at: Completed 05-01-PLAN.md (Card Components)
+Resume file: 05-02-PLAN.md
