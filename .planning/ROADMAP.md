@@ -106,11 +106,11 @@ Plans:
   3. Patrimonio total correctly sums liquid ARS + liquid USD (converted) + active investment current values
   4. Every number in the card has a tooltip or expandable desglose showing the exact formula behind it
   5. Colors follow semantic convention: green for income, red for expenses, blue for investments
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [ ] 05-01-PLAN.md — Create 3 card components (Resumen, Patrimonio, Config) + extend hook (CARD-01, CARD-02, CARD-03, CARD-05)
+- [ ] 05-02-PLAN.md — Wire cards into layout + add tooltip desgloses to all numbers (CARD-01, CARD-02, CARD-04, CARD-05)
 
 ### Phase 6: Recurring Expenses
 **Goal**: User defines recurring expenses once and they auto-appear each month with payment tracking
