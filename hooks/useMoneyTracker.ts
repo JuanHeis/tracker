@@ -210,37 +210,79 @@ export function useMoneyTracker() {
   const getCurrentMonthKey = () =>
     `${selectedYear}-${selectedMonth.split("-")[1]}`;
 
-  const calculateTotalAvailable = () => {
+  const calculateDualBalances = () => {
     const monthKey = getCurrentMonthKey();
+    let arsBalance = 0;
+    let usdBalance = 0;
 
-    const monthlySalary = monthlyData.salaries[monthKey]?.amount || 0;
+    // Salary: always ARS, month-scoped
+    arsBalance += monthlyData.salaries[monthKey]?.amount || 0;
 
-    const monthlyExtraIncomes = monthlyData.extraIncomes
-      .filter((income) => income.date.startsWith(monthKey))
-      .reduce((sum, income) => sum + income.amount, 0);
+    // Extra incomes: ARS month-scoped, USD cumulative (all time)
+    monthlyData.extraIncomes
+      .filter((i) => i.date.startsWith(monthKey))
+      .forEach((income) => {
+        if (income.currencyType !== CurrencyType.USD) {
+          arsBalance += income.amount;
+        }
+      });
+    monthlyData.extraIncomes
+      .filter((i) => i.currencyType === CurrencyType.USD)
+      .forEach((income) => {
+        usdBalance += income.amount;
+      });
 
-    const monthlyExpenses = monthlyData.expenses
-      .filter((expense) => expense.date.startsWith(monthKey))
-      .reduce((sum, expense) => sum + expense.amount, 0);
+    // Expenses: ARS month-scoped, USD cumulative (all time)
+    monthlyData.expenses
+      .filter((e) => e.date.startsWith(monthKey))
+      .forEach((expense) => {
+        if (expense.currencyType !== CurrencyType.USD) {
+          arsBalance -= expense.amount;
+        }
+      });
+    monthlyData.expenses
+      .filter((e) => e.currencyType === CurrencyType.USD)
+      .forEach((expense) => {
+        usdBalance -= expense.amount;
+      });
 
-    // All investment movements affect liquidity regardless of status
-    // (finalization retiros must still add back to available money)
-    const monthlyInvestmentImpact = (monthlyData.investments || [])
-      .flatMap((inv) => inv.movements)
-      .filter((mov) => mov.date.startsWith(monthKey))
-      .reduce((sum, mov) => {
-        return mov.type === "aporte" ? sum + mov.amount : sum - mov.amount;
-      }, 0);
+    // USD purchases: cumulative across ALL time (USD is a running balance)
+    // ARS deduction only for current month (tracked purchases reduce this month's ARS)
+    (monthlyData.usdPurchases || []).forEach((purchase) => {
+      usdBalance += purchase.usdAmount;
+      if (purchase.origin === "tracked" && purchase.date.startsWith(monthKey)) {
+        arsBalance -= purchase.arsAmount;
+      }
+    });
 
-    return {
-      total: monthlySalary + monthlyExtraIncomes - monthlyExpenses,
-      availableForUse:
-        monthlySalary +
-        monthlyExtraIncomes -
-        monthlyExpenses -
-        monthlyInvestmentImpact,
-      blockedInInvestments: monthlyInvestmentImpact,
-    };
+    // Investment movements: ARS month-scoped, USD cumulative
+    (monthlyData.investments || []).forEach((inv) => {
+      if (inv.currencyType === CurrencyType.USD) {
+        // USD investment movements: cumulative (all time)
+        inv.movements.forEach((mov) => {
+          const impact = mov.type === "aporte" ? -mov.amount : mov.amount;
+          usdBalance += impact;
+        });
+      } else {
+        // ARS investment movements: month-scoped
+        inv.movements
+          .filter((mov) => mov.date.startsWith(monthKey))
+          .forEach((mov) => {
+            const impact = mov.type === "aporte" ? -mov.amount : mov.amount;
+            arsBalance += impact;
+          });
+      }
+    });
+
+    // Investment current values for patrimonio
+    const arsInvestments = (monthlyData.investments || [])
+      .filter((i) => i.status === "Activa" && i.currencyType === CurrencyType.ARS)
+      .reduce((sum, i) => sum + i.currentValue, 0);
+    const usdInvestments = (monthlyData.investments || [])
+      .filter((i) => i.status === "Activa" && i.currencyType === CurrencyType.USD)
+      .reduce((sum, i) => sum + i.currentValue, 0);
+
+    return { arsBalance, usdBalance, arsInvestments, usdInvestments };
   };
 
   const expensesTracker = useExpensesTracker(
@@ -259,19 +301,8 @@ export function useMoneyTracker() {
     selectedMonth
   );
 
-  // All movements affect liquidity regardless of investment status
-  const monthlyInvestmentImpact = (monthlyData.investments || [])
-    .flatMap((inv) => inv.movements)
-    .filter((mov) => mov.date.startsWith(getCurrentMonthKey()))
-    .reduce((sum, mov) => {
-      return mov.type === "aporte" ? sum + mov.amount : sum - mov.amount;
-    }, 0);
-
-  const availableMoney = monthlyData.salaries[getCurrentMonthKey()]
-    ? monthlyData.salaries[getCurrentMonthKey()].amount -
-      expensesTracker.totalExpenses -
-      monthlyInvestmentImpact
-    : 0;
+  const dualBalances = calculateDualBalances();
+  const availableMoney = dualBalances.arsBalance;
 
   const savings = availableMoney > 0 ? availableMoney : 0;
 
@@ -287,7 +318,7 @@ export function useMoneyTracker() {
     getAvailableYears,
     availableMoney,
     savings,
-    calculateTotalAvailable,
+    calculateDualBalances,
 
     // Funciones de useIncomes
     showSalaryForm: incomesTracker.showSalaryForm,
