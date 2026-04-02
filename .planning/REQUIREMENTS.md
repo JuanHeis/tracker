@@ -60,9 +60,9 @@
 
 ### Gastos Recurrentes
 
-- [ ] **REC-01**: User puede definir gasto recurrente (nombre, monto, categoria, frecuencia mensual)
-- [ ] **REC-02**: Gastos recurrentes se auto-generan cada mes
-- [ ] **REC-03**: User puede pausar o cancelar un gasto recurrente
+- [x] **REC-01**: User puede definir gasto recurrente (nombre, monto, categoria, frecuencia mensual)
+- [x] **REC-02**: Gastos recurrentes se auto-generan cada mes
+- [x] **REC-03**: User puede pausar o cancelar un gasto recurrente
 - [ ] **REC-04**: User puede marcar gasto recurrente como pagado cada mes
 
 ### Prestamos
@@ -167,9 +167,9 @@
 | CARD-03 | Phase 5 | Complete |
 | CARD-04 | Phase 5 | Complete |
 | CARD-05 | Phase 5 | Complete |
-| REC-01 | Phase 6 | Pending |
-| REC-02 | Phase 6 | Pending |
-| REC-03 | Phase 6 | Pending |
+| REC-01 | Phase 6 | Complete |
+| REC-02 | Phase 6 | Complete |
+| REC-03 | Phase 6 | Complete |
 | REC-04 | Phase 6 | Pending |
 | PREST-01 | Phase 7 | Pending |
 | PREST-02 | Phase 7 | Pending |

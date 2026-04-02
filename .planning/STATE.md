@@ -22,10 +22,10 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 ## Current Position
 
-Phase: 9 of 10 (Transfers & Adjustments) -- COMPLETE
-Plan: 3 of 3 in current phase (09-03 complete)
-Status: Phase 9 Complete
-Last activity: 2026-04-02 -- Completed 09-03 (Balance Adjustment Dialog)
+Phase: 6 of 10 (Recurring Expenses)
+Plan: 1 of 3 in current phase (06-01 complete)
+Status: Executing Phase 6
+Last activity: 2026-04-02 -- Completed 06-01 (Data Model & Auto-Generation)
 
 Progress: [████████████████████] 63%
 
@@ -63,6 +63,7 @@ Progress: [████████████████████] 63%
 | Phase 09 P01 | 2min | 2 tasks | 2 files |
 | Phase 09 P02 | 2min | 2 tasks | 3 files |
 | Phase 09 P03 | 2min | 2 tasks | 3 files |
+| Phase 06 P01 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -129,6 +130,9 @@ Recent decisions affecting current work:
 - 09-03: AdjustmentDialog reads trackedBalance from props at render time (not captured in state) to avoid stale data
 - 09-03: Herramientas section added to ConfigCard for tool-type actions separate from config editing
 - 09-03: Used hr element instead of Separator since ui/separator component does not exist in project
+- 06-01: Single monthlyData storage for recurring instances (not per-month keys), filtered by date field
+- 06-01: Ref guard pattern prevents StrictMode double-execution of auto-generation
+- 06-01: generateMissingInstances takes recurrings as parameter to avoid stale closure issues
 
 ### Pending Todos
 
@@ -141,5 +145,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 09-03-PLAN.md (Balance Adjustment Dialog)
-Resume file: Phase 9 complete, ready for next phase
+Stopped at: Completed 06-01-PLAN.md (Data Model & Auto-Generation)
+Resume file: Continue with 06-02-PLAN.md
