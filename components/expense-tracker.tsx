@@ -10,6 +10,7 @@ import {
   Coins,
   Settings,
   ArrowLeftRight,
+  Repeat,
 } from "lucide-react";
 import { format, lastDayOfMonth } from "date-fns";
 import {
@@ -59,6 +60,8 @@ import type { ViewMode } from "@/hooks/usePayPeriod";
 import { TransferDialog } from "@/components/transfer-dialog";
 import { AdjustmentDialog } from "@/components/adjustment-dialog";
 import { MovementsTable } from "@/components/movements-table";
+import { RecurringDialog } from "@/components/recurring-dialog";
+import { RecurringTable } from "@/components/recurring-table";
 import { UsdPurchaseDialog } from "./usd-purchase-dialog";
 import { ExchangeSummary } from "./exchange-summary";
 import { ThemeToggle } from "./theme-toggle";
@@ -161,6 +164,10 @@ export function ExpenseTracker() {
     handleDeleteTransfer,
     handleCreateAdjustment,
     filteredTransfers,
+    // Recurring expenses
+    recurringExpenses,
+    addRecurring,
+    updateRecurringStatus,
   } = useMoneyTracker();
 
   // Aguinaldo computed props (dependiente only)
@@ -195,6 +202,9 @@ export function ExpenseTracker() {
 
   // Adjustment dialog state
   const [openAdjustmentDialog, setOpenAdjustmentDialog] = useState(false);
+
+  // Recurring dialog state
+  const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
 
   // Form validation state
   const [expenseErrors, setExpenseErrors] = useState<Record<string, string>>({});
@@ -309,6 +319,10 @@ export function ExpenseTracker() {
               <TabsTrigger value="movements">
                 <ArrowLeftRight className="h-4 w-4 mr-1" />
                 Movimientos
+              </TabsTrigger>
+              <TabsTrigger value="recurrentes">
+                <Repeat className="h-4 w-4 mr-2" />
+                Recurrentes
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -489,6 +503,18 @@ export function ExpenseTracker() {
                   />
                 </CardContent>
               </Card>
+            </TabsContent>
+            <TabsContent value="recurrentes" className="mt-0">
+              <RecurringTable
+                recurrings={recurringExpenses}
+                onUpdateStatus={updateRecurringStatus}
+                onAddClick={() => setRecurringDialogOpen(true)}
+              />
+              <RecurringDialog
+                open={recurringDialogOpen}
+                onOpenChange={setRecurringDialogOpen}
+                onAdd={addRecurring}
+              />
             </TabsContent>
           </Tabs>
 
