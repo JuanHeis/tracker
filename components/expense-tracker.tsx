@@ -332,7 +332,7 @@ export function ExpenseTracker() {
   return (
     <div className=" p-4 ">
       <div className="mx-auto max-w-7xl space-y-8 ">
-        <div className="flex items-center gap-10">
+        <div className="flex items-center gap-6 rounded-2xl bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg shadow-black/5 px-4 py-2 mx-2">
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
