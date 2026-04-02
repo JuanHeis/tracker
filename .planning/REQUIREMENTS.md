@@ -75,8 +75,8 @@
 ### Presupuestos
 
 - [x] **PRES-01**: User puede definir tope mensual por categoria de gasto
-- [ ] **PRES-02**: User ve barra de progreso visual del gasto vs presupuesto por categoria
-- [ ] **PRES-03**: User ve alerta visual al acercarse al limite del presupuesto
+- [x] **PRES-02**: User ve barra de progreso visual del gasto vs presupuesto por categoria
+- [x] **PRES-03**: User ve alerta visual al acercarse al limite del presupuesto
 
 ### Transferencias
 
@@ -176,8 +176,8 @@
 | PREST-03 | Phase 7 | Pending |
 | PREST-04 | Phase 7 | Pending |
 | PRES-01 | Phase 8 | Complete |
-| PRES-02 | Phase 8 | Pending |
-| PRES-03 | Phase 8 | Pending |
+| PRES-02 | Phase 8 | Complete |
+| PRES-03 | Phase 8 | Complete |
 | TRANS-01 | Phase 9 | Complete |
 | TRANS-02 | Phase 9 | Complete |
 | AJUST-01 | Phase 9 | Complete |
