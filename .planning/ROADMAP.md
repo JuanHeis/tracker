@@ -184,7 +184,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 |-------|----------------|--------|-----------|
 | 1. Critical Bug Fixes | 3/3 | Complete   | 2026-04-01 |
 | 2. Investment Model Refactor | 4/5 | In Progress|  |
-| 3. Dual Currency Engine | 1/4 | In Progress|  |
+| 3. Dual Currency Engine | 2/4 | In Progress|  |
 | 4. Income & Pay Date | 0/TBD | Not started | - |
 | 5. Monthly Card Redesign | 0/TBD | Not started | - |
 | 6. Recurring Expenses | 0/TBD | Not started | - |

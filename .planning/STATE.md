@@ -8,7 +8,7 @@ progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 12
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State
@@ -23,18 +23,18 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 3 of 10 (Dual Currency Engine)
-Plan: 2 of 4 in current phase (03-01 complete, next: 03-02)
+Plan: 3 of 4 in current phase (03-01, 03-02 complete, next: 03-03)
 Status: Executing Phase 3
-Last activity: 2026-04-02 -- Completed 03-01 (Data Model & Currency Engine)
+Last activity: 2026-04-02 -- Completed 03-02 (Dual Balance Calculation & Sidebar UI)
 
-Progress: [████████░░] 32%
+Progress: [█████████░] 36%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 10
 - Average duration: ~2.8 min
-- Total execution time: ~25 min
+- Total execution time: ~28 min
 
 **By Phase:**
 
@@ -42,7 +42,7 @@ Progress: [████████░░] 32%
 |-------|-------|-------|----------|
 | 01-critical-bug-fixes | 01-01, 01-02, 01-03 | 7min | 2.3min |
 | 02-investment-model-refactor | 02-01, 02-02, 02-03, 02-04, 02-05 | 15min | 3.0min |
-| 03-dual-currency-engine | 03-01 | 3min | 3.0min |
+| 03-dual-currency-engine | 03-01, 03-02 | 6min | 3.0min |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -51,6 +51,7 @@ Progress: [████████░░] 32%
 *Updated after each plan completion*
 | Phase 02 P02 | 3min | 2 tasks | 4 files |
 | Phase 03 P01 | 3min | 2 tasks | 4 files |
+| Phase 03 P02 | 3min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,9 @@ Recent decisions affecting current work:
 - 03-01: Migration v3 uses _migrationVersion field to prevent double-reversal of USD amounts
 - 03-01: globalUsdRate stored in separate localStorage key (not per-month) for global availability
 - 03-01: Exchange gain/loss only calculated for tracked purchases (untracked have no purchase rate)
+- 03-02: USD balance is cumulative across all time (running wallet), ARS balance is month-scoped
+- 03-02: Removed dual Monto/USD table columns — single column with native currency symbol
+- 03-02: Patrimonio = arsLiquid + (usdLiquid * globalRate) + arsInvestments + (usdInvestments * globalRate)
 
 ### Pending Todos
 
@@ -95,5 +99,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 03-01-PLAN.md (Data Model & Currency Engine)
-Resume file: 03-02-PLAN.md
+Stopped at: Completed 03-02-PLAN.md (Dual Balance Calculation & Sidebar UI)
+Resume file: 03-03-PLAN.md
