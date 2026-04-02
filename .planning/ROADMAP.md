@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Critical Bug Fixes** - Fix 7 confirmed bugs that produce wrong calculations, broken forms, and corrupted data (completed 2026-04-01)
 - [ ] **Phase 2: Investment Model Refactor** - Replace transactional investment model with account-based model (movements, value tracking, finalization)
-- [ ] **Phase 3: Dual Currency Engine** - Implement real ARS/USD separation with per-transaction rates, currency purchases, and exchange gain/loss
+- [x] **Phase 3: Dual Currency Engine** - Implement real ARS/USD separation with per-transaction rates, currency purchases, and exchange gain/loss (completed 2026-04-02)
 - [ ] **Phase 4: Income & Pay Date** - Rename terminology, add configurable pay date with dual calendar views, and auto-calculated aguinaldo
 - [ ] **Phase 5: Monthly Card Redesign** - Rebuild the monthly summary card with correct formulas, clear desglose, and patrimonio calculation
 - [ ] **Phase 6: Recurring Expenses** - Define, auto-generate, pause/cancel, and track payment of recurring expenses
@@ -184,7 +184,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 |-------|----------------|--------|-----------|
 | 1. Critical Bug Fixes | 3/3 | Complete   | 2026-04-01 |
 | 2. Investment Model Refactor | 4/5 | In Progress|  |
-| 3. Dual Currency Engine | 3/4 | In Progress|  |
+| 3. Dual Currency Engine | 4/4 | Complete   | 2026-04-02 |
 | 4. Income & Pay Date | 0/TBD | Not started | - |
 | 5. Monthly Card Redesign | 0/TBD | Not started | - |
 | 6. Recurring Expenses | 0/TBD | Not started | - |

@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-last_updated: "2026-04-02T10:43:30.106Z"
+status: phase-complete
+last_updated: "2026-04-02T10:52:00.000Z"
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 12
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State
@@ -22,12 +22,12 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 ## Current Position
 
-Phase: 3 of 10 (Dual Currency Engine)
-Plan: 4 of 4 in current phase (03-01, 03-02, 03-03 complete, next: 03-04)
-Status: Executing Phase 3
-Last activity: 2026-04-02 -- Completed 03-03 (USD Purchase Dialog & Exchange Summary)
+Phase: 3 of 10 (Dual Currency Engine) -- COMPLETE
+Plan: 4 of 4 in current phase (03-01, 03-02, 03-03, 03-04 complete)
+Status: Phase 3 Complete
+Last activity: 2026-04-02 -- Completed 03-04 (Retroactive Rate Editing & Validation)
 
-Progress: [██████████░] 39%
+Progress: [████████████] 42%
 
 ## Performance Metrics
 
@@ -42,7 +42,7 @@ Progress: [██████████░] 39%
 |-------|-------|-------|----------|
 | 01-critical-bug-fixes | 01-01, 01-02, 01-03 | 7min | 2.3min |
 | 02-investment-model-refactor | 02-01, 02-02, 02-03, 02-04, 02-05 | 15min | 3.0min |
-| 03-dual-currency-engine | 03-01, 03-02, 03-03 | 8min | 2.7min |
+| 03-dual-currency-engine | 03-01, 03-02, 03-03, 03-04 | 12min | 3.0min |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -53,6 +53,7 @@ Progress: [██████████░] 39%
 | Phase 03 P01 | 3min | 2 tasks | 4 files |
 | Phase 03 P02 | 3min | 2 tasks | 6 files |
 | Phase 03 P03 | 2min | 2 tasks | 3 files |
+| Phase 03 P04 | 4min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,8 @@ Recent decisions affecting current work:
 - 03-03: UsdPurchaseDialog uses mode toggle (buy/register) instead of separate dialogs
 - 03-03: ExchangeSummary placed in sidebar below Balance card
 - 03-03: Effective rate computed live as user types ARS and USD amounts
+- 03-04: Pencil icon always visible with muted color + hover:blue for rate editing discoverability
+- 03-04: USD purchase auto-calc uses globalUsdRate but user can freely override either field
 
 ### Pending Todos
 
@@ -103,5 +106,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 03-03-PLAN.md (USD Purchase Dialog & Exchange Summary)
-Resume file: 03-04-PLAN.md
+Stopped at: Completed 03-04-PLAN.md (Retroactive Rate Editing & Validation) -- Phase 3 COMPLETE
+Resume file: Next phase (04)

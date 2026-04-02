@@ -36,7 +36,7 @@
 - [x] **MON-04**: User puede comprar USD desde saldo ARS (resta ARS, suma USD, patrimonio no cambia)
 - [x] **MON-05**: User puede registrar USD de efectivo no trackeado (suma USD sin restar ARS, con origen explicito)
 - [x] **MON-06**: User ve ganancia/perdida cambiaria automatica (cotizacion de compra vs global actual)
-- [ ] **MON-07**: User puede editar cotizacion USD retroactivamente si la cargo mal
+- [x] **MON-07**: User puede editar cotizacion USD retroactivamente si la cargo mal
 - [x] **MON-08**: Validacion: cotizacion USD siempre > 0, monto siempre > 0
 
 ### Ingresos y Fecha de Cobro
@@ -152,7 +152,7 @@
 | MON-04 | Phase 3 | Complete |
 | MON-05 | Phase 3 | Complete |
 | MON-06 | Phase 3 | Complete |
-| MON-07 | Phase 3 | Pending |
+| MON-07 | Phase 3 | Complete |
 | MON-08 | Phase 3 | Complete |
 | ING-01 | Phase 4 | Pending |
 | ING-02 | Phase 4 | Pending |
