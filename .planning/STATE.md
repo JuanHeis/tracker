@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Setup Wizard & Manual
-status: ready-to-plan
+status: executing
 last_updated: "2026-04-02"
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
 ---
 
 # Project State
@@ -23,11 +23,11 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 11 of 13 (Core Setup Wizard)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-04-02 - Roadmap created for v1.1 milestone
+Plan: 1 of 2 completed in current phase
+Status: Executing
+Last activity: 2026-04-02 - Completed 11-01 useSetupWizard hook
 
-Progress: [░░░░░░░░░░] 0% (v1.1)
+Progress: [█████░░░░░] 50% (v1.1 - 1/2 plans in phase 11)
 
 ## Performance Metrics
 
@@ -55,6 +55,9 @@ Recent decisions affecting current work:
 - [v1.0]: 10-01: Import triggers window.location.reload() — wizard must follow same pattern
 - [v1.0]: 03-01: globalUsdRate in separate localStorage key — wizard must write this key too
 - [v1.0]: 03-01: _migrationVersion field required on monthlyData — wizard must include it
+- [11-01]: Validation returns Record<string,string> errors object for flexible UI error display
+- [11-01]: Draft persistence uses sessionStorage (cleared on tab close)
+- [11-01]: Step numbering: 0=welcome, 1=ARS, 2=USD, 3=income, 4=summary
 
 ### Pending Todos
 
@@ -69,5 +72,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Created v1.1 roadmap (phases 11-13)
-Resume file: None — ready for `/gsd:plan-phase 11`
+Stopped at: Completed 11-01-PLAN.md (useSetupWizard hook)
+Resume file: None — ready for 11-02 execution

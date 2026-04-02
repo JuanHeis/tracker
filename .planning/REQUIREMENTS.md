@@ -99,13 +99,13 @@
 ### Setup Wizard
 
 - [ ] **WIZ-01**: User ve wizard automaticamente al abrir la app por primera vez (sin datos en localStorage)
-- [ ] **WIZ-02**: User puede cargar saldo liquido ARS actual en el wizard
-- [ ] **WIZ-03**: User puede cargar saldo USD + cotizacion actual en el wizard
-- [ ] **WIZ-04**: User puede cargar ingreso fijo (sueldo, tipo empleo, dia de cobro) en el wizard
+- [x] **WIZ-02**: User puede cargar saldo liquido ARS actual en el wizard
+- [x] **WIZ-03**: User puede cargar saldo USD + cotizacion actual en el wizard
+- [x] **WIZ-04**: User puede cargar ingreso fijo (sueldo, tipo empleo, dia de cobro) en el wizard
 - [ ] **WIZ-05**: User puede cargar inversiones existentes una por una (tipo, nombre, monto, moneda) con loop "agregar otra"
 - [ ] **WIZ-06**: User ve resumen de todo lo cargado y confirma antes de guardar
-- [ ] **WIZ-07**: Wizard guarda todos los datos de forma atomica (todo o nada) al confirmar
-- [ ] **WIZ-08**: User puede saltar pasos opcionales (USD, ingreso, inversiones) y completarlos despues
+- [x] **WIZ-07**: Wizard guarda todos los datos de forma atomica (todo o nada) al confirmar
+- [x] **WIZ-08**: User puede saltar pasos opcionales (USD, ingreso, inversiones) y completarlos despues
 - [ ] **WIZ-09**: Wizard ofrece importar JSON existente como alternativa en la pantalla de bienvenida
 - [ ] **WIZ-10**: User puede re-ejecutar wizard desde Configuracion (reset de fabrica + wizard)
 
@@ -205,13 +205,13 @@
 | UX-01 | Phase 10 | Complete |
 | UX-02 | Phase 10 | Complete |
 | WIZ-01 | Phase 11 | Pending |
-| WIZ-02 | Phase 11 | Pending |
-| WIZ-03 | Phase 11 | Pending |
-| WIZ-04 | Phase 11 | Pending |
+| WIZ-02 | Phase 11 | Complete |
+| WIZ-03 | Phase 11 | Complete |
+| WIZ-04 | Phase 11 | Complete |
 | WIZ-05 | Phase 12 | Pending |
 | WIZ-06 | Phase 11 | Pending |
-| WIZ-07 | Phase 11 | Pending |
-| WIZ-08 | Phase 11 | Pending |
+| WIZ-07 | Phase 11 | Complete |
+| WIZ-08 | Phase 11 | Complete |
 | WIZ-09 | Phase 11 | Pending |
 | WIZ-10 | Phase 12 | Pending |
 | MAN-01 | Phase 13 | Pending |
