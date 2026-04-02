@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { CATEGORIES } from "@/constants/colors";
 import type { Category } from "@/hooks/useMoneyTracker";
 
@@ -36,6 +37,7 @@ export function BudgetDialog({
 }: BudgetDialogProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [limitValue, setLimitValue] = useState<string>("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (open) {
@@ -46,17 +48,29 @@ export function BudgetDialog({
         setSelectedCategory("");
         setLimitValue("");
       }
+      setErrors({});
     }
   }, [open, editingBudget]);
 
   const handleSave = () => {
     const limit = parseFloat(limitValue);
-    if (limit <= 0 || isNaN(limit)) return;
+    const newErrors: Record<string, string> = {};
+
+    if (isNaN(limit) || limit <= 0) {
+      newErrors.limit = "El limite debe ser mayor a 0";
+    }
 
     const category = editingBudget
       ? editingBudget.category
       : (selectedCategory as Category);
-    if (!category) return;
+    if (!category) {
+      newErrors.category = "Selecciona una categoria";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
     onSave(category, limit);
     onOpenChange(false);
@@ -91,9 +105,12 @@ export function BudgetDialog({
               <label className="text-sm font-medium">Categoria</label>
               <Select
                 value={selectedCategory}
-                onValueChange={setSelectedCategory}
+                onValueChange={(val) => {
+                  setSelectedCategory(val);
+                  setErrors((prev) => { const next = { ...prev }; delete next.category; return next; });
+                }}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(errors.category && "border-red-500")}>
                   <SelectValue placeholder="Seleccionar categoria" />
                 </SelectTrigger>
                 <SelectContent>
@@ -113,6 +130,9 @@ export function BudgetDialog({
                   ))}
                 </SelectContent>
               </Select>
+              {errors.category && (
+                <p className="text-xs text-red-500">{errors.category}</p>
+              )}
             </div>
           )}
           <div className="space-y-1">
@@ -124,9 +144,16 @@ export function BudgetDialog({
               min={1}
               step={1000}
               value={limitValue}
-              onChange={(e) => setLimitValue(e.target.value)}
+              onChange={(e) => {
+                setLimitValue(e.target.value);
+                setErrors((prev) => { const next = { ...prev }; delete next.limit; return next; });
+              }}
               placeholder="Ej: 50000"
+              className={cn(errors.limit && "border-red-500")}
             />
+            {errors.limit && (
+              <p className="text-xs text-red-500">{errors.limit}</p>
+            )}
           </div>
           <Button onClick={handleSave} disabled={!isValid} className="w-full">
             {editingBudget ? "Guardar" : "Crear presupuesto"}
