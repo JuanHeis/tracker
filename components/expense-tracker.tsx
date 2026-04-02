@@ -91,7 +91,9 @@ export function ExpenseTracker() {
     handleSetSalary,
     handleDeleteExpense,
     handleAddExtraIncome,
-    calculateTotalAvailable,
+    calculateDualBalances,
+    globalUsdRate,
+    setGlobalUsdRate,
     handleDeleteIncome,
     filteredIncomes,
     defaultDate,
@@ -400,19 +402,21 @@ export function ExpenseTracker() {
               totalExpenses={totalExpenses}
               availableMoney={availableMoney}
               savings={savings}
+              globalUsdRate={globalUsdRate}
+              onSetGlobalUsdRate={setGlobalUsdRate}
               onSalarySubmit={handleSetSalary}
               onShowFormChange={setShowSalaryForm}
             />
             <Card className="h-fit">
               <CardHeader>
-                <CardTitle>Disponible este mes</CardTitle>
+                <CardTitle>Balance</CardTitle>
               </CardHeader>
               <TotalAmounts
-                availableForUse={calculateTotalAvailable().availableForUse}
-                blockedInInvestments={
-                  calculateTotalAvailable().blockedInInvestments
-                }
-                total={calculateTotalAvailable().total}
+                arsBalance={calculateDualBalances().arsBalance}
+                usdBalance={calculateDualBalances().usdBalance}
+                arsInvestments={calculateDualBalances().arsInvestments}
+                usdInvestments={calculateDualBalances().usdInvestments}
+                globalUsdRate={globalUsdRate}
               />
             </Card>
 

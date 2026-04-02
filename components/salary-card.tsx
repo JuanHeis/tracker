@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Pencil, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -27,6 +27,8 @@ interface SalaryCardProps {
   totalExpenses: number;
   availableMoney: number;
   savings: number;
+  globalUsdRate: number;
+  onSetGlobalUsdRate: (rate: number) => void;
   onSalarySubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onShowFormChange: (show: boolean) => void;
 }
@@ -37,10 +39,15 @@ export function SalaryCard({
   showSalaryForm,
   totalExpenses,
   availableMoney,
+  globalUsdRate,
+  onSetGlobalUsdRate,
   onSalarySubmit,
   onShowFormChange,
 }: SalaryCardProps) {
   const currentSalary = monthlyData.salaries[selectedMonth];
+
+  const [editingRate, setEditingRate] = useState(false);
+  const [rateInput, setRateInput] = useState("");
 
   useEffect(() => {
     if (monthlyData.salaries[selectedMonth]) {
@@ -49,6 +56,20 @@ export function SalaryCard({
       onShowFormChange(true);
     }
   }, [selectedMonth]);
+
+  const handleSubmitRate = () => {
+    const newRate = parseFloat(rateInput);
+    if (!isNaN(newRate) && newRate > 0) {
+      onSetGlobalUsdRate(newRate);
+      setEditingRate(false);
+    }
+  };
+
+  const handleStartEditRate = () => {
+    setRateInput(globalUsdRate > 0 ? String(globalUsdRate) : "");
+    setEditingRate(true);
+  };
+
   return (
     <Card className="h-fit">
       <TooltipProvider>
@@ -86,34 +107,6 @@ export function SalaryCard({
                   />
                 </span>
               </div>
-              <Tooltip>
-                <TooltipTrigger className="w-full ">
-                  <div className="flex justify-between w-full ">
-                    <span>Salario (USD):</span>
-                    <span className="font-medium text-green-800">
-                      <FormattedAmount
-                        value={
-                          currentSalary?.usdRate && currentSalary.usdRate > 0
-                            ? Number(
-                                (
-                                  currentSalary.amount / currentSalary.usdRate
-                                ).toFixed(2)
-                              )
-                            : 0
-                        }
-                        currency="USD"
-                      />
-                    </span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs mb-5">
-                  <p className="font-bold">Salario en dolares</p>
-                  <p>
-                    Salario en pesos / valor del dolar ($
-                    {currentSalary?.usdRate})
-                  </p>
-                </TooltipContent>
-              </Tooltip>
 
               <div className="flex justify-between w-full">
                 <span>Gastos:</span>
@@ -123,8 +116,8 @@ export function SalaryCard({
               </div>
 
               <Tooltip>
-                <TooltipTrigger className="w-full ">
-                  <div className="flex justify-between w-full ">
+                <TooltipTrigger className="w-full">
+                  <div className="flex justify-between w-full">
                     <span className="block shrink-1">Disponible:</span>
                     <span className="font-medium text-green-500">
                       <FormattedAmount value={availableMoney} currency="ARS" />
@@ -136,6 +129,63 @@ export function SalaryCard({
                   <p>Total del mes - gastos del mes - inversiones del mes</p>
                 </TooltipContent>
               </Tooltip>
+
+              <hr className="border-border" />
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Cotizacion USD:</span>
+                {editingRate ? (
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={rateInput}
+                      onChange={(e) => setRateInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleSubmitRate();
+                        }
+                        if (e.key === "Escape") setEditingRate(false);
+                      }}
+                      className="h-7 w-24 text-sm"
+                      autoFocus
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={handleSubmitRate}
+                    >
+                      <Check className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => setEditingRate(false)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <span className="font-medium text-sm">
+                      {globalUsdRate > 0
+                        ? `$ ${globalUsdRate.toLocaleString()}`
+                        : "Sin configurar"}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={handleStartEditRate}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+              </div>
 
               <Button
                 variant="outline"

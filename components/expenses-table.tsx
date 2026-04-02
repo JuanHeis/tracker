@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Expense, CurrencyType } from "@/hooks/useMoneyTracker";
+import { currencySymbol } from "@/constants/investments";
 import { useHydration } from "@/hooks/useHydration";
 import { FormattedDate } from "./formatted-date";
 import { FormattedAmount } from "./formatted-amount";
@@ -42,13 +43,12 @@ export function ExpensesTable({
             <TableHead className={className}>Nombre</TableHead>
             <TableHead className={className}>Categoría</TableHead>
             <TableHead className={className}>Monto</TableHead>
-            <TableHead className={className}>USD</TableHead>
             <TableHead className={className}>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell colSpan={6} className="text-center">
+            <TableCell colSpan={5} className="text-center">
               Cargando...
             </TableCell>
           </TableRow>
@@ -65,14 +65,13 @@ export function ExpensesTable({
           <TableHead className={className}>Nombre</TableHead>
           <TableHead className={className}>Categoría</TableHead>
           <TableHead className={className}>Monto</TableHead>
-          <TableHead className={className}>USD</TableHead>
           <TableHead className={className}>Acciones</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {expenses.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={6} className="text-center">
+            <TableCell colSpan={5} className="text-center">
               No hay gastos cargados este mes
             </TableCell>
           </TableRow>
@@ -102,27 +101,13 @@ export function ExpensesTable({
                   </Badge>
                 </TableCell>
                 <TableCell className={className}>
-                  <span
-                    className={
-                      expense.currencyType === CurrencyType.ARS
-                        ? "font-bold"
-                        : ""
-                    }
-                  >
-                    <FormattedAmount value={expense.amount} currency="ARS" />
-                  </span>
-                </TableCell>
-                <TableCell className={className}>
-                  <span
-                    className={
-                      expense.currencyType === CurrencyType.USD
-                        ? "font-bold"
-                        : ""
-                    }
-                  >
+                  <span className={cn(
+                    "font-medium",
+                    expense.currencyType === CurrencyType.USD && "text-green-600 dark:text-green-400"
+                  )}>
                     <FormattedAmount
-                      value={expense.usdRate > 0 ? expense.amount / expense.usdRate : 0}
-                      currency="USD"
+                      value={expense.amount}
+                      currency={currencySymbol(expense.currencyType || CurrencyType.ARS)}
                     />
                   </span>
                 </TableCell>

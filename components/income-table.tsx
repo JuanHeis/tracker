@@ -11,9 +11,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ExtraIncome, CurrencyType } from "@/hooks/useMoneyTracker";
+import { currencySymbol } from "@/constants/investments";
 import { FormattedAmount } from "./formatted-amount";
 import { FormattedDate } from "./formatted-date";
 import { useHydration } from "@/hooks/useHydration";
+import { cn } from "@/lib/utils";
 
 interface IncomeTableProps {
   incomes: ExtraIncome[];
@@ -36,13 +38,12 @@ export default function IncomeTable({
             <TableHead className={className}>Fecha</TableHead>
             <TableHead className={className}>Descripción</TableHead>
             <TableHead className={className}>Monto</TableHead>
-            <TableHead className={className}>USD</TableHead>
             <TableHead className={className}>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell colSpan={5} className="text-center">
+            <TableCell colSpan={4} className="text-center">
               Cargando...
             </TableCell>
           </TableRow>
@@ -58,14 +59,13 @@ export default function IncomeTable({
           <TableHead className={className}>Fecha</TableHead>
           <TableHead className={className}>Descripción</TableHead>
           <TableHead className={className}>Monto</TableHead>
-          <TableHead className={className}>USD</TableHead>
           <TableHead className={className}>Acciones</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {incomes.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={5} className="text-center">
+            <TableCell colSpan={4} className="text-center">
               No hay ingresos extra este mes
             </TableCell>
           </TableRow>
@@ -77,23 +77,13 @@ export default function IncomeTable({
               </TableCell>
               <TableCell className={className}>{income.name}</TableCell>
               <TableCell className={className}>
-                <span
-                  className={
-                    income.currencyType === CurrencyType.ARS ? "font-bold" : ""
-                  }
-                >
-                  <FormattedAmount value={income.amount} currency="ARS" />
-                </span>
-              </TableCell>
-              <TableCell className={className}>
-                <span
-                  className={
-                    income.currencyType === CurrencyType.USD ? "font-bold" : ""
-                  }
-                >
+                <span className={cn(
+                  "font-medium",
+                  income.currencyType === CurrencyType.USD && "text-green-600 dark:text-green-400"
+                )}>
                   <FormattedAmount
-                    value={income.usdRate > 0 ? income.amount / income.usdRate : 0}
-                    currency="USD"
+                    value={income.amount}
+                    currency={currencySymbol(income.currencyType || CurrencyType.ARS)}
                   />
                 </span>
               </TableCell>
