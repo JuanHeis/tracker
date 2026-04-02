@@ -724,6 +724,7 @@ export function ExpenseTracker() {
         onBuyUsd={handleBuyUsd}
         onRegisterUntracked={handleRegisterUntrackedUsd}
         defaultDate={defaultDate}
+        globalUsdRate={globalUsdRate}
       />
     </div>
   );

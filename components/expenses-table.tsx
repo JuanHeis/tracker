@@ -195,10 +195,11 @@ export function ExpensesTable({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 text-muted-foreground hover:text-blue-500"
                           onClick={() => setEditingRateId(expense.id)}
+                          title="Editar cotizacion"
                         >
-                          <Pencil className="h-3 w-3" />
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
                       )}
                     </div>

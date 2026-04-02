@@ -17,6 +17,7 @@ interface UsdPurchaseDialogProps {
   onBuyUsd: (arsAmount: number, usdAmount: number, date: string) => void;
   onRegisterUntracked: (usdAmount: number, date: string, description: string) => void;
   defaultDate: string;
+  globalUsdRate: number;
 }
 
 export function UsdPurchaseDialog({
@@ -25,10 +26,12 @@ export function UsdPurchaseDialog({
   onBuyUsd,
   onRegisterUntracked,
   defaultDate,
+  globalUsdRate,
 }: UsdPurchaseDialogProps) {
   const [mode, setMode] = useState<"buy" | "register">("buy");
   const [arsAmount, setArsAmount] = useState("");
   const [usdAmount, setUsdAmount] = useState("");
+  const [lastEdited, setLastEdited] = useState<"ars" | "usd" | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const effectiveRate =
@@ -36,9 +39,30 @@ export function UsdPurchaseDialog({
       ? (parseFloat(arsAmount) / parseFloat(usdAmount)).toFixed(2)
       : null;
 
+  const handleArsChange = (value: string) => {
+    setArsAmount(value);
+    setLastEdited("ars");
+    setErrors((prev) => { const next = { ...prev }; delete next.arsAmount; return next; });
+    const ars = parseFloat(value);
+    if (!isNaN(ars) && ars > 0 && globalUsdRate > 0) {
+      setUsdAmount((ars / globalUsdRate).toFixed(2));
+    }
+  };
+
+  const handleUsdChange = (value: string) => {
+    setUsdAmount(value);
+    setLastEdited("usd");
+    setErrors((prev) => { const next = { ...prev }; delete next.usdAmount; return next; });
+    const usd = parseFloat(value);
+    if (!isNaN(usd) && usd > 0 && globalUsdRate > 0) {
+      setArsAmount((usd * globalUsdRate).toFixed(2));
+    }
+  };
+
   const resetForm = () => {
     setArsAmount("");
     setUsdAmount("");
+    setLastEdited(null);
     setErrors({});
   };
 
@@ -131,10 +155,7 @@ export function UsdPurchaseDialog({
                 step="0.01"
                 min="0.01"
                 value={arsAmount}
-                onChange={(e) => {
-                  setArsAmount(e.target.value);
-                  setErrors((prev) => { const next = { ...prev }; delete next.arsAmount; return next; });
-                }}
+                onChange={(e) => handleArsChange(e.target.value)}
                 className={cn(errors.arsAmount && "border-red-500")}
                 required
               />
@@ -150,10 +171,7 @@ export function UsdPurchaseDialog({
                 step="0.01"
                 min="0.01"
                 value={usdAmount}
-                onChange={(e) => {
-                  setUsdAmount(e.target.value);
-                  setErrors((prev) => { const next = { ...prev }; delete next.usdAmount; return next; });
-                }}
+                onChange={(e) => handleUsdChange(e.target.value)}
                 className={cn(errors.usdAmount && "border-red-500")}
                 required
               />
@@ -161,6 +179,11 @@ export function UsdPurchaseDialog({
                 <p className="mt-1 text-xs text-red-500">{errors.usdAmount}</p>
               )}
             </div>
+            {globalUsdRate > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Cotizacion global: ${globalUsdRate.toLocaleString()} — podes editar los montos libremente
+              </p>
+            )}
             {effectiveRate && (
               <p className="text-sm text-muted-foreground">
                 Cotizacion efectiva: ${effectiveRate}
