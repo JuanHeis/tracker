@@ -10,7 +10,7 @@ import {
   Coins,
   Settings,
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, lastDayOfMonth } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -43,7 +43,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { SalaryCard } from "@/components/salary-card";
+import { ResumenCard } from "@/components/resumen-card";
+import { PatrimonioCard } from "@/components/patrimonio-card";
+import { ConfigCard } from "@/components/config-card";
 import { ExpensesTable } from "@/components/expenses-table";
 import { CATEGORIES } from "@/constants/colors";
 import IncomeTable from "./income-table";
@@ -53,7 +55,6 @@ import { InvestmentDialog } from "@/components/investment-dialog";
 import { useMoneyTracker } from "@/hooks/useMoneyTracker";
 import { CurrencyType } from "@/hooks/useMoneyTracker";
 import type { ViewMode } from "@/hooks/usePayPeriod";
-import { TotalAmounts } from "./total-amounts";
 import { UsdPurchaseDialog } from "./usd-purchase-dialog";
 import { ExchangeSummary } from "./exchange-summary";
 import { ThemeToggle } from "./theme-toggle";
@@ -160,6 +161,22 @@ export function ExpenseTracker() {
   const aguinaldoPreviewData = incomeConfig.employmentType === "dependiente"
     ? getAguinaldoPreviewForMonth(selectedMonth)
     : null;
+
+  // Compute Resumen card line items from existing hook data
+  const currentMonthSalary = getSalaryForMonth(selectedMonth, monthlyData.salaryOverrides || {});
+  const dualBalancesForCards = calculateDualBalances();
+
+  // Otros ingresos: sum of ARS extra incomes for current period
+  const otrosIngresosArs = filteredIncomes
+    .filter((i: any) => i.currencyType !== CurrencyType.USD)
+    .reduce((sum: number, i: any) => sum + i.amount, 0);
+
+  // Pendiente de cobro logic
+  const today = new Date();
+  const currentRealMonth = format(today, "yyyy-MM");
+  const isCurrentMonth = selectedMonth === currentRealMonth;
+  const payDayThisMonth = Math.min(incomeConfig.payDay, lastDayOfMonth(today).getDate());
+  const isPendiente = viewMode === "mes" && isCurrentMonth && today.getDate() < payDayThisMonth;
 
   // USD purchase dialog state
   const [usdPurchaseOpen, setUsdPurchaseOpen] = useState(false);
@@ -439,44 +456,44 @@ export function ExpenseTracker() {
           </Tabs>
 
           <div className="flex flex-col gap-4">
-            <SalaryCard
-              selectedMonth={selectedMonth}
-              monthlyData={monthlyData}
-              totalExpenses={totalExpenses}
-              availableMoney={availableMoney}
-              savings={savings}
-              globalUsdRate={globalUsdRate}
-              onSetGlobalUsdRate={setGlobalUsdRate}
-              incomeConfig={incomeConfig}
-              onUpdateIncomeConfig={setIncomeConfig}
-              salaryHistory={salaryHistory.entries}
-              onAddSalaryEntry={addSalaryEntry}
-              onUpdateSalaryEntry={updateSalaryEntry}
-              onDeleteSalaryEntry={deleteSalaryEntry}
-              currentMonthSalary={getSalaryForMonth(selectedMonth, monthlyData.salaryOverrides || {})}
+            <ResumenCard
+              ingresoFijo={currentMonthSalary.amount}
+              ingresoFijoIsOverride={currentMonthSalary.isOverride}
+              otrosIngresos={otrosIngresosArs}
               aguinaldoAmount={aguinaldoData?.amount ?? null}
               aguinaldoInfo={
                 aguinaldoData
                   ? { bestSalary: aguinaldoData.bestSalary, isOverride: aguinaldoData.isOverride }
                   : null
               }
+              totalGastos={totalExpenses}
+              aportesInversiones={dualBalancesForCards.arsInvestmentContributions}
+              disponible={availableMoney}
+              isPendiente={isPendiente}
+              payDay={incomeConfig.payDay}
               aguinaldoPreview={aguinaldoPreviewData}
               onSetAguinaldoOverride={setAguinaldoOverride}
               onClearAguinaldoOverride={clearAguinaldoOverride}
-              viewMode={viewMode}
+              selectedMonth={selectedMonth}
             />
-            <Card className="h-fit">
-              <CardHeader>
-                <CardTitle>Balance</CardTitle>
-              </CardHeader>
-              <TotalAmounts
-                arsBalance={calculateDualBalances().arsBalance}
-                usdBalance={calculateDualBalances().usdBalance}
-                arsInvestments={calculateDualBalances().arsInvestments}
-                usdInvestments={calculateDualBalances().usdInvestments}
-                globalUsdRate={globalUsdRate}
-              />
-            </Card>
+            <PatrimonioCard
+              arsBalance={dualBalancesForCards.arsBalance}
+              usdBalance={dualBalancesForCards.usdBalance}
+              arsInvestments={dualBalancesForCards.arsInvestments}
+              usdInvestments={dualBalancesForCards.usdInvestments}
+              globalUsdRate={globalUsdRate}
+            />
+            <ConfigCard
+              incomeConfig={incomeConfig}
+              onUpdateIncomeConfig={setIncomeConfig}
+              globalUsdRate={globalUsdRate}
+              onSetGlobalUsdRate={setGlobalUsdRate}
+              salaryHistory={salaryHistory.entries}
+              onAddSalaryEntry={addSalaryEntry}
+              onUpdateSalaryEntry={updateSalaryEntry}
+              onDeleteSalaryEntry={deleteSalaryEntry}
+              selectedMonth={selectedMonth}
+            />
 
             <ExchangeSummary
               usdPurchases={monthlyData.usdPurchases || []}
