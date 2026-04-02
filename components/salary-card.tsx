@@ -81,7 +81,7 @@ export function SalaryCard({
             <form onSubmit={onSalarySubmit} className="space-y-4" key={`salary-form-${selectedMonth}-${showSalaryForm}`}>
               <Input
                 type="number"
-                placeholder="Salario"
+                placeholder="Ingreso fijo"
                 name="salary"
                 defaultValue={currentSalary?.amount}
                 required
@@ -99,7 +99,7 @@ export function SalaryCard({
           ) : (
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span>Salario:</span>
+                <span>Ingreso fijo:</span>
                 <span className="font-medium">
                   <FormattedAmount
                     value={currentSalary?.amount || 0}
@@ -192,7 +192,7 @@ export function SalaryCard({
                 className="w-full"
                 onClick={() => onShowFormChange(true)}
               >
-                Editar Salario
+                Editar Ingreso fijo
               </Button>
             </div>
           )}

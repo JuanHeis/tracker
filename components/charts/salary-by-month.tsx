@@ -26,7 +26,7 @@ interface SalaryByMonthProps {
 }
 
 const chartConfig = {
-  label: "Salario",
+  label: "Ingreso fijo",
   icon: Coins,
 } as ChartConfig;
 
@@ -60,7 +60,7 @@ export function SalaryByMonth({
     <Card className="m-0 border-none shadow-none p-0">
       <CardHeader className="px-0">
         <div className="flex items-center justify-between">
-          <CardTitle>Salario por Mes - {selectedYear}</CardTitle>
+          <CardTitle>Ingreso fijo por Mes - {selectedYear}</CardTitle>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-[200px] grid-cols-2">
               <TabsTrigger value="ars">ARS</TabsTrigger>

@@ -360,7 +360,7 @@ export function ExpenseTracker() {
             <TabsContent value="incomes" className="mt-0">
               <Card>
                 <CardHeader className="flex flex-row items-start justify-between">
-                  <CardTitle>Ingresos extras del Mes</CardTitle>
+                  <CardTitle>Otros ingresos del Mes</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <IncomeTable
@@ -591,7 +591,7 @@ export function ExpenseTracker() {
                 <DialogTrigger asChild>
                   <Button variant="outline" onClick={handleOpenIncomeModal}>
                     <Plus className="mr-2 h-4 w-4" />
-                    {editingIncome ? "Editar Ingreso" : "Ingresos Extra"}
+                    {editingIncome ? "Editar Ingreso" : "Otros ingresos"}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -599,7 +599,7 @@ export function ExpenseTracker() {
                     <DialogTitle>
                       {editingIncome
                         ? "Editar Ingreso"
-                        : "Agregar Nuevo Ingreso Extra"}
+                        : "Agregar Nuevo Ingreso"}
                     </DialogTitle>
                   </DialogHeader>
                   <form
