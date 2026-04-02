@@ -23,9 +23,9 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 10 of 10 (Persistence & UX Polish)
-Plan: 1 of 3 in current phase (10-01 complete)
+Plan: 2 of 3 in current phase (10-02 complete)
 Status: Executing Phase 10
-Last activity: 2026-04-02 -- Completed 10-01 (Data Persistence Export/Import)
+Last activity: 2026-04-02 -- Completed 10-02 (Dialog Form Validation)
 
 Progress: [██████████████████████████████] 98%
 
@@ -159,6 +159,8 @@ Recent decisions affecting current work:
 - 10-01: Export envelope uses appName + exportVersion for forward-compatible validation
 - 10-01: Import triggers window.location.reload() to reset all React state after writing localStorage
 - 10-01: handleResetAllData expanded from 2 to 7 localStorage key removals
+- 10-02: USD purchase dialog already had full validation pattern - no changes needed
+- 10-02: Errors clear on individual field interaction for responsive UX feedback
 
 ### Pending Todos
 
@@ -171,5 +173,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 10-01-PLAN.md (Data Persistence Export/Import)
+Stopped at: Completed 10-02-PLAN.md (Dialog Form Validation)
 Resume file: Phase 10 in progress
