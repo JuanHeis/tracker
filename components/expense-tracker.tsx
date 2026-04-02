@@ -90,6 +90,17 @@ function validateField(
 }
 
 export function ExpenseTracker() {
+  const isHydrated = useHydration();
+  const [showWizard, setShowWizard] = useState(false);
+
+  useEffect(() => {
+    if (isHydrated) {
+      const hasMonthlyData = localStorage.getItem("monthlyData");
+      const hasSalaryHistory = localStorage.getItem("salaryHistory");
+      setShowWizard(!hasMonthlyData && !hasSalaryHistory);
+    }
+  }, [isHydrated]);
+
   const {
     activeTab,
     setActiveTab,
@@ -330,6 +341,16 @@ export function ExpenseTracker() {
 
   const expenseHasErrors = Object.keys(expenseErrors).length > 0;
   const incomeHasErrors = Object.keys(incomeErrors).length > 0;
+
+  if (!isHydrated) return null;
+
+  if (showWizard) {
+    return (
+      <SetupWizard
+        onComplete={() => window.location.reload()}
+      />
+    );
+  }
 
   return (
     <div className=" p-4 pb-20">
