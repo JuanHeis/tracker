@@ -33,7 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Milestone Goal:** Permitir al usuario configurar su situacion financiera inicial con un wizard paso a paso y documentar como usar la app.
 
-- [ ] **Phase 11: Core Setup Wizard** - First-time detection, multi-step wizard (ARS, USD, income, summary), atomic save, skip options, and import alternative
+- [x] **Phase 11: Core Setup Wizard** - First-time detection, multi-step wizard (ARS, USD, income, summary), atomic save, skip options, and import alternative (completed 2026-04-02)
 - [ ] **Phase 12: Investments Step & Re-run** - Add investments quick-add step to wizard and re-run capability from config (reset + wizard)
 - [ ] **Phase 13: Manual de Uso** - Comprehensive user guide documenting every feature of the app
 
@@ -232,8 +232,8 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 12-01: TBD
-- [ ] 12-02: TBD
+- [ ] 12-01-PLAN.md — Investments wizard step: WizardData extension, inline add/remove loop, currency enforcement, commit with Investment objects, updated step numbering (WIZ-05)
+- [ ] 12-02-PLAN.md — Re-run wizard button: export STORAGE_KEYS, ConfigCard reset button with confirmation, factory reset + reload (WIZ-10)
 
 ### Phase 13: Manual de Uso
 **Goal**: A reference document exists that explains how to use every feature of the app
@@ -266,6 +266,6 @@ Plans:
 | 8. Budgets | v1.0 | 2/2 | Complete | 2026-04-02 |
 | 9. Transfers & Adjustments | v1.0 | 3/3 | Complete | 2026-04-02 |
 | 10. Persistence & UX Polish | v1.0 | 3/3 | Complete | 2026-04-02 |
-| 11. Core Setup Wizard | 1/2 | In Progress|  | - |
+| 11. Core Setup Wizard | 2/2 | Complete   | 2026-04-02 | - |
 | 12. Investments Step & Re-run | v1.1 | 0/TBD | Not started | - |
 | 13. Manual de Uso | v1.1 | 0/TBD | Not started | - |
