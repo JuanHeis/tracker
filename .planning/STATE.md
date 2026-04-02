@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-02T16:47:50.136Z"
+last_updated: "2026-04-02T16:51:02.000Z"
 progress:
   total_phases: 9
   completed_phases: 8
   total_plans: 29
-  completed_plans: 27
+  completed_plans: 28
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 Phase: 8 of 10 (Budgets)
 Plan: 2 of 3 in current phase (08-02 complete)
 Status: Executing Phase 8
-Last activity: 2026-04-02 -- Completed 08-02 (Budget UI Components)
+Last activity: 2026-04-02 -- Completed 07-02 (Loan UI Components)
 
-Progress: [██████████████████████] 66%
+Progress: [██████████████████████████████] 97%
 
 ## Performance Metrics
 
@@ -69,6 +69,7 @@ Progress: [██████████████████████] 6
 | Phase 08 P01 | 2min | 2 tasks | 2 files |
 | Phase 08 P02 | 3min | 2 tasks | 4 files |
 | Phase 07 P01 | 2min | 2 tasks | 2 files |
+| Phase 07 P02 | 4min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -149,6 +150,9 @@ Recent decisions affecting current work:
 - 07-01: Only persona, note, date editable after creation -- amount, currency, type immutable
 - 07-01: Forgiven loans (Perdonado) excluded from patrimonio assets, past payments preserved
 - 07-01: ARS loan impacts scoped by isInArsRange, USD loan impacts cumulative (all time)
+- 07-02: AlertDialog component created manually (shadcn pattern) for confirmation dialogs
+- 07-02: Preste/Debo toggle uses green/red filled backgrounds matching employment type toggle pattern
+- 07-02: Perdonar action only visible on pending preste-type loans as text button in actions column
 
 ### Pending Todos
 
@@ -161,5 +165,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 08-02-PLAN.md (Budget UI Components)
-Resume file: Continue with 08-03-PLAN.md
+Stopped at: Completed 07-02-PLAN.md (Loan UI Components)
+Resume file: Continue with 07-03-PLAN.md
