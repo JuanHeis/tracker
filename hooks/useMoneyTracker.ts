@@ -6,7 +6,7 @@ import { useInvestmentsTracker } from "./useInvestmentsTracker";
 import { useIncomes } from "./useIncomes";
 import { useExpensesTracker } from "./useExpensesTracker";
 import { useCurrencyEngine } from "./useCurrencyEngine";
-import { useSalaryHistory } from "./useSalaryHistory";
+import { useSalaryHistory, calculateAguinaldo, getAguinaldoPreview } from "./useSalaryHistory";
 import { type InvestmentType, CurrencyType } from "@/constants/investments";
 
 // Re-export CurrencyType from constants so existing consumers don't break
@@ -368,6 +368,73 @@ export function useMoneyTracker() {
 
   const savings = availableMoney > 0 ? availableMoney : 0;
 
+  // --- Aguinaldo management ---
+
+  const setAguinaldoOverride = (monthKey: string, amount: number) => {
+    setMonthlyData({
+      ...monthlyData,
+      aguinaldoOverrides: {
+        ...(monthlyData.aguinaldoOverrides || {}),
+        [monthKey]: { amount },
+      },
+    });
+  };
+
+  const clearAguinaldoOverride = (monthKey: string) => {
+    const overrides = { ...(monthlyData.aguinaldoOverrides || {}) };
+    delete overrides[monthKey];
+    setMonthlyData({
+      ...monthlyData,
+      aguinaldoOverrides: overrides,
+    });
+  };
+
+  const getAguinaldoForMonth = (monthKey: string): {
+    amount: number;
+    bestSalary: number;
+    isOverride: boolean;
+  } | null => {
+    const month = parseInt(monthKey.split("-")[1], 10);
+    // Aguinaldo only applies to June (6) and December (12)
+    if (month !== 6 && month !== 12) return null;
+
+    // Check override first
+    const overrides = monthlyData.aguinaldoOverrides || {};
+    if (overrides[monthKey]) {
+      // Still need bestSalary for tooltip
+      const auto = calculateAguinaldo(
+        monthKey,
+        salaryHistoryTracker.salaryHistory.entries,
+        monthlyData.salaryOverrides || {}
+      );
+      return {
+        amount: overrides[monthKey].amount,
+        bestSalary: auto.bestSalary,
+        isOverride: true,
+      };
+    }
+
+    // Auto-calculate
+    const auto = calculateAguinaldo(
+      monthKey,
+      salaryHistoryTracker.salaryHistory.entries,
+      monthlyData.salaryOverrides || {}
+    );
+    return {
+      amount: auto.amount,
+      bestSalary: auto.bestSalary,
+      isOverride: false,
+    };
+  };
+
+  const getAguinaldoPreviewForMonth = (monthKey: string) => {
+    return getAguinaldoPreview(
+      monthKey,
+      salaryHistoryTracker.salaryHistory.entries,
+      monthlyData.salaryOverrides || {}
+    );
+  };
+
   return {
     // Estado general
     activeTab,
@@ -441,6 +508,12 @@ export function useMoneyTracker() {
     updateSalaryEntry: salaryHistoryTracker.updateSalaryEntry,
     deleteSalaryEntry: salaryHistoryTracker.deleteSalaryEntry,
     getSalaryForMonth: salaryHistoryTracker.getSalaryForMonth,
+
+    // Aguinaldo functions
+    setAguinaldoOverride,
+    clearAguinaldoOverride,
+    getAguinaldoForMonth,
+    getAguinaldoPreviewForMonth,
 
     // Funciones de useCurrencyEngine
     globalUsdRate: currencyEngine.globalUsdRate,
