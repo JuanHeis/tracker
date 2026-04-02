@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-01T21:35:12.380Z"
+last_updated: "2026-04-02T10:43:30.106Z"
 progress:
-  total_phases: 2
+  total_phases: 3
   completed_phases: 2
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 12
+  completed_plans: 9
 ---
 
 # Project State
@@ -18,23 +18,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** Reflejar la realidad financiera exacta del usuario en todo momento — nunca perderse un peso ni un dolar.
-**Current focus:** Phase 2: Investment Model Refactor
+**Current focus:** Phase 3: Dual Currency Engine
 
 ## Current Position
 
-Phase: 2 of 10 (Investment Model Refactor) -- COMPLETE
-Plan: 5 of 5 in current phase (02-05 complete)
-Status: Phase 2 Complete
-Last activity: 2026-04-01 -- Completed 02-05 (End-to-End Verification)
+Phase: 3 of 10 (Dual Currency Engine)
+Plan: 2 of 4 in current phase (03-01 complete, next: 03-02)
+Status: Executing Phase 3
+Last activity: 2026-04-02 -- Completed 03-01 (Data Model & Currency Engine)
 
-Progress: [████████░░] 30%
+Progress: [████████░░] 32%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: ~2.5 min
-- Total execution time: ~22 min
+- Total plans completed: 9
+- Average duration: ~2.8 min
+- Total execution time: ~25 min
 
 **By Phase:**
 
@@ -42,6 +42,7 @@ Progress: [████████░░] 30%
 |-------|-------|-------|----------|
 | 01-critical-bug-fixes | 01-01, 01-02, 01-03 | 7min | 2.3min |
 | 02-investment-model-refactor | 02-01, 02-02, 02-03, 02-04, 02-05 | 15min | 3.0min |
+| 03-dual-currency-engine | 03-01 | 3min | 3.0min |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -49,6 +50,7 @@ Progress: [████████░░] 30%
 
 *Updated after each plan completion*
 | Phase 02 P02 | 3min | 2 tasks | 4 files |
+| Phase 03 P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -78,6 +80,9 @@ Recent decisions affecting current work:
 - 02-04: Added Ganancia/% column to InvestmentRow for 8-column table layout
 - 02-05: Pencil icon always visible (not hover-only) for click-to-edit discoverability
 - 02-05: PF auto-calculated value shown directly in Valor Actual column
+- 03-01: Migration v3 uses _migrationVersion field to prevent double-reversal of USD amounts
+- 03-01: globalUsdRate stored in separate localStorage key (not per-month) for global availability
+- 03-01: Exchange gain/loss only calculated for tracked purchases (untracked have no purchase rate)
 
 ### Pending Todos
 
@@ -89,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01
-Stopped at: Completed 02-05-PLAN.md (End-to-End Verification) -- Phase 2 COMPLETE
-Resume file: Next phase (03)
+Last session: 2026-04-02
+Stopped at: Completed 03-01-PLAN.md (Data Model & Currency Engine)
+Resume file: 03-02-PLAN.md
