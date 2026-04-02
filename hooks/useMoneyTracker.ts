@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format, getYear, parse } from "date-fns";
 import { useLocalStorage } from "./useLocalStorage";
 import { useInvestmentsTracker } from "./useInvestmentsTracker";
@@ -8,6 +8,7 @@ import { useExpensesTracker } from "./useExpensesTracker";
 import { useCurrencyEngine } from "./useCurrencyEngine";
 import { useTransfers } from "./useTransfers";
 import { useSalaryHistory, calculateAguinaldo, getAguinaldoPreview } from "./useSalaryHistory";
+import { useRecurringExpenses } from "./useRecurringExpenses";
 import { usePayPeriod, getFilterDateRange } from "./usePayPeriod";
 import { type InvestmentType, CurrencyType } from "@/constants/investments";
 
@@ -447,6 +448,42 @@ export function useMoneyTracker() {
 
   const currencyEngine = useCurrencyEngine(monthlyData, setMonthlyData);
 
+  // --- Recurring expenses ---
+  const recurringTracker = useRecurringExpenses();
+  const hasGeneratedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasGeneratedRef.current) return;
+    if (recurringTracker.recurringExpenses.length === 0) return;
+
+    const newExpenses = recurringTracker.generateMissingInstances(
+      monthlyData.expenses,
+      currencyEngine.globalUsdRate,
+      recurringTracker.recurringExpenses
+    );
+
+    if (newExpenses.length > 0) {
+      setMonthlyData({
+        ...monthlyData,
+        expenses: [...monthlyData.expenses, ...newExpenses],
+      });
+    }
+
+    hasGeneratedRef.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recurringTracker.recurringExpenses]);
+
+  const toggleExpensePaid = (expenseId: string) => {
+    setMonthlyData({
+      ...monthlyData,
+      expenses: monthlyData.expenses.map((expense) =>
+        expense.id === expenseId
+          ? { ...expense, isPaid: !expense.isPaid }
+          : expense
+      ),
+    });
+  };
+
   const transfersTracker = useTransfers(
     monthlyData,
     setMonthlyData,
@@ -625,6 +662,12 @@ export function useMoneyTracker() {
     handleDeleteTransfer: transfersTracker.handleDeleteTransfer,
     filteredTransfers: transfersTracker.filteredTransfers,
     handleCreateAdjustment: transfersTracker.handleCreateAdjustment,
+
+    // Funciones de useRecurringExpenses
+    recurringExpenses: recurringTracker.recurringExpenses,
+    addRecurring: recurringTracker.addRecurring,
+    updateRecurringStatus: recurringTracker.updateStatus,
+    toggleExpensePaid,
 
     // Funciones de useCurrencyEngine
     globalUsdRate: currencyEngine.globalUsdRate,
