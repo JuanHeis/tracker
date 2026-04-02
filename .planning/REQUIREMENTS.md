@@ -204,13 +204,24 @@
 | PERS-02 | Phase 10 | Complete |
 | UX-01 | Phase 10 | Complete |
 | UX-02 | Phase 10 | Complete |
+| WIZ-01 | Phase 11 | Pending |
+| WIZ-02 | Phase 11 | Pending |
+| WIZ-03 | Phase 11 | Pending |
+| WIZ-04 | Phase 11 | Pending |
+| WIZ-05 | Phase 12 | Pending |
+| WIZ-06 | Phase 11 | Pending |
+| WIZ-07 | Phase 11 | Pending |
+| WIZ-08 | Phase 11 | Pending |
+| WIZ-09 | Phase 11 | Pending |
+| WIZ-10 | Phase 12 | Pending |
+| MAN-01 | Phase 13 | Pending |
 
 **Coverage:**
 - v1 requirements: 46 total — all complete
-- v1.1 requirements: 11 total
-- Mapped to phases: 46 (v1) + 0 (v1.1, pending roadmap)
-- Unmapped: 11
+- v1.1 requirements: 11 total — all mapped
+- Mapped to phases: 46 (v1) + 11 (v1.1) = 57 total
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-01*
-*Last updated: 2026-04-02 — v1.1 requirements added*
+*Last updated: 2026-04-02 — v1.1 roadmap mapped*
