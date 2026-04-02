@@ -102,7 +102,7 @@
 - [x] **WIZ-02**: User puede cargar saldo liquido ARS actual en el wizard
 - [x] **WIZ-03**: User puede cargar saldo USD + cotizacion actual en el wizard
 - [x] **WIZ-04**: User puede cargar ingreso fijo (sueldo, tipo empleo, dia de cobro) en el wizard
-- [ ] **WIZ-05**: User puede cargar inversiones existentes una por una (tipo, nombre, monto, moneda) con loop "agregar otra"
+- [x] **WIZ-05**: User puede cargar inversiones existentes una por una (tipo, nombre, monto, moneda) con loop "agregar otra"
 - [x] **WIZ-06**: User ve resumen de todo lo cargado y confirma antes de guardar
 - [x] **WIZ-07**: Wizard guarda todos los datos de forma atomica (todo o nada) al confirmar
 - [x] **WIZ-08**: User puede saltar pasos opcionales (USD, ingreso, inversiones) y completarlos despues
@@ -208,7 +208,7 @@
 | WIZ-02 | Phase 11 | Complete |
 | WIZ-03 | Phase 11 | Complete |
 | WIZ-04 | Phase 11 | Complete |
-| WIZ-05 | Phase 12 | Pending |
+| WIZ-05 | Phase 12 | Complete |
 | WIZ-06 | Phase 11 | Complete |
 | WIZ-07 | Phase 11 | Complete |
 | WIZ-08 | Phase 11 | Complete |

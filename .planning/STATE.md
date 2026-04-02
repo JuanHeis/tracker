@@ -22,12 +22,12 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 ## Current Position
 
-Phase: 11 of 13 (Core Setup Wizard)
-Plan: 2 of 2 completed in current phase
-Status: Phase 11 Complete
-Last activity: 2026-04-02 - Completed 11-02 (Setup Wizard UI)
+Phase: 12 of 13 (Investments Step + Re-run)
+Plan: 1 of 2 completed in current phase
+Status: Executing Phase 12
+Last activity: 2026-04-02 - Completed 12-01 (Investments Wizard Step)
 
-Progress: [██████████] 100% (v1.1 - 2/2 plans in phase 11)
+Progress: [█████████░] 50% (v1.1 - 1/2 plans in phase 12)
 
 ## Performance Metrics
 
@@ -61,6 +61,9 @@ Recent decisions affecting current work:
 - [11-02]: Wizard gate checks both monthlyData and salaryHistory keys for first-time detection
 - [11-02]: window.location.reload() for post-wizard remount (consistent with import pattern)
 - [11-02]: budgetData structure fixed to use proper object format for useBudgetTracker
+- [12-01]: Inline add/remove form pattern for investments step (no dialog/modal)
+- [12-01]: Currency enforcement at form level disables select when type enforces currency
+- [12-01]: Plazo Fijo startDate set to today on wizard commit
 
 ### Pending Todos
 
@@ -81,5 +84,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 11-02-PLAN.md (Setup Wizard UI + wizard gate)
-Resume file: None — phase 11 complete, ready for phase 12
+Stopped at: Completed 12-01-PLAN.md (Investments Wizard Step)
+Resume file: None — continuing phase 12
