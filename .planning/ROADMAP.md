@@ -215,11 +215,11 @@ Plans:
   3. User can skip optional steps (USD, income) and still complete the wizard with only ARS balance
   4. User sees a summary of everything entered and confirms before any data is saved — canceling or closing the wizard mid-way leaves localStorage untouched
   5. User on the welcome screen can choose to import a JSON backup instead of going through the wizard steps
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 11-01: TBD
-- [ ] 11-02: TBD
+- [ ] 11-01-PLAN.md — useSetupWizard hook with WizardData type, atomic commit, validation, and draft persistence (WIZ-02, WIZ-03, WIZ-04, WIZ-07, WIZ-08)
+- [ ] 11-02-PLAN.md — Wizard step components, container, and ExpenseTracker wizard gate (WIZ-01, WIZ-06, WIZ-08, WIZ-09)
 
 ### Phase 12: Investments Step & Re-run
 **Goal**: User can declare existing investments during setup and re-run the wizard later to start fresh
