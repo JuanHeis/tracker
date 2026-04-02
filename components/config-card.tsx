@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Pencil, Check, X, Plus, Trash2, Scale } from "lucide-react";
+import { useState, useRef } from "react";
+import { Pencil, Check, X, Plus, Trash2, Scale, Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,6 +26,8 @@ interface ConfigCardProps {
   onDeleteSalaryEntry: (id: string) => void;
   selectedMonth: string;
   onAdjustBalance?: () => void;
+  onExport?: () => void;
+  onImport?: (file: File) => void;
 }
 
 export function ConfigCard({
@@ -39,6 +41,8 @@ export function ConfigCard({
   onDeleteSalaryEntry,
   selectedMonth,
   onAdjustBalance,
+  onExport,
+  onImport,
 }: ConfigCardProps) {
   // Employment config editing
   const [editingEmploymentType, setEditingEmploymentType] = useState(false);
@@ -53,6 +57,9 @@ export function ConfigCard({
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [entryAmountInput, setEntryAmountInput] = useState("");
   const [entryRateInput, setEntryRateInput] = useState("");
+
+  // Import file input ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Add new salary entry
   const [showAddForm, setShowAddForm] = useState(false);
@@ -451,6 +458,49 @@ export function ConfigCard({
                   <Scale className="h-4 w-4 mr-2" />
                   Ajustar saldo real
                 </Button>
+                {onExport && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={onExport}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Exportar datos (JSON)
+                  </Button>
+                )}
+                {onImport && (
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".json"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const confirmed = window.confirm(
+                          "Esto reemplazara TODOS los datos actuales. Deseas continuar?"
+                        );
+                        if (!confirmed) {
+                          if (fileInputRef.current) fileInputRef.current.value = "";
+                          return;
+                        }
+                        onImport(file);
+                        if (fileInputRef.current) fileInputRef.current.value = "";
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Importar datos
+                    </Button>
+                  </>
+                )}
               </div>
             </>
           )}

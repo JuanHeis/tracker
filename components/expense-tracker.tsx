@@ -57,6 +57,7 @@ import ChartsContainer from "./charts-container";
 import { InvestmentsTable } from "@/components/investments-table";
 import { InvestmentDialog } from "@/components/investment-dialog";
 import { useMoneyTracker } from "@/hooks/useMoneyTracker";
+import { useDataPersistence } from "@/hooks/useDataPersistence";
 import { CurrencyType } from "@/hooks/useMoneyTracker";
 import type { ViewMode } from "@/hooks/usePayPeriod";
 import { TransferDialog } from "@/components/transfer-dialog";
@@ -191,6 +192,15 @@ export function ExpenseTracker() {
     handleForgiveLoan,
   } = useMoneyTracker();
 
+  const { exportData, importData } = useDataPersistence();
+
+  const handleImport = async (file: File) => {
+    const result = await importData(file);
+    if (!result.success) {
+      alert(result.error);
+    }
+  };
+
   // Aguinaldo computed props (dependiente only)
   const aguinaldoData = incomeConfig.employmentType === "dependiente"
     ? getAguinaldoForMonth(selectedMonth)
@@ -308,6 +318,11 @@ export function ExpenseTracker() {
   const handleResetAllData = () => {
     localStorage.removeItem("monthlyData");
     localStorage.removeItem("lastUsedUsdRate");
+    localStorage.removeItem("salaryHistory");
+    localStorage.removeItem("incomeConfig");
+    localStorage.removeItem("recurringExpenses");
+    localStorage.removeItem("budgetData");
+    localStorage.removeItem("globalUsdRate");
     window.location.reload();
   };
 
@@ -627,6 +642,8 @@ export function ExpenseTracker() {
               onDeleteSalaryEntry={deleteSalaryEntry}
               selectedMonth={selectedMonth}
               onAdjustBalance={() => setOpenAdjustmentDialog(true)}
+              onExport={exportData}
+              onImport={handleImport}
             />
 
             <ExchangeSummary
