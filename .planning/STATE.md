@@ -18,21 +18,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** Reflejar la realidad financiera exacta del usuario en todo momento — nunca perderse un peso ni un dolar.
-**Current focus:** Phase 5: Monthly Card Redesign
+**Current focus:** Phase 9: Transfers & Adjustments
 
 ## Current Position
 
-Phase: 5 of 10 (Monthly Card Redesign) -- COMPLETE
-Plan: 2 of 2 in current phase (05-02 complete)
-Status: Phase 5 Complete
-Last activity: 2026-04-02 -- Completed 05-02 (Card Integration & Tooltip Desgloses)
+Phase: 9 of 10 (Transfers & Adjustments)
+Plan: 1 of 3 in current phase (09-01 complete)
+Status: Executing Phase 9
+Last activity: 2026-04-02 -- Completed 09-01 (Transfer Data Model & Domain Hook)
 
-Progress: [███████████████] 55%
+Progress: [████████████████████] 58%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
+- Total plans completed: 12
 - Average duration: ~2.7 min
 - Total execution time: ~30 min
 
@@ -60,6 +60,7 @@ Progress: [███████████████] 55%
 | Phase 04 P04 | 4min | 2 tasks | 6 files |
 | Phase 05 P01 | 3min | 2 tasks | 4 files |
 | Phase 05 P02 | 3min | 2 tasks | 3 files |
+| Phase 09 P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,9 @@ Recent decisions affecting current work:
 - 05-02: Disponible tooltip shows full formula with all line items and actual values
 - 05-02: Patrimonio Total tooltip shows per-line USD conversion math (US$ X x $rate = $result)
 - 05-02: calculateDualBalances called once in parent, result stored in variable (was 3 calls)
+- 09-01: Transfer type uses discriminated union with 6 types: currency conversions, cash in/out, adjustments
+- 09-01: handleCreateAdjustment takes trackedBalance at confirm time (avoids stale balance pitfall)
+- 09-01: Currency conversions are patrimonio-neutral (ARS down = USD up or vice versa)
 
 ### Pending Todos
 
@@ -129,5 +133,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 05-02-PLAN.md (Card Integration & Tooltip Desgloses)
-Resume file: Phase 5 complete, ready for Phase 6
+Stopped at: Completed 09-01-PLAN.md (Transfer Data Model & Domain Hook)
+Resume file: Phase 9 in progress, ready for 09-02

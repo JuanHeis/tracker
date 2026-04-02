@@ -80,8 +80,8 @@
 
 ### Transferencias
 
-- [ ] **TRANS-01**: User puede registrar transferencia entre cuentas propias (banco a MP, ARS a USD)
-- [ ] **TRANS-02**: Transferencia no afecta patrimonio — solo cambia donde esta la plata
+- [x] **TRANS-01**: User puede registrar transferencia entre cuentas propias (banco a MP, ARS a USD)
+- [x] **TRANS-02**: Transferencia no afecta patrimonio — solo cambia donde esta la plata
 
 ### Ajustes y Persistencia
 
@@ -178,8 +178,8 @@
 | PRES-01 | Phase 8 | Pending |
 | PRES-02 | Phase 8 | Pending |
 | PRES-03 | Phase 8 | Pending |
-| TRANS-01 | Phase 9 | Pending |
-| TRANS-02 | Phase 9 | Pending |
+| TRANS-01 | Phase 9 | Complete |
+| TRANS-02 | Phase 9 | Complete |
 | AJUST-01 | Phase 9 | Pending |
 | PERS-01 | Phase 10 | Pending |
 | PERS-02 | Phase 10 | Pending |
