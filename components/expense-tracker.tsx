@@ -11,6 +11,7 @@ import {
   Settings,
   ArrowLeftRight,
   Repeat,
+  Target,
 } from "lucide-react";
 import { format, lastDayOfMonth } from "date-fns";
 import {
@@ -62,6 +63,7 @@ import { AdjustmentDialog } from "@/components/adjustment-dialog";
 import { MovementsTable } from "@/components/movements-table";
 import { RecurringDialog } from "@/components/recurring-dialog";
 import { RecurringTable } from "@/components/recurring-table";
+import { BudgetTab } from "@/components/budget-tab";
 import { UsdPurchaseDialog } from "./usd-purchase-dialog";
 import { ExchangeSummary } from "./exchange-summary";
 import { ThemeToggle } from "./theme-toggle";
@@ -169,6 +171,14 @@ export function ExpenseTracker() {
     addRecurring,
     updateRecurringStatus,
     toggleExpensePaid,
+    // Budget operations
+    budgetProgress,
+    totalBudgeted,
+    totalSpent: totalSpentBudget,
+    addBudget,
+    updateBudget,
+    deleteBudget,
+    categoriesWithoutBudget,
   } = useMoneyTracker();
 
   // Aguinaldo computed props (dependiente only)
@@ -324,6 +334,10 @@ export function ExpenseTracker() {
               <TabsTrigger value="recurrentes">
                 <Repeat className="h-4 w-4 mr-2" />
                 Recurrentes
+              </TabsTrigger>
+              <TabsTrigger value="budgets">
+                <Target className="h-4 w-4 mr-1" />
+                Presupuestos
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -516,6 +530,17 @@ export function ExpenseTracker() {
                 open={recurringDialogOpen}
                 onOpenChange={setRecurringDialogOpen}
                 onAdd={addRecurring}
+              />
+            </TabsContent>
+            <TabsContent value="budgets" className="mt-0">
+              <BudgetTab
+                budgetProgress={budgetProgress}
+                totalBudgeted={totalBudgeted}
+                totalSpent={totalSpentBudget}
+                categoriesWithoutBudget={categoriesWithoutBudget}
+                onAdd={addBudget}
+                onUpdate={updateBudget}
+                onDelete={deleteBudget}
               />
             </TabsContent>
           </Tabs>
