@@ -6,6 +6,7 @@ import { useInvestmentsTracker } from "./useInvestmentsTracker";
 import { useIncomes } from "./useIncomes";
 import { useExpensesTracker } from "./useExpensesTracker";
 import { useCurrencyEngine } from "./useCurrencyEngine";
+import { useTransfers } from "./useTransfers";
 import { useSalaryHistory, calculateAguinaldo, getAguinaldoPreview } from "./useSalaryHistory";
 import { usePayPeriod, getFilterDateRange } from "./usePayPeriod";
 import { type InvestmentType, CurrencyType } from "@/constants/investments";
@@ -84,6 +85,30 @@ export interface UsdPurchase {
   description?: string;   // Required for untracked, optional for tracked
 }
 
+export type TransferType =
+  | "currency_ars_to_usd"    // ARS → USD conversion
+  | "currency_usd_to_ars"    // USD → ARS conversion
+  | "cash_out"               // Retiro a efectivo (tracked → untracked)
+  | "cash_in"                // Deposito desde efectivo (untracked → tracked)
+  | "adjustment_ars"         // Balance adjustment ARS
+  | "adjustment_usd";        // Balance adjustment USD
+
+export interface Transfer {
+  id: string;
+  date: string;              // yyyy-MM-dd
+  type: TransferType;
+  // Currency conversion fields (currency_ars_to_usd, currency_usd_to_ars)
+  arsAmount?: number;        // ARS side of conversion
+  usdAmount?: number;        // USD side of conversion
+  exchangeRate?: number;     // Effective rate (arsAmount / usdAmount)
+  // Cash and adjustment fields
+  amount?: number;           // For cash_in/out and adjustments
+  currency?: "ARS" | "USD";  // For cash_in/out
+  // Metadata
+  description?: string;      // Auto-generated or user note (cash_in allows text note)
+  createdAt: string;         // ISO timestamp for ordering
+}
+
 export interface MonthlyData {
   salaries: {
     [key: string]: {
@@ -97,6 +122,7 @@ export interface MonthlyData {
   usdPurchases: UsdPurchase[];
   salaryOverrides?: Record<string, { amount: number; usdRate: number }>;
   aguinaldoOverrides?: Record<string, { amount: number }>;
+  transfers?: Transfer[];
 }
 
 
@@ -153,8 +179,13 @@ function migrateData(data: MonthlyData): MonthlyData {
     usdPurchases: (data as any).usdPurchases || [],
     salaryOverrides: (data as any).salaryOverrides || {},
     aguinaldoOverrides: (data as any).aguinaldoOverrides || {},
-    _migrationVersion: 4,
+    _migrationVersion: 5,
   };
+
+  // Migration v5: Initialize transfers array
+  if (currentVersion < 5) {
+    migrated.transfers = (migrated as any).transfers || [];
+  }
 
   // Migration v4: Convert per-month salaries to effective-date salary history
   if (currentVersion < 4) {
@@ -358,6 +389,44 @@ export function useMoneyTracker() {
       .filter((i) => i.status === "Activa" && i.currencyType === CurrencyType.USD)
       .reduce((sum, i) => sum + i.currentValue, 0);
 
+    // Transfers and adjustments
+    (monthlyData.transfers || []).forEach((transfer) => {
+      switch (transfer.type) {
+        case "currency_ars_to_usd":
+          // Patrimonio-neutral: ARS down, USD up
+          if (isInArsRange(transfer.date)) arsBalance -= transfer.arsAmount!;
+          usdBalance += transfer.usdAmount!;
+          break;
+        case "currency_usd_to_ars":
+          // Patrimonio-neutral: USD down, ARS up
+          usdBalance -= transfer.usdAmount!;
+          if (isInArsRange(transfer.date)) arsBalance += transfer.arsAmount!;
+          break;
+        case "cash_out":
+          // Reduces patrimonio — money leaves tracked world
+          if (transfer.currency === "ARS" && isInArsRange(transfer.date)) {
+            arsBalance -= transfer.amount!;
+          } else if (transfer.currency === "USD") {
+            usdBalance -= transfer.amount!;
+          }
+          break;
+        case "cash_in":
+          // Increases patrimonio — money enters tracked world
+          if (transfer.currency === "ARS" && isInArsRange(transfer.date)) {
+            arsBalance += transfer.amount!;
+          } else if (transfer.currency === "USD") {
+            usdBalance += transfer.amount!;
+          }
+          break;
+        case "adjustment_ars":
+          if (isInArsRange(transfer.date)) arsBalance += transfer.amount!;
+          break;
+        case "adjustment_usd":
+          usdBalance += transfer.amount!;
+          break;
+      }
+    });
+
     return { arsBalance, usdBalance, arsInvestments, usdInvestments, arsInvestmentContributions };
   };
 
@@ -371,6 +440,15 @@ export function useMoneyTracker() {
   );
 
   const currencyEngine = useCurrencyEngine(monthlyData, setMonthlyData);
+
+  const transfersTracker = useTransfers(
+    monthlyData,
+    setMonthlyData,
+    selectedYear,
+    selectedMonth,
+    viewMode,
+    payDay
+  );
 
   const investmentsTracker = useInvestmentsTracker(
     monthlyData,
@@ -534,6 +612,13 @@ export function useMoneyTracker() {
     // View mode (pay period / calendar month)
     viewMode,
     setViewMode,
+
+    // Funciones de useTransfers
+    handleAddTransfer: transfersTracker.handleAddTransfer,
+    handleUpdateTransfer: transfersTracker.handleUpdateTransfer,
+    handleDeleteTransfer: transfersTracker.handleDeleteTransfer,
+    filteredTransfers: transfersTracker.filteredTransfers,
+    handleCreateAdjustment: transfersTracker.handleCreateAdjustment,
 
     // Funciones de useCurrencyEngine
     globalUsdRate: currencyEngine.globalUsdRate,
