@@ -22,10 +22,10 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 ## Current Position
 
-Phase: 9 of 10 (Transfers & Adjustments)
-Plan: 2 of 3 in current phase (09-02 complete)
-Status: Executing Phase 9
-Last activity: 2026-04-02 -- Completed 09-02 (Transfer UI Components)
+Phase: 9 of 10 (Transfers & Adjustments) -- COMPLETE
+Plan: 3 of 3 in current phase (09-03 complete)
+Status: Phase 9 Complete
+Last activity: 2026-04-02 -- Completed 09-03 (Balance Adjustment Dialog)
 
 Progress: [████████████████████] 63%
 
@@ -62,6 +62,7 @@ Progress: [████████████████████] 63%
 | Phase 05 P02 | 3min | 2 tasks | 3 files |
 | Phase 09 P01 | 2min | 2 tasks | 2 files |
 | Phase 09 P02 | 2min | 2 tasks | 3 files |
+| Phase 09 P03 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -125,6 +126,9 @@ Recent decisions affecting current work:
 - 09-02: TransferDialog exposes 4 types (conversions + cash); adjustment types deferred to 09-03
 - 09-02: MovementsTable uses inline TransferAmount for dual-currency display on conversions
 - 09-02: TabsList changed from fixed w-[400px] to w-auto for 5-tab layout
+- 09-03: AdjustmentDialog reads trackedBalance from props at render time (not captured in state) to avoid stale data
+- 09-03: Herramientas section added to ConfigCard for tool-type actions separate from config editing
+- 09-03: Used hr element instead of Separator since ui/separator component does not exist in project
 
 ### Pending Todos
 
@@ -137,5 +141,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 09-02-PLAN.md (Transfer UI Components)
-Resume file: Phase 9 in progress, ready for 09-03
+Stopped at: Completed 09-03-PLAN.md (Balance Adjustment Dialog)
+Resume file: Phase 9 complete, ready for next phase

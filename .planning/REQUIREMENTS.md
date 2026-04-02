@@ -85,7 +85,7 @@
 
 ### Ajustes y Persistencia
 
-- [ ] **AJUST-01**: User puede "Ajustar saldo real" — crea ingreso/gasto de ajuste automatico para cuadrar con realidad
+- [x] **AJUST-01**: User puede "Ajustar saldo real" — crea ingreso/gasto de ajuste automatico para cuadrar con realidad
 - [ ] **PERS-01**: User puede exportar todos los datos a archivo JSON
 - [ ] **PERS-02**: User puede importar datos desde archivo JSON con validacion
 
@@ -180,7 +180,7 @@
 | PRES-03 | Phase 8 | Pending |
 | TRANS-01 | Phase 9 | Complete |
 | TRANS-02 | Phase 9 | Complete |
-| AJUST-01 | Phase 9 | Pending |
+| AJUST-01 | Phase 9 | Complete |
 | PERS-01 | Phase 10 | Pending |
 | PERS-02 | Phase 10 | Pending |
 | UX-01 | Phase 10 | Pending |
