@@ -55,7 +55,7 @@
 - [x] **CARD-01**: Resumen mensual con desglose claro: Ingresos (fijo + otros) / Egresos (gastos + aportes inversiones) / Disponible
 - [x] **CARD-02**: Separacion visual explicita "Este mes" vs "Historico (todos los meses)" con etiquetas y colores distintos
 - [x] **CARD-03**: Patrimonio total = Dinero liquido ARS + Dinero liquido USD (convertido) + sum currentValue inversiones activas
-- [ ] **CARD-04**: Cada numero muestra tooltip o desglose de como se calcula
+- [x] **CARD-04**: Cada numero muestra tooltip o desglose de como se calcula
 - [x] **CARD-05**: Colores semanticos: verde ingresos, rojo egresos, azul inversiones
 
 ### Gastos Recurrentes
@@ -165,7 +165,7 @@
 | CARD-01 | Phase 5 | Complete |
 | CARD-02 | Phase 5 | Complete |
 | CARD-03 | Phase 5 | Complete |
-| CARD-04 | Phase 5 | Pending |
+| CARD-04 | Phase 5 | Complete |
 | CARD-05 | Phase 5 | Complete |
 | REC-01 | Phase 6 | Pending |
 | REC-02 | Phase 6 | Pending |
