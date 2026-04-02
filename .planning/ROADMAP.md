@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 4: Income & Pay Date** - Rename terminology, add configurable pay date with dual calendar views, and auto-calculated aguinaldo
 - [ ] **Phase 5: Monthly Card Redesign** - Rebuild the monthly summary card with correct formulas, clear desglose, and patrimonio calculation
 - [x] **Phase 6: Recurring Expenses** - Define, auto-generate, pause/cancel, and track payment of recurring expenses (completed 2026-04-02)
-- [ ] **Phase 7: Loans** - Register loans given and debts owed, track as assets/liabilities, mark as collected/paid
+- [x] **Phase 7: Loans** - Register loans given and debts owed, track as assets/liabilities, mark as collected/paid (completed 2026-04-02)
 - [x] **Phase 8: Budgets** - Set category spending limits with progress bars and proximity alerts (completed 2026-04-02)
 - [ ] **Phase 9: Transfers & Adjustments** - Register inter-account transfers and manual balance adjustments
 - [ ] **Phase 10: Persistence & UX Polish** - JSON export/import with validation, consistent financial terminology, and form validations
@@ -190,7 +190,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 4. Income & Pay Date | 0/TBD | Not started | - |
 | 5. Monthly Card Redesign | 0/TBD | Not started | - |
 | 6. Recurring Expenses | 3/3 | Complete   | 2026-04-02 |
-| 7. Loans | 1/3 | In Progress|  |
+| 7. Loans | 3/3 | Complete   | 2026-04-02 |
 | 8. Budgets | 2/2 | Complete   | 2026-04-02 |
 | 9. Transfers & Adjustments | 0/TBD | Not started | - |
 | 10. Persistence & UX Polish | 0/TBD | Not started | - |
