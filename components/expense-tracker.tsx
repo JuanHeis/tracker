@@ -12,6 +12,7 @@ import {
   ArrowLeftRight,
   Repeat,
   Target,
+  Handshake,
 } from "lucide-react";
 import { format, lastDayOfMonth } from "date-fns";
 import {
@@ -64,6 +65,8 @@ import { MovementsTable } from "@/components/movements-table";
 import { RecurringDialog } from "@/components/recurring-dialog";
 import { RecurringTable } from "@/components/recurring-table";
 import { BudgetTab } from "@/components/budget-tab";
+import { LoansTable } from "./loans-table";
+import { LoanDialog } from "./loan-dialog";
 import { UsdPurchaseDialog } from "./usd-purchase-dialog";
 import { ExchangeSummary } from "./exchange-summary";
 import { ThemeToggle } from "./theme-toggle";
@@ -179,6 +182,13 @@ export function ExpenseTracker() {
     updateBudget,
     deleteBudget,
     categoriesWithoutBudget,
+    // Loan operations
+    filteredLoans,
+    handleAddLoan,
+    handleAddLoanPayment,
+    handleEditLoan,
+    handleDeleteLoan,
+    handleForgiveLoan,
   } = useMoneyTracker();
 
   // Aguinaldo computed props (dependiente only)
@@ -216,6 +226,9 @@ export function ExpenseTracker() {
 
   // Recurring dialog state
   const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
+
+  // Loan dialog state
+  const [openLoanDialog, setOpenLoanDialog] = useState(false);
 
   // Form validation state
   const [expenseErrors, setExpenseErrors] = useState<Record<string, string>>({});
@@ -338,6 +351,10 @@ export function ExpenseTracker() {
               <TabsTrigger value="budgets">
                 <Target className="h-4 w-4 mr-1" />
                 Presupuestos
+              </TabsTrigger>
+              <TabsTrigger value="loans">
+                <Handshake className="mr-2 h-4 w-4" />
+                Prestamos
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -543,6 +560,28 @@ export function ExpenseTracker() {
                 onDelete={deleteBudget}
               />
             </TabsContent>
+            <TabsContent value="loans" className="mt-0">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Prestamos</h2>
+                <Button onClick={() => setOpenLoanDialog(true)}>
+                  <Plus className="mr-2 h-4 w-4" /> Nuevo prestamo
+                </Button>
+              </div>
+              <LoansTable
+                loans={filteredLoans}
+                onAddPayment={handleAddLoanPayment}
+                onEditLoan={handleEditLoan}
+                onDeleteLoan={handleDeleteLoan}
+                onForgiveLoan={handleForgiveLoan}
+                onOpenDialog={() => setOpenLoanDialog(true)}
+              />
+              <LoanDialog
+                open={openLoanDialog}
+                onOpenChange={setOpenLoanDialog}
+                onAddLoan={handleAddLoan}
+                defaultDate={defaultDate}
+              />
+            </TabsContent>
           </Tabs>
 
           <div className="flex flex-col gap-4">
@@ -571,6 +610,10 @@ export function ExpenseTracker() {
               usdBalance={dualBalancesForCards.usdBalance}
               arsInvestments={dualBalancesForCards.arsInvestments}
               usdInvestments={dualBalancesForCards.usdInvestments}
+              arsLoansGiven={dualBalancesForCards.arsLoansGiven}
+              usdLoansGiven={dualBalancesForCards.usdLoansGiven}
+              arsDebts={dualBalancesForCards.arsDebts}
+              usdDebts={dualBalancesForCards.usdDebts}
               globalUsdRate={globalUsdRate}
             />
             <ConfigCard
