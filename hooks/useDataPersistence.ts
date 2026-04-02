@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 
-const STORAGE_KEYS = [
+export const STORAGE_KEYS = [
   "monthlyData",
   "globalUsdRate",
   "salaryHistory",

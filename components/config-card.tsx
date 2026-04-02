@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Pencil, Check, X, Plus, Trash2, Scale, Download, Upload } from "lucide-react";
+import { Pencil, Check, X, Plus, Trash2, Scale, Download, Upload, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FormattedAmount } from "./formatted-amount";
+import { STORAGE_KEYS } from "@/hooks/useDataPersistence";
 import { format, parse } from "date-fns";
 import { es } from "date-fns/locale";
 import type { SalaryEntry, IncomeConfig } from "@/hooks/useSalaryHistory";
@@ -501,6 +502,22 @@ export function ConfigCard({
                     </Button>
                   </>
                 )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start text-destructive hover:text-destructive"
+                  onClick={() => {
+                    const confirmed = window.confirm(
+                      "Esto borrara TODOS tus datos y reiniciara el wizard de configuracion. Esta accion no se puede deshacer. Deseas continuar?"
+                    );
+                    if (!confirmed) return;
+                    STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+                    window.location.reload();
+                  }}
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Re-ejecutar wizard
+                </Button>
               </div>
             </>
           )}
