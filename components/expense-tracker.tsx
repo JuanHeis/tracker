@@ -52,6 +52,7 @@ import { InvestmentsTable } from "@/components/investments-table";
 import { InvestmentDialog } from "@/components/investment-dialog";
 import { useMoneyTracker } from "@/hooks/useMoneyTracker";
 import { CurrencyType } from "@/hooks/useMoneyTracker";
+import type { ViewMode } from "@/hooks/usePayPeriod";
 import { TotalAmounts } from "./total-amounts";
 import { UsdPurchaseDialog } from "./usd-purchase-dialog";
 import { ExchangeSummary } from "./exchange-summary";
@@ -147,6 +148,9 @@ export function ExpenseTracker() {
     // Retroactive rate editing
     handleUpdateUsdRate,
     handleUpdateIncomeUsdRate,
+    // View mode
+    viewMode,
+    setViewMode,
   } = useMoneyTracker();
 
   // Aguinaldo computed props (dependiente only)
@@ -300,6 +304,12 @@ export function ExpenseTracker() {
                 })}
               </SelectContent>
             </Select>
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+              <TabsList className="grid w-[200px] grid-cols-2">
+                <TabsTrigger value="periodo">Periodo</TabsTrigger>
+                <TabsTrigger value="mes">Mes</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <Dialog
@@ -453,6 +463,7 @@ export function ExpenseTracker() {
               aguinaldoPreview={aguinaldoPreviewData}
               onSetAguinaldoOverride={setAguinaldoOverride}
               onClearAguinaldoOverride={clearAguinaldoOverride}
+              viewMode={viewMode}
             />
             <Card className="h-fit">
               <CardHeader>

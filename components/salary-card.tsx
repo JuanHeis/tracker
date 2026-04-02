@@ -13,7 +13,8 @@ import {
 import { FormattedAmount } from "./formatted-amount";
 import type { MonthlyData } from "@/hooks/useMoneyTracker";
 import type { SalaryEntry, IncomeConfig, SalaryResolution } from "@/hooks/useSalaryHistory";
-import { format, parse } from "date-fns";
+import type { ViewMode } from "@/hooks/usePayPeriod";
+import { format, parse, lastDayOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 
 import {
@@ -46,6 +47,8 @@ interface SalaryCardProps {
   aguinaldoPreview: { estimatedAmount: number; bestSalary: number; targetMonth: string } | null;
   onSetAguinaldoOverride: (monthKey: string, amount: number) => void;
   onClearAguinaldoOverride: (monthKey: string) => void;
+  // View mode
+  viewMode: ViewMode;
 }
 
 export function SalaryCard({
@@ -67,6 +70,7 @@ export function SalaryCard({
   aguinaldoPreview,
   onSetAguinaldoOverride,
   onClearAguinaldoOverride,
+  viewMode,
 }: SalaryCardProps) {
   // USD rate editing
   const [editingRate, setEditingRate] = useState(false);
@@ -193,6 +197,13 @@ export function SalaryCard({
     }
   };
 
+  // Pendiente de cobro calculation
+  const today = new Date();
+  const currentRealMonth = format(today, "yyyy-MM");
+  const isCurrentMonth = selectedMonth === currentRealMonth;
+  const payDayThisMonth = Math.min(incomeConfig.payDay, lastDayOfMonth(today).getDate());
+  const isPendiente = viewMode === "mes" && isCurrentMonth && today.getDate() < payDayThisMonth;
+
   // Sort entries most-recent-first for display
   const sortedHistory = [...salaryHistory].sort((a, b) =>
     b.effectiveDate.localeCompare(a.effectiveDate)
@@ -309,6 +320,13 @@ export function SalaryCard({
               </div>
             </div>
 
+            {/* Pendiente de cobro banner */}
+            {isPendiente && (
+              <div className="rounded-md bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 p-3 text-sm text-amber-800 dark:text-amber-200">
+                Pendiente de cobro — Cobras el dia {incomeConfig.payDay}
+              </div>
+            )}
+
             {/* Aguinaldo preview banner (May/November, dependiente only) */}
             {aguinaldoPreview && (
               <div className="rounded-md bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-3 text-sm text-blue-800 dark:text-blue-200">
@@ -325,7 +343,7 @@ export function SalaryCard({
             {/* Current month salary display */}
             <div className="flex justify-between">
               <span>Ingreso fijo:</span>
-              <span className="font-medium">
+              <span className={`font-medium ${isPendiente ? "opacity-50" : ""}`}>
                 <FormattedAmount
                   value={currentMonthSalary.amount}
                   currency="ARS"
