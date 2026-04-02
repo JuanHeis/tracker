@@ -7,6 +7,7 @@ import { useIncomes } from "./useIncomes";
 import { useExpensesTracker } from "./useExpensesTracker";
 import { useCurrencyEngine } from "./useCurrencyEngine";
 import { useTransfers } from "./useTransfers";
+import { useLoans } from "./useLoans";
 import { useSalaryHistory, calculateAguinaldo, getAguinaldoPreview } from "./useSalaryHistory";
 import { useRecurringExpenses } from "./useRecurringExpenses";
 import { useBudgetTracker } from "./useBudgetTracker";
@@ -117,6 +118,30 @@ export interface Transfer {
   createdAt: string;         // ISO timestamp for ordering
 }
 
+export type LoanType = "preste" | "debo";
+
+export type LoanStatus = "Pendiente" | "Cobrado" | "Pagado" | "Perdonado";
+
+export interface LoanPayment {
+  id: string;
+  date: string;          // yyyy-MM-dd
+  amount: number;        // Always positive, same currency as loan
+  createdAt: string;     // ISO timestamp
+}
+
+export interface Loan {
+  id: string;
+  type: LoanType;        // "preste" = I lent (asset), "debo" = I owe (liability)
+  persona: string;       // Required, free text
+  amount: number;        // Original amount, immutable after creation
+  currencyType: CurrencyType;  // ARS or USD, immutable after creation
+  date: string;          // yyyy-MM-dd
+  note?: string;         // Optional free text
+  status: LoanStatus;    // Auto-transitions when remaining = 0
+  payments: LoanPayment[];
+  createdAt: string;     // ISO timestamp
+}
+
 export interface MonthlyData {
   salaries: {
     [key: string]: {
@@ -131,6 +156,7 @@ export interface MonthlyData {
   salaryOverrides?: Record<string, { amount: number; usdRate: number }>;
   aguinaldoOverrides?: Record<string, { amount: number }>;
   transfers?: Transfer[];
+  loans?: Loan[];
 }
 
 
@@ -187,8 +213,13 @@ function migrateData(data: MonthlyData): MonthlyData {
     usdPurchases: (data as any).usdPurchases || [],
     salaryOverrides: (data as any).salaryOverrides || {},
     aguinaldoOverrides: (data as any).aguinaldoOverrides || {},
-    _migrationVersion: 6,
+    _migrationVersion: 7,
   };
+
+  // Migration v7: Initialize loans array
+  if (currentVersion < 7) {
+    migrated.loans = (migrated as any).loans || [];
+  }
 
   // Migration v5: Initialize transfers array
   if (currentVersion < 5) {
@@ -435,7 +466,50 @@ export function useMoneyTracker() {
       }
     });
 
-    return { arsBalance, usdBalance, arsInvestments, usdInvestments, arsInvestmentContributions };
+    // Loans: lending reduces liquid, collecting restores it
+    // Debts: paying reduces liquid (borrowing itself doesn't change liquid)
+    (monthlyData.loans || []).forEach((loan) => {
+      if (loan.type === "preste") {
+        // Lending: original amount left liquid when lent
+        if (loan.currencyType === CurrencyType.USD) {
+          usdBalance -= loan.amount;  // Cumulative
+          // Payments (collections) return money to liquid
+          loan.payments.forEach(p => { usdBalance += p.amount; });
+        } else {
+          // ARS: scope by date range
+          if (isInArsRange(loan.date)) arsBalance -= loan.amount;
+          loan.payments.forEach(p => {
+            if (isInArsRange(p.date)) arsBalance += p.amount;
+          });
+        }
+      } else {
+        // Debo: borrowing doesn't change liquid, but paying does
+        if (loan.currencyType === CurrencyType.USD) {
+          loan.payments.forEach(p => { usdBalance -= p.amount; });
+        } else {
+          loan.payments.forEach(p => {
+            if (isInArsRange(p.date)) arsBalance -= p.amount;
+          });
+        }
+      }
+    });
+
+    // Loan values for patrimonio (separate from liquid)
+    // Remaining = original - sum(payments). NEVER store remaining as a field.
+    const arsLoansGiven = (monthlyData.loans || [])
+      .filter(l => l.type === "preste" && l.status !== "Perdonado" && l.currencyType === CurrencyType.ARS)
+      .reduce((sum, l) => sum + (l.amount - l.payments.reduce((s, p) => s + p.amount, 0)), 0);
+    const usdLoansGiven = (monthlyData.loans || [])
+      .filter(l => l.type === "preste" && l.status !== "Perdonado" && l.currencyType === CurrencyType.USD)
+      .reduce((sum, l) => sum + (l.amount - l.payments.reduce((s, p) => s + p.amount, 0)), 0);
+    const arsDebts = (monthlyData.loans || [])
+      .filter(l => l.type === "debo" && l.status !== "Pagado" && l.currencyType === CurrencyType.ARS)
+      .reduce((sum, l) => sum + (l.amount - l.payments.reduce((s, p) => s + p.amount, 0)), 0);
+    const usdDebts = (monthlyData.loans || [])
+      .filter(l => l.type === "debo" && l.status !== "Pagado" && l.currencyType === CurrencyType.USD)
+      .reduce((sum, l) => sum + (l.amount - l.payments.reduce((s, p) => s + p.amount, 0)), 0);
+
+    return { arsBalance, usdBalance, arsInvestments, usdInvestments, arsInvestmentContributions, arsLoansGiven, usdLoansGiven, arsDebts, usdDebts };
   };
 
   const expensesTracker = useExpensesTracker(
@@ -486,6 +560,15 @@ export function useMoneyTracker() {
   };
 
   const transfersTracker = useTransfers(
+    monthlyData,
+    setMonthlyData,
+    selectedYear,
+    selectedMonth,
+    viewMode,
+    payDay
+  );
+
+  const loansTracker = useLoans(
     monthlyData,
     setMonthlyData,
     selectedYear,
@@ -670,6 +753,14 @@ export function useMoneyTracker() {
     handleDeleteTransfer: transfersTracker.handleDeleteTransfer,
     filteredTransfers: transfersTracker.filteredTransfers,
     handleCreateAdjustment: transfersTracker.handleCreateAdjustment,
+
+    // Funciones de useLoans
+    filteredLoans: loansTracker.filteredLoans,
+    handleAddLoan: loansTracker.handleAddLoan,
+    handleAddLoanPayment: loansTracker.handleAddLoanPayment,
+    handleEditLoan: loansTracker.handleEditLoan,
+    handleDeleteLoan: loansTracker.handleDeleteLoan,
+    handleForgiveLoan: loansTracker.handleForgiveLoan,
 
     // Funciones de useRecurringExpenses
     recurringExpenses: recurringTracker.recurringExpenses,
