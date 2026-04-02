@@ -8,7 +8,7 @@ progress:
   total_phases: 3
   completed_phases: 3
   total_plans: 16
-  completed_plans: 15
+  completed_plans: 16
 ---
 
 # Project State
@@ -22,10 +22,10 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 ## Current Position
 
-Phase: 4 of 10 (Income & Pay Date) -- IN PROGRESS
-Plan: 3 of 4 in current phase (04-01, 04-02, 04-03 complete)
-Status: Executing Phase 4
-Last activity: 2026-04-02 -- Completed 04-03 (Aguinaldo Auto-Calculation)
+Phase: 4 of 10 (Income & Pay Date) -- COMPLETE
+Plan: 4 of 4 in current phase (04-01, 04-02, 04-03, 04-04 complete)
+Status: Phase 4 Complete
+Last activity: 2026-04-02 -- Completed 04-04 (Pay Period Views)
 
 Progress: [██████████████] 50%
 
@@ -57,6 +57,7 @@ Progress: [██████████████] 50%
 | Phase 04 P01 | 3min | 2 tasks | 6 files |
 | Phase 04 P02 | 2min | 2 tasks | 2 files |
 | Phase 04 P03 | 3min | 2 tasks | 4 files |
+| Phase 04 P04 | 4min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -105,6 +106,9 @@ Recent decisions affecting current work:
 - 04-02: Salary timeline shows "Desde {MMM yyyy}" format using date-fns/es locale
 - 04-03: Aguinaldo override management in useMoneyTracker (not useSalaryHistory) since overrides live in monthlyData
 - 04-03: Aguinaldo preview uses partial semester data (Jan-May for June, Jul-Nov for December)
+- 04-04: Segmented control placed alongside month/year selectors using existing Tabs component
+- 04-04: Balance calculation uses getFilterDateRange for ARS scoping; USD remains cumulative
+- 04-04: Pendiente de cobro banner only in mes view, current month, before pay date
 
 ### Pending Todos
 
@@ -117,5 +121,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 04-03-PLAN.md (Aguinaldo Auto-Calculation)
-Resume file: 04-04-PLAN.md
+Stopped at: Completed 04-04-PLAN.md (Pay Period Views) - Phase 4 Complete
+Resume file: Phase 5 planning
