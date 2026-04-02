@@ -5,6 +5,7 @@ import { useLocalStorage } from "./useLocalStorage";
 import { useInvestmentsTracker } from "./useInvestmentsTracker";
 import { useIncomes } from "./useIncomes";
 import { useExpensesTracker } from "./useExpensesTracker";
+import { useCurrencyEngine } from "./useCurrencyEngine";
 import { type InvestmentType, CurrencyType } from "@/constants/investments";
 
 // Re-export CurrencyType from constants so existing consumers don't break
@@ -71,6 +72,16 @@ export interface ExtraIncome {
   currencyType: CurrencyType;
 }
 
+export interface UsdPurchase {
+  id: string;
+  date: string;           // yyyy-MM-dd
+  arsAmount: number;      // ARS spent (0 for untracked)
+  usdAmount: number;      // USD received
+  purchaseRate: number;   // arsAmount / usdAmount (0 for untracked)
+  origin: "tracked" | "untracked";
+  description?: string;   // Required for untracked, optional for tracked
+}
+
 export interface MonthlyData {
   salaries: {
     [key: string]: {
@@ -81,21 +92,38 @@ export interface MonthlyData {
   expenses: Expense[];
   extraIncomes: ExtraIncome[];
   investments: Investment[];
+  usdPurchases: UsdPurchase[];
 }
 
 
 
 function migrateData(data: MonthlyData): MonthlyData {
-  return {
+  const needsUsdReversal = !((data as any)._migrationVersion >= 3);
+
+  const migrated = {
     ...data,
-    expenses: data.expenses.map((expense) => ({
-      ...expense,
-      currencyType: expense.currencyType || CurrencyType.ARS,
-    })),
-    extraIncomes: data.extraIncomes.map((income) => ({
-      ...income,
-      currencyType: income.currencyType || CurrencyType.ARS,
-    })),
+    expenses: data.expenses.map((expense) => {
+      const base = {
+        ...expense,
+        currencyType: expense.currencyType || CurrencyType.ARS,
+      };
+      // Reverse USD->ARS conversion: restore original USD amount
+      if (needsUsdReversal && base.currencyType === CurrencyType.USD && base.usdRate > 0) {
+        base.amount = Math.round((base.amount / base.usdRate) * 100) / 100;
+      }
+      return base;
+    }),
+    extraIncomes: data.extraIncomes.map((income) => {
+      const base = {
+        ...income,
+        currencyType: income.currencyType || CurrencyType.ARS,
+      };
+      // Reverse USD->ARS conversion: restore original USD amount
+      if (needsUsdReversal && base.currencyType === CurrencyType.USD && base.usdRate > 0) {
+        base.amount = Math.round((base.amount / base.usdRate) * 100) / 100;
+      }
+      return base;
+    }),
     investments: (data.investments || []).map((investment: any) => ({
       id: investment.id,
       name: investment.name,
@@ -117,7 +145,11 @@ function migrateData(data: MonthlyData): MonthlyData {
       ...(investment.plazoDias !== undefined && { plazoDias: investment.plazoDias }),
       ...(investment.startDate !== undefined && { startDate: investment.startDate }),
     })),
+    usdPurchases: (data as any).usdPurchases || [],
+    _migrationVersion: 3,
   };
+
+  return migrated as MonthlyData;
 }
 
 export function useMoneyTracker() {
@@ -134,6 +166,7 @@ export function useMoneyTracker() {
     expenses: [],
     extraIncomes: [],
     investments: [],
+    usdPurchases: [],
   };
 
   const [monthlyData, setMonthlyData] = useLocalStorage(
@@ -216,6 +249,8 @@ export function useMoneyTracker() {
     selectedYear,
     selectedMonth
   );
+
+  const currencyEngine = useCurrencyEngine(monthlyData, setMonthlyData);
 
   const investmentsTracker = useInvestmentsTracker(
     monthlyData,
@@ -300,5 +335,13 @@ export function useMoneyTracker() {
     handleUpdateValue: investmentsTracker.handleUpdateValue,
     handleFinalizeInvestment: investmentsTracker.handleFinalizeInvestment,
     handleUpdatePFFields: investmentsTracker.handleUpdatePFFields,
+
+    // Funciones de useCurrencyEngine
+    globalUsdRate: currencyEngine.globalUsdRate,
+    setGlobalUsdRate: currencyEngine.setGlobalUsdRate,
+    handleBuyUsd: currencyEngine.handleBuyUsd,
+    handleRegisterUntrackedUsd: currencyEngine.handleRegisterUntrackedUsd,
+    handleDeleteUsdPurchase: currencyEngine.handleDeleteUsdPurchase,
+    calculateExchangeGainLoss: currencyEngine.calculateExchangeGainLoss,
   };
 }
