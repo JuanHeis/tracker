@@ -1,12 +1,13 @@
 "use client";
 import { useState } from "react";
-import { format, parse, startOfMonth, endOfMonth } from "date-fns";
+import { format, parse } from "date-fns";
 import {
   CurrencyType,
   type ExtraIncome,
   type MonthlyData,
 } from "./useMoneyTracker";
 import type { SalaryEntry } from "./useSalaryHistory";
+import { type ViewMode, getFilterDateRange } from "./usePayPeriod";
 
 interface SalaryHistoryActions {
   salaryHistory: { entries: SalaryEntry[] };
@@ -19,7 +20,9 @@ export function useIncomes(
   updateMonthlyData: (data: MonthlyData) => void,
   selectedYear: string,
   selectedMonth: string,
-  salaryHistoryActions?: SalaryHistoryActions
+  salaryHistoryActions?: SalaryHistoryActions,
+  viewMode: ViewMode = "mes",
+  payDay: number = 1
 ) {
   const [showSalaryForm, setShowSalaryForm] = useState(true);
   const [openExtraIncome, setOpenExtraIncome] = useState(false);
@@ -136,17 +139,11 @@ export function useIncomes(
     e.currentTarget.reset();
   };
 
+  const monthKey = `${selectedYear}-${selectedMonth.split("-")[1]}`;
+  const { start: filterStart, end: filterEnd } = getFilterDateRange(monthKey, viewMode, payDay);
   const filteredIncomes = monthlyData.extraIncomes.filter((income) => {
     const incomeDate = parse(income.date, "yyyy-MM-dd", new Date());
-    const monthStart = startOfMonth(
-      parse(
-        `${selectedYear}-${selectedMonth.split("-")[1]}`,
-        "yyyy-MM",
-        new Date()
-      )
-    );
-    const monthEnd = endOfMonth(monthStart);
-    return incomeDate >= monthStart && incomeDate <= monthEnd;
+    return incomeDate >= filterStart && incomeDate <= filterEnd;
   });
 
   const handleUpdateIncomeUsdRate = (incomeId: string, newRate: number) => {

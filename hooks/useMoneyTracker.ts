@@ -1,12 +1,13 @@
 "use client";
 import { useState } from "react";
-import { format, getYear } from "date-fns";
+import { format, getYear, parse } from "date-fns";
 import { useLocalStorage } from "./useLocalStorage";
 import { useInvestmentsTracker } from "./useInvestmentsTracker";
 import { useIncomes } from "./useIncomes";
 import { useExpensesTracker } from "./useExpensesTracker";
 import { useCurrencyEngine } from "./useCurrencyEngine";
 import { useSalaryHistory, calculateAguinaldo, getAguinaldoPreview } from "./useSalaryHistory";
+import { usePayPeriod, getFilterDateRange } from "./usePayPeriod";
 import { type InvestmentType, CurrencyType } from "@/constants/investments";
 
 // Re-export CurrencyType from constants so existing consumers don't break
@@ -225,13 +226,17 @@ export function useMoneyTracker() {
   );
 
   const salaryHistoryTracker = useSalaryHistory();
+  const { viewMode, setViewMode } = usePayPeriod();
+  const payDay = salaryHistoryTracker.incomeConfig.payDay;
 
   const incomesTracker = useIncomes(
     monthlyData,
     setMonthlyData,
     selectedYear,
     selectedMonth,
-    salaryHistoryTracker
+    salaryHistoryTracker,
+    viewMode,
+    payDay
   );
 
   const getAvailableYears = () => {
@@ -273,6 +278,13 @@ export function useMoneyTracker() {
     let arsBalance = 0;
     let usdBalance = 0;
 
+    // Date range for ARS scoping (respects view mode)
+    const { start: arsStart, end: arsEnd } = getFilterDateRange(monthKey, viewMode, payDay);
+    const isInArsRange = (dateStr: string) => {
+      const d = parse(dateStr, "yyyy-MM-dd", new Date());
+      return d >= arsStart && d <= arsEnd;
+    };
+
     // Salary: always ARS, month-scoped — resolve from salary history
     const salaryResolution = salaryHistoryTracker.getSalaryForMonth(
       monthKey,
@@ -280,9 +292,9 @@ export function useMoneyTracker() {
     );
     arsBalance += salaryResolution.amount;
 
-    // Extra incomes: ARS month-scoped, USD cumulative (all time)
+    // Extra incomes: ARS scoped by view mode, USD cumulative (all time)
     monthlyData.extraIncomes
-      .filter((i) => i.date.startsWith(monthKey))
+      .filter((i) => isInArsRange(i.date))
       .forEach((income) => {
         if (income.currencyType !== CurrencyType.USD) {
           arsBalance += income.amount;
@@ -294,9 +306,9 @@ export function useMoneyTracker() {
         usdBalance += income.amount;
       });
 
-    // Expenses: ARS month-scoped, USD cumulative (all time)
+    // Expenses: ARS scoped by view mode, USD cumulative (all time)
     monthlyData.expenses
-      .filter((e) => e.date.startsWith(monthKey))
+      .filter((e) => isInArsRange(e.date))
       .forEach((expense) => {
         if (expense.currencyType !== CurrencyType.USD) {
           arsBalance -= expense.amount;
@@ -309,15 +321,15 @@ export function useMoneyTracker() {
       });
 
     // USD purchases: cumulative across ALL time (USD is a running balance)
-    // ARS deduction only for current month (tracked purchases reduce this month's ARS)
+    // ARS deduction scoped by view mode (tracked purchases reduce this period's ARS)
     (monthlyData.usdPurchases || []).forEach((purchase) => {
       usdBalance += purchase.usdAmount;
-      if (purchase.origin === "tracked" && purchase.date.startsWith(monthKey)) {
+      if (purchase.origin === "tracked" && isInArsRange(purchase.date)) {
         arsBalance -= purchase.arsAmount;
       }
     });
 
-    // Investment movements: ARS month-scoped, USD cumulative
+    // Investment movements: ARS scoped by view mode, USD cumulative
     (monthlyData.investments || []).forEach((inv) => {
       if (inv.currencyType === CurrencyType.USD) {
         // USD investment movements: cumulative (all time)
@@ -326,9 +338,9 @@ export function useMoneyTracker() {
           usdBalance += impact;
         });
       } else {
-        // ARS investment movements: month-scoped
+        // ARS investment movements: scoped by view mode
         inv.movements
-          .filter((mov) => mov.date.startsWith(monthKey))
+          .filter((mov) => isInArsRange(mov.date))
           .forEach((mov) => {
             const impact = mov.type === "aporte" ? -mov.amount : mov.amount;
             arsBalance += impact;
@@ -351,7 +363,9 @@ export function useMoneyTracker() {
     monthlyData,
     setMonthlyData,
     selectedYear,
-    selectedMonth
+    selectedMonth,
+    viewMode,
+    payDay
   );
 
   const currencyEngine = useCurrencyEngine(monthlyData, setMonthlyData);
@@ -514,6 +528,10 @@ export function useMoneyTracker() {
     clearAguinaldoOverride,
     getAguinaldoForMonth,
     getAguinaldoPreviewForMonth,
+
+    // View mode (pay period / calendar month)
+    viewMode,
+    setViewMode,
 
     // Funciones de useCurrencyEngine
     globalUsdRate: currencyEngine.globalUsdRate,

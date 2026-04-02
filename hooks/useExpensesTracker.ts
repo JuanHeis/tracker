@@ -1,14 +1,17 @@
 "use client";
 import { useState } from "react";
-import { format, parse, startOfMonth, endOfMonth, addMonths, getDate, setDate } from "date-fns";
+import { format, parse, endOfMonth, addMonths, getDate, setDate } from "date-fns";
 import type { Expense, MonthlyData, Category } from "./useMoneyTracker";
 import { CurrencyType } from "./useMoneyTracker";
+import { type ViewMode, getFilterDateRange } from "./usePayPeriod";
 
 export function useExpensesTracker(
   monthlyData: MonthlyData,
   updateMonthlyData: (data: MonthlyData) => void,
   selectedYear: string,
-  selectedMonth: string
+  selectedMonth: string,
+  viewMode: ViewMode = "mes",
+  payDay: number = 1
 ) {
   const [open, setOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -70,17 +73,11 @@ export function useExpensesTracker(
     e.currentTarget.reset();
   };
 
+  const monthKey = `${selectedYear}-${selectedMonth.split("-")[1]}`;
+  const { start: filterStart, end: filterEnd } = getFilterDateRange(monthKey, viewMode, payDay);
   const filteredExpenses = monthlyData.expenses.filter((expense) => {
     const expenseDate = parse(expense.date, "yyyy-MM-dd", new Date());
-    const monthStart = startOfMonth(
-      parse(
-        `${selectedYear}-${selectedMonth.split("-")[1]}`,
-        "yyyy-MM",
-        new Date()
-      )
-    );
-    const monthEnd = endOfMonth(monthStart);
-    return expenseDate >= monthStart && expenseDate <= monthEnd;
+    return expenseDate >= filterStart && expenseDate <= filterEnd;
   });
 
   const totalExpenses = filteredExpenses.reduce(
