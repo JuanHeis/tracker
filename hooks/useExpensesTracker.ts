@@ -21,11 +21,7 @@ export function useExpensesTracker(
     const formData = new FormData(e.currentTarget);
     const currencyType = formData.get("currencyType") as CurrencyType;
     const usdRate = Number(formData.get("usdRate"));
-    let amount = Number(formData.get("amount"));
-
-    if (currencyType === CurrencyType.USD) {
-      amount = amount * usdRate;
-    }
+    const amount = Number(formData.get("amount"));
 
     const baseExpense = {
       id: crypto.randomUUID(),
@@ -119,11 +115,7 @@ export function useExpensesTracker(
     const formData = new FormData(e.currentTarget);
     const currencyType = formData.get("currencyType") as CurrencyType;
     const usdRate = Number(formData.get("usdRate"));
-    let amount = Number(formData.get("amount"));
-
-    if (currencyType === CurrencyType.USD) {
-      amount = amount * usdRate;
-    }
+    const amount = Number(formData.get("amount"));
 
     const updatedExpense = {
       ...editingExpense,
