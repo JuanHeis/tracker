@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Setup Wizard & Manual
-status: executing
-last_updated: "2026-04-02T23:00:47.037Z"
+status: unknown
+last_updated: "2026-04-02T23:14:23.036Z"
 progress:
   total_phases: 13
   completed_phases: 11
