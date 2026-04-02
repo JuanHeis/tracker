@@ -42,13 +42,13 @@
 ### Ingresos y Fecha de Cobro
 
 - [x] **ING-01**: Terminologia renombrada: "Salario" -> "Ingreso fijo", "Ingresos extras" -> "Otros ingresos"
-- [ ] **ING-02**: User puede configurar fecha de cobro del ingreso fijo (ej: dia 10)
+- [x] **ING-02**: User puede configurar fecha de cobro del ingreso fijo (ej: dia 10)
 - [ ] **ING-03**: User puede ver vista "periodo personalizado" (del dia de cobro al dia anterior del mes siguiente)
 - [ ] **ING-04**: User puede ver vista "mes calendario" con indicador "Pendiente de cobro" antes de la fecha
 - [ ] **ING-05**: User puede alternar entre ambas vistas segun preferencia
 - [x] **ING-06**: Aumento de sueldo afecta al mes corriente y a los siguientes
 - [ ] **ING-07**: Aguinaldo auto-calculado para relacion de dependencia (50% mejor sueldo del semestre, junio/diciembre)
-- [ ] **ING-08**: User puede indicar si es dependiente o independiente; aguinaldo oculto para independientes
+- [x] **ING-08**: User puede indicar si es dependiente o independiente; aguinaldo oculto para independientes
 
 ### Card Mensual
 
@@ -155,13 +155,13 @@
 | MON-07 | Phase 3 | Complete |
 | MON-08 | Phase 3 | Complete |
 | ING-01 | Phase 4 | Complete |
-| ING-02 | Phase 4 | Pending |
+| ING-02 | Phase 4 | Complete |
 | ING-03 | Phase 4 | Pending |
 | ING-04 | Phase 4 | Pending |
 | ING-05 | Phase 4 | Pending |
 | ING-06 | Phase 4 | Complete |
 | ING-07 | Phase 4 | Pending |
-| ING-08 | Phase 4 | Pending |
+| ING-08 | Phase 4 | Complete |
 | CARD-01 | Phase 5 | Pending |
 | CARD-02 | Phase 5 | Pending |
 | CARD-03 | Phase 5 | Pending |

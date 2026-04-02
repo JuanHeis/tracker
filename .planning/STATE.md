@@ -8,7 +8,7 @@ progress:
   total_phases: 3
   completed_phases: 3
   total_plans: 16
-  completed_plans: 13
+  completed_plans: 14
 ---
 
 # Project State
@@ -23,9 +23,9 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 4 of 10 (Income & Pay Date) -- IN PROGRESS
-Plan: 1 of 4 in current phase (04-01 complete)
+Plan: 2 of 4 in current phase (04-01, 04-02 complete)
 Status: Executing Phase 4
-Last activity: 2026-04-02 -- Completed 04-01 (Income Model & Terminology)
+Last activity: 2026-04-02 -- Completed 04-02 (Salary Card Refactor)
 
 Progress: [█████████████] 46%
 
@@ -55,6 +55,7 @@ Progress: [█████████████] 46%
 | Phase 03 P03 | 2min | 2 tasks | 3 files |
 | Phase 03 P04 | 4min | 2 tasks | 6 files |
 | Phase 04 P01 | 3min | 2 tasks | 6 files |
+| Phase 04 P02 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,9 @@ Recent decisions affecting current work:
 - 04-01: Dual-write to salaryHistory and legacy salaries map for backward compat during transition
 - 04-01: Migration v4 deduplicates entries — only creates new SalaryEntry when amount/rate changes
 - 04-01: getSalaryForMonth uses string comparison for yyyy-MM ordering
+- 04-02: Employment type uses two-button toggle (not dropdown) for quick switching
+- 04-02: Pencil icons always visible with muted+hover:blue, delete icons muted+hover:red
+- 04-02: Salary timeline shows "Desde {MMM yyyy}" format using date-fns/es locale
 
 ### Pending Todos
 
@@ -110,5 +114,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 04-01-PLAN.md (Income Model & Terminology)
-Resume file: 04-02-PLAN.md
+Stopped at: Completed 04-02-PLAN.md (Salary Card Refactor)
+Resume file: 04-03-PLAN.md
