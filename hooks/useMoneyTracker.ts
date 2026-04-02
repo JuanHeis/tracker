@@ -277,6 +277,7 @@ export function useMoneyTracker() {
     const monthKey = getCurrentMonthKey();
     let arsBalance = 0;
     let usdBalance = 0;
+    let arsInvestmentContributions = 0;
 
     // Date range for ARS scoping (respects view mode)
     const { start: arsStart, end: arsEnd } = getFilterDateRange(monthKey, viewMode, payDay);
@@ -344,6 +345,7 @@ export function useMoneyTracker() {
           .forEach((mov) => {
             const impact = mov.type === "aporte" ? -mov.amount : mov.amount;
             arsBalance += impact;
+            if (mov.type === "aporte") arsInvestmentContributions += mov.amount;
           });
       }
     });
@@ -356,7 +358,7 @@ export function useMoneyTracker() {
       .filter((i) => i.status === "Activa" && i.currencyType === CurrencyType.USD)
       .reduce((sum, i) => sum + i.currentValue, 0);
 
-    return { arsBalance, usdBalance, arsInvestments, usdInvestments };
+    return { arsBalance, usdBalance, arsInvestments, usdInvestments, arsInvestmentContributions };
   };
 
   const expensesTracker = useExpensesTracker(
