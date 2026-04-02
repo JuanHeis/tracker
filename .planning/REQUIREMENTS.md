@@ -94,6 +94,25 @@
 - [x] **UX-01**: Terminologia estandar de finanzas personales en toda la app (patrimonio, liquido, etc.)
 - [x] **UX-02**: Formularios validan monto > 0 y cotizacion USD > 0
 
+## v1.1 Requirements
+
+### Setup Wizard
+
+- [ ] **WIZ-01**: User ve wizard automaticamente al abrir la app por primera vez (sin datos en localStorage)
+- [ ] **WIZ-02**: User puede cargar saldo liquido ARS actual en el wizard
+- [ ] **WIZ-03**: User puede cargar saldo USD + cotizacion actual en el wizard
+- [ ] **WIZ-04**: User puede cargar ingreso fijo (sueldo, tipo empleo, dia de cobro) en el wizard
+- [ ] **WIZ-05**: User puede cargar inversiones existentes una por una (tipo, nombre, monto, moneda) con loop "agregar otra"
+- [ ] **WIZ-06**: User ve resumen de todo lo cargado y confirma antes de guardar
+- [ ] **WIZ-07**: Wizard guarda todos los datos de forma atomica (todo o nada) al confirmar
+- [ ] **WIZ-08**: User puede saltar pasos opcionales (USD, ingreso, inversiones) y completarlos despues
+- [ ] **WIZ-09**: Wizard ofrece importar JSON existente como alternativa en la pantalla de bienvenida
+- [ ] **WIZ-10**: User puede re-ejecutar wizard desde Configuracion (reset de fabrica + wizard)
+
+### Manual de Uso
+
+- [ ] **MAN-01**: Existe un MANUAL.md con guia paso a paso de como usar cada feature de la app
+
 ## v2 Requirements
 
 ### Tarjetas de Credito
@@ -187,10 +206,11 @@
 | UX-02 | Phase 10 | Complete |
 
 **Coverage:**
-- v1 requirements: 46 total
-- Mapped to phases: 46
-- Unmapped: 0
+- v1 requirements: 46 total — all complete
+- v1.1 requirements: 11 total
+- Mapped to phases: 46 (v1) + 0 (v1.1, pending roadmap)
+- Unmapped: 11
 
 ---
 *Requirements defined: 2026-04-01*
-*Last updated: 2026-04-01 after roadmap creation*
+*Last updated: 2026-04-02 — v1.1 requirements added*
