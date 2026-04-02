@@ -175,7 +175,9 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 10-01: TBD
+- [ ] 10-01-PLAN.md — JSON export/import with validation and confirmation (PERS-01, PERS-02)
+- [ ] 10-02-PLAN.md — Form validation hardening across all dialogs (UX-02)
+- [ ] 10-03-PLAN.md — Terminology audit and standardization (UX-01)
 
 ## Progress
 
@@ -193,4 +195,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Loans | 3/3 | Complete   | 2026-04-02 |
 | 8. Budgets | 2/2 | Complete   | 2026-04-02 |
 | 9. Transfers & Adjustments | 0/TBD | Not started | - |
-| 10. Persistence & UX Polish | 0/TBD | Not started | - |
+| 10. Persistence & UX Polish | 2/3 | In Progress|  |
