@@ -54,9 +54,7 @@ result: pass
 
 ### 11. Periodo/Mes Toggle
 expected: Near the month/year selectors, a segmented control shows "Periodo" and "Mes" options. Clicking each switches the view mode. The selection persists on reload.
-result: issue
-reported: "can change toggle but i dont see ui change"
-severity: major
+result: pass
 
 ### 12. Pay Period Filtering
 expected: With pay day set to 25 and "Periodo" selected, the date range should be ~25th of previous month to ~24th of current month. Expenses and incomes shown should correspond to this period, not the calendar month.
@@ -69,19 +67,11 @@ result: pass
 ## Summary
 
 total: 13
-passed: 12
-issues: 1
+passed: 13
+issues: 0
 pending: 0
 skipped: 0
 
 ## Gaps
 
-- truth: "Switching Periodo/Mes toggle produces visible UI change indicating active view mode"
-  status: failed
-  reason: "User reported: can change toggle but i dont see ui change"
-  severity: major
-  test: 11
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+[none]
