@@ -8,7 +8,7 @@ progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -23,18 +23,18 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 3 of 10 (Dual Currency Engine)
-Plan: 3 of 4 in current phase (03-01, 03-02 complete, next: 03-03)
+Plan: 4 of 4 in current phase (03-01, 03-02, 03-03 complete, next: 03-04)
 Status: Executing Phase 3
-Last activity: 2026-04-02 -- Completed 03-02 (Dual Balance Calculation & Sidebar UI)
+Last activity: 2026-04-02 -- Completed 03-03 (USD Purchase Dialog & Exchange Summary)
 
-Progress: [█████████░] 36%
+Progress: [██████████░] 39%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
-- Average duration: ~2.8 min
-- Total execution time: ~28 min
+- Total plans completed: 11
+- Average duration: ~2.7 min
+- Total execution time: ~30 min
 
 **By Phase:**
 
@@ -42,7 +42,7 @@ Progress: [█████████░] 36%
 |-------|-------|-------|----------|
 | 01-critical-bug-fixes | 01-01, 01-02, 01-03 | 7min | 2.3min |
 | 02-investment-model-refactor | 02-01, 02-02, 02-03, 02-04, 02-05 | 15min | 3.0min |
-| 03-dual-currency-engine | 03-01, 03-02 | 6min | 3.0min |
+| 03-dual-currency-engine | 03-01, 03-02, 03-03 | 8min | 2.7min |
 
 **Recent Trend:**
 - Last 5 plans: -
@@ -52,6 +52,7 @@ Progress: [█████████░] 36%
 | Phase 02 P02 | 3min | 2 tasks | 4 files |
 | Phase 03 P01 | 3min | 2 tasks | 4 files |
 | Phase 03 P02 | 3min | 2 tasks | 6 files |
+| Phase 03 P03 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,9 @@ Recent decisions affecting current work:
 - 03-02: USD balance is cumulative across all time (running wallet), ARS balance is month-scoped
 - 03-02: Removed dual Monto/USD table columns — single column with native currency symbol
 - 03-02: Patrimonio = arsLiquid + (usdLiquid * globalRate) + arsInvestments + (usdInvestments * globalRate)
+- 03-03: UsdPurchaseDialog uses mode toggle (buy/register) instead of separate dialogs
+- 03-03: ExchangeSummary placed in sidebar below Balance card
+- 03-03: Effective rate computed live as user types ARS and USD amounts
 
 ### Pending Todos
 
@@ -99,5 +103,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 03-02-PLAN.md (Dual Balance Calculation & Sidebar UI)
-Resume file: 03-03-PLAN.md
+Stopped at: Completed 03-03-PLAN.md (USD Purchase Dialog & Exchange Summary)
+Resume file: 03-04-PLAN.md

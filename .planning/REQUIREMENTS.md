@@ -33,9 +33,9 @@
 - [x] **MON-01**: User tiene saldos reales separados en ARS y USD (no solo conversion visual)
 - [x] **MON-02**: Cada transaccion guarda la cotizacion USD del momento en que se registro
 - [x] **MON-03**: User puede configurar cotizacion global actual para calcular patrimonio total en ARS
-- [ ] **MON-04**: User puede comprar USD desde saldo ARS (resta ARS, suma USD, patrimonio no cambia)
-- [ ] **MON-05**: User puede registrar USD de efectivo no trackeado (suma USD sin restar ARS, con origen explicito)
-- [ ] **MON-06**: User ve ganancia/perdida cambiaria automatica (cotizacion de compra vs global actual)
+- [x] **MON-04**: User puede comprar USD desde saldo ARS (resta ARS, suma USD, patrimonio no cambia)
+- [x] **MON-05**: User puede registrar USD de efectivo no trackeado (suma USD sin restar ARS, con origen explicito)
+- [x] **MON-06**: User ve ganancia/perdida cambiaria automatica (cotizacion de compra vs global actual)
 - [ ] **MON-07**: User puede editar cotizacion USD retroactivamente si la cargo mal
 - [x] **MON-08**: Validacion: cotizacion USD siempre > 0, monto siempre > 0
 
@@ -149,9 +149,9 @@
 | MON-01 | Phase 3 | Complete |
 | MON-02 | Phase 3 | Complete |
 | MON-03 | Phase 3 | Complete |
-| MON-04 | Phase 3 | Pending |
-| MON-05 | Phase 3 | Pending |
-| MON-06 | Phase 3 | Pending |
+| MON-04 | Phase 3 | Complete |
+| MON-05 | Phase 3 | Complete |
+| MON-06 | Phase 3 | Complete |
 | MON-07 | Phase 3 | Pending |
 | MON-08 | Phase 3 | Complete |
 | ING-01 | Phase 4 | Pending |
