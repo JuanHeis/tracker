@@ -6,12 +6,20 @@ import {
   type ExtraIncome,
   type MonthlyData,
 } from "./useMoneyTracker";
+import type { SalaryEntry } from "./useSalaryHistory";
+
+interface SalaryHistoryActions {
+  salaryHistory: { entries: SalaryEntry[] };
+  addSalaryEntry: (entry: Omit<SalaryEntry, "id">) => void;
+  updateSalaryEntry: (id: string, updates: Partial<Omit<SalaryEntry, "id">>) => void;
+}
 
 export function useIncomes(
   monthlyData: MonthlyData,
   updateMonthlyData: (data: MonthlyData) => void,
   selectedYear: string,
-  selectedMonth: string
+  selectedMonth: string,
+  salaryHistoryActions?: SalaryHistoryActions
 ) {
   const [showSalaryForm, setShowSalaryForm] = useState(true);
   const [openExtraIncome, setOpenExtraIncome] = useState(false);
@@ -23,15 +31,28 @@ export function useIncomes(
   const handleSetSalary = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const monthKey = `${selectedYear}-${selectedMonth.split("-")[1]}`;
+    const amount = Number(formData.get("salary"));
+    const usdRate = Number(formData.get("usdRate"));
 
+    // Write to salary history (effective-date model)
+    if (salaryHistoryActions) {
+      const existing = salaryHistoryActions.salaryHistory.entries.find(
+        (e) => e.effectiveDate === monthKey
+      );
+      if (existing) {
+        salaryHistoryActions.updateSalaryEntry(existing.id, { amount, usdRate });
+      } else {
+        salaryHistoryActions.addSalaryEntry({ effectiveDate: monthKey, amount, usdRate });
+      }
+    }
+
+    // Also update legacy salaries map for backward compat
     updateMonthlyData({
       ...monthlyData,
       salaries: {
         ...monthlyData.salaries,
-        [`${selectedYear}-${selectedMonth.split("-")[1]}`]: {
-          amount: Number(formData.get("salary")),
-          usdRate: Number(formData.get("usdRate")),
-        },
+        [monthKey]: { amount, usdRate },
       },
     });
 

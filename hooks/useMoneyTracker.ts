@@ -6,6 +6,7 @@ import { useInvestmentsTracker } from "./useInvestmentsTracker";
 import { useIncomes } from "./useIncomes";
 import { useExpensesTracker } from "./useExpensesTracker";
 import { useCurrencyEngine } from "./useCurrencyEngine";
+import { useSalaryHistory } from "./useSalaryHistory";
 import { type InvestmentType, CurrencyType } from "@/constants/investments";
 
 // Re-export CurrencyType from constants so existing consumers don't break
@@ -93,12 +94,15 @@ export interface MonthlyData {
   extraIncomes: ExtraIncome[];
   investments: Investment[];
   usdPurchases: UsdPurchase[];
+  salaryOverrides?: Record<string, { amount: number; usdRate: number }>;
+  aguinaldoOverrides?: Record<string, { amount: number }>;
 }
 
 
 
 function migrateData(data: MonthlyData): MonthlyData {
-  const needsUsdReversal = !((data as any)._migrationVersion >= 3);
+  const currentVersion = (data as any)._migrationVersion || 0;
+  const needsUsdReversal = !(currentVersion >= 3);
 
   const migrated = {
     ...data,
@@ -146,8 +150,53 @@ function migrateData(data: MonthlyData): MonthlyData {
       ...(investment.startDate !== undefined && { startDate: investment.startDate }),
     })),
     usdPurchases: (data as any).usdPurchases || [],
-    _migrationVersion: 3,
+    salaryOverrides: (data as any).salaryOverrides || {},
+    aguinaldoOverrides: (data as any).aguinaldoOverrides || {},
+    _migrationVersion: 4,
   };
+
+  // Migration v4: Convert per-month salaries to effective-date salary history
+  if (currentVersion < 4) {
+    try {
+      const existingSalaryHistory = localStorage.getItem("salaryHistory");
+      if (!existingSalaryHistory) {
+        const salaries = data.salaries || {};
+        const monthKeys = Object.keys(salaries).sort();
+        const entries: Array<{ id: string; effectiveDate: string; amount: number; usdRate: number }> = [];
+
+        let prevAmount: number | null = null;
+        let prevUsdRate: number | null = null;
+
+        for (const monthKey of monthKeys) {
+          const { amount, usdRate } = salaries[monthKey];
+          // Only create a new entry when salary changes
+          if (amount !== prevAmount || usdRate !== prevUsdRate) {
+            entries.push({
+              id: crypto.randomUUID(),
+              effectiveDate: monthKey,
+              amount,
+              usdRate,
+            });
+            prevAmount = amount;
+            prevUsdRate = usdRate;
+          }
+        }
+
+        localStorage.setItem("salaryHistory", JSON.stringify({ entries }));
+      }
+
+      // Initialize incomeConfig if not present
+      const existingConfig = localStorage.getItem("incomeConfig");
+      if (!existingConfig) {
+        localStorage.setItem(
+          "incomeConfig",
+          JSON.stringify({ employmentType: "dependiente", payDay: 1 })
+        );
+      }
+    } catch (e) {
+      console.error("Migration v4 error:", e);
+    }
+  }
 
   return migrated as MonthlyData;
 }
@@ -175,11 +224,14 @@ export function useMoneyTracker() {
     migrateData
   );
 
+  const salaryHistoryTracker = useSalaryHistory();
+
   const incomesTracker = useIncomes(
     monthlyData,
     setMonthlyData,
     selectedYear,
-    selectedMonth
+    selectedMonth,
+    salaryHistoryTracker
   );
 
   const getAvailableYears = () => {
@@ -191,6 +243,12 @@ export function useMoneyTracker() {
 
     Object.keys(monthlyData.salaries).forEach((monthKey) => {
       const year = monthKey.split("-")[0];
+      years.add(year);
+    });
+
+    // Also check salary history entries for years
+    salaryHistoryTracker.salaryHistory.entries.forEach((entry) => {
+      const year = entry.effectiveDate.split("-")[0];
       years.add(year);
     });
 
@@ -215,8 +273,12 @@ export function useMoneyTracker() {
     let arsBalance = 0;
     let usdBalance = 0;
 
-    // Salary: always ARS, month-scoped
-    arsBalance += monthlyData.salaries[monthKey]?.amount || 0;
+    // Salary: always ARS, month-scoped — resolve from salary history
+    const salaryResolution = salaryHistoryTracker.getSalaryForMonth(
+      monthKey,
+      monthlyData.salaryOverrides || {}
+    );
+    arsBalance += salaryResolution.amount;
 
     // Extra incomes: ARS month-scoped, USD cumulative (all time)
     monthlyData.extraIncomes
@@ -370,6 +432,15 @@ export function useMoneyTracker() {
     handleUpdateValue: investmentsTracker.handleUpdateValue,
     handleFinalizeInvestment: investmentsTracker.handleFinalizeInvestment,
     handleUpdatePFFields: investmentsTracker.handleUpdatePFFields,
+
+    // Funciones de useSalaryHistory
+    salaryHistory: salaryHistoryTracker.salaryHistory,
+    incomeConfig: salaryHistoryTracker.incomeConfig,
+    setIncomeConfig: salaryHistoryTracker.setIncomeConfig,
+    addSalaryEntry: salaryHistoryTracker.addSalaryEntry,
+    updateSalaryEntry: salaryHistoryTracker.updateSalaryEntry,
+    deleteSalaryEntry: salaryHistoryTracker.deleteSalaryEntry,
+    getSalaryForMonth: salaryHistoryTracker.getSalaryForMonth,
 
     // Funciones de useCurrencyEngine
     globalUsdRate: currencyEngine.globalUsdRate,
