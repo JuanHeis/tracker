@@ -8,7 +8,7 @@ progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 19
-  completed_plans: 18
+  completed_plans: 19
 ---
 
 # Project State
@@ -23,11 +23,11 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 9 of 10 (Transfers & Adjustments)
-Plan: 1 of 3 in current phase (09-01 complete)
+Plan: 2 of 3 in current phase (09-02 complete)
 Status: Executing Phase 9
-Last activity: 2026-04-02 -- Completed 09-01 (Transfer Data Model & Domain Hook)
+Last activity: 2026-04-02 -- Completed 09-02 (Transfer UI Components)
 
-Progress: [████████████████████] 58%
+Progress: [████████████████████] 63%
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Progress: [████████████████████] 58%
 | Phase 05 P01 | 3min | 2 tasks | 4 files |
 | Phase 05 P02 | 3min | 2 tasks | 3 files |
 | Phase 09 P01 | 2min | 2 tasks | 2 files |
+| Phase 09 P02 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -121,6 +122,9 @@ Recent decisions affecting current work:
 - 09-01: Transfer type uses discriminated union with 6 types: currency conversions, cash in/out, adjustments
 - 09-01: handleCreateAdjustment takes trackedBalance at confirm time (avoids stale balance pitfall)
 - 09-01: Currency conversions are patrimonio-neutral (ARS down = USD up or vice versa)
+- 09-02: TransferDialog exposes 4 types (conversions + cash); adjustment types deferred to 09-03
+- 09-02: MovementsTable uses inline TransferAmount for dual-currency display on conversions
+- 09-02: TabsList changed from fixed w-[400px] to w-auto for 5-tab layout
 
 ### Pending Todos
 
@@ -133,5 +137,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 09-01-PLAN.md (Transfer Data Model & Domain Hook)
-Resume file: Phase 9 in progress, ready for 09-02
+Stopped at: Completed 09-02-PLAN.md (Transfer UI Components)
+Resume file: Phase 9 in progress, ready for 09-03
