@@ -57,6 +57,7 @@ import { useMoneyTracker } from "@/hooks/useMoneyTracker";
 import { CurrencyType } from "@/hooks/useMoneyTracker";
 import type { ViewMode } from "@/hooks/usePayPeriod";
 import { TransferDialog } from "@/components/transfer-dialog";
+import { AdjustmentDialog } from "@/components/adjustment-dialog";
 import { MovementsTable } from "@/components/movements-table";
 import { UsdPurchaseDialog } from "./usd-purchase-dialog";
 import { ExchangeSummary } from "./exchange-summary";
@@ -158,6 +159,7 @@ export function ExpenseTracker() {
     // Transfers
     handleAddTransfer,
     handleDeleteTransfer,
+    handleCreateAdjustment,
     filteredTransfers,
   } = useMoneyTracker();
 
@@ -190,6 +192,9 @@ export function ExpenseTracker() {
 
   // Transfer dialog state
   const [openTransferDialog, setOpenTransferDialog] = useState(false);
+
+  // Adjustment dialog state
+  const [openAdjustmentDialog, setOpenAdjustmentDialog] = useState(false);
 
   // Form validation state
   const [expenseErrors, setExpenseErrors] = useState<Record<string, string>>({});
@@ -525,6 +530,7 @@ export function ExpenseTracker() {
               onUpdateSalaryEntry={updateSalaryEntry}
               onDeleteSalaryEntry={deleteSalaryEntry}
               selectedMonth={selectedMonth}
+              onAdjustBalance={() => setOpenAdjustmentDialog(true)}
             />
 
             <ExchangeSummary
@@ -824,6 +830,13 @@ export function ExpenseTracker() {
         onAddTransfer={handleAddTransfer}
         defaultDate={defaultDate}
         globalUsdRate={globalUsdRate}
+      />
+      <AdjustmentDialog
+        open={openAdjustmentDialog}
+        onOpenChange={setOpenAdjustmentDialog}
+        onCreateAdjustment={handleCreateAdjustment}
+        arsBalance={dualBalancesForCards.arsBalance}
+        usdBalance={dualBalancesForCards.usdBalance}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Check, X, Plus, Trash2 } from "lucide-react";
+import { Pencil, Check, X, Plus, Trash2, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,6 +25,7 @@ interface ConfigCardProps {
   onUpdateSalaryEntry: (id: string, updates: Partial<SalaryEntry>) => void;
   onDeleteSalaryEntry: (id: string) => void;
   selectedMonth: string;
+  onAdjustBalance?: () => void;
 }
 
 export function ConfigCard({
@@ -37,6 +38,7 @@ export function ConfigCard({
   onUpdateSalaryEntry,
   onDeleteSalaryEntry,
   selectedMonth,
+  onAdjustBalance,
 }: ConfigCardProps) {
   // Employment config editing
   const [editingEmploymentType, setEditingEmploymentType] = useState(false);
@@ -434,6 +436,24 @@ export function ConfigCard({
               </Button>
             )}
           </div>
+
+          {onAdjustBalance && (
+            <>
+              <hr className="border-border" />
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-muted-foreground">Herramientas</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={onAdjustBalance}
+                >
+                  <Scale className="h-4 w-4 mr-2" />
+                  Ajustar saldo real
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </CardContent>
     </Card>
