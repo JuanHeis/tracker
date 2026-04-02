@@ -189,7 +189,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 3. Dual Currency Engine | 4/4 | Complete   | 2026-04-02 |
 | 4. Income & Pay Date | 0/TBD | Not started | - |
 | 5. Monthly Card Redesign | 0/TBD | Not started | - |
-| 6. Recurring Expenses | 0/TBD | Not started | - |
+| 6. Recurring Expenses | 2/3 | In Progress|  |
 | 7. Loans | 0/TBD | Not started | - |
 | 8. Budgets | 0/TBD | Not started | - |
 | 9. Transfers & Adjustments | 0/TBD | Not started | - |

@@ -23,9 +23,9 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 6 of 10 (Recurring Expenses)
-Plan: 1 of 3 in current phase (06-01 complete)
+Plan: 2 of 3 in current phase (06-02 complete)
 Status: Executing Phase 6
-Last activity: 2026-04-02 -- Completed 06-01 (Data Model & Auto-Generation)
+Last activity: 2026-04-02 -- Completed 06-02 (UI Components & Tab Integration)
 
 Progress: [████████████████████] 63%
 
@@ -64,6 +64,7 @@ Progress: [████████████████████] 63%
 | Phase 09 P02 | 2min | 2 tasks | 3 files |
 | Phase 09 P03 | 2min | 2 tasks | 3 files |
 | Phase 06 P01 | 2min | 2 tasks | 3 files |
+| Phase 06 P02 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,9 @@ Recent decisions affecting current work:
 - 06-01: Single monthlyData storage for recurring instances (not per-month keys), filtered by date field
 - 06-01: Ref guard pattern prevents StrictMode double-execution of auto-generation
 - 06-01: generateMissingInstances takes recurrings as parameter to avoid stale closure issues
+- 06-02: Currency toggle uses two-button pattern (matching employment type toggle) instead of Select dropdown
+- 06-02: Status badges use custom color classes (green/amber/outline) for clear visual distinction
+- 06-02: Canceled rows use opacity-50 with no action buttons for clear inactive state
 
 ### Pending Todos
 
@@ -145,5 +149,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 06-01-PLAN.md (Data Model & Auto-Generation)
-Resume file: Continue with 06-02-PLAN.md
+Stopped at: Completed 06-02-PLAN.md (UI Components & Tab Integration)
+Resume file: Continue with 06-03-PLAN.md
