@@ -1,8 +1,19 @@
 "use client";
 import { useState } from "react";
 import { format } from "date-fns";
+import type { InvestmentType, CurrencyType } from "@/constants/investments";
+import type { Investment, InvestmentMovement } from "@/hooks/useMoneyTracker";
 
 // ─── Types ──────────────────────────────────────────────────────────
+
+export interface WizardInvestment {
+  name: string;
+  type: InvestmentType;
+  currencyType: CurrencyType;
+  amount: number;
+  tna?: number;         // Plazo Fijo only
+  plazoDias?: number;   // Plazo Fijo only
+}
 
 export interface WizardData {
   arsBalance: number;       // Step: ARS Balance (required, >= 0)
@@ -11,6 +22,7 @@ export interface WizardData {
   employmentType: "dependiente" | "independiente";  // Step: Income
   payDay: number;           // Step: Income (1-31)
   salaryAmount: number;     // Step: Income (optional, skippable)
+  investments: WizardInvestment[];  // Step: Investments (optional, skippable)
 }
 
 export const INITIAL_WIZARD_DATA: WizardData = {
@@ -20,6 +32,7 @@ export const INITIAL_WIZARD_DATA: WizardData = {
   employmentType: "dependiente",
   payDay: 1,
   salaryAmount: 0,
+  investments: [],
 };
 
 // ─── Step Validation ────────────────────────────────────────────────
@@ -50,6 +63,27 @@ export function validateIncomeStep(data: WizardData): Record<string, string> {
   return errors;
 }
 
+export function validateInvestmentsStep(data: WizardData): Record<string, string> {
+  const errors: Record<string, string> = {};
+  data.investments.forEach((inv, i) => {
+    if (!inv.name || inv.name.trim() === "") {
+      errors[`investment_${i}_name`] = "El nombre es requerido";
+    }
+    if (!inv.amount || inv.amount <= 0) {
+      errors[`investment_${i}_amount`] = "El monto debe ser mayor a 0";
+    }
+    if (inv.type === "Plazo Fijo") {
+      if (!inv.tna || inv.tna <= 0) {
+        errors[`investment_${i}_tna`] = "La TNA debe ser mayor a 0";
+      }
+      if (!inv.plazoDias || inv.plazoDias <= 0) {
+        errors[`investment_${i}_plazoDias`] = "El plazo debe ser mayor a 0 dias";
+      }
+    }
+  });
+  return errors;
+}
+
 // ─── Session Storage Draft Persistence ──────────────────────────────
 
 const DRAFT_KEY = "wizardDraft";
@@ -62,7 +96,12 @@ function loadDraft(): { data: WizardData; step: number } | null {
   const raw = sessionStorage.getItem(DRAFT_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    // Handle drafts saved before investments phase
+    if (parsed?.data && !Array.isArray(parsed.data.investments)) {
+      parsed.data.investments = [];
+    }
+    return parsed;
   } catch {
     return null;
   }
@@ -104,12 +143,33 @@ export function commitWizardData(data: WizardData): void {
       }]
     : [];
 
+  // Map wizard investments to full Investment objects
+  const mappedInvestments: Investment[] = data.investments.map((wi) => ({
+    id: crypto.randomUUID(),
+    name: wi.name,
+    type: wi.type,
+    currencyType: wi.currencyType,
+    status: "Activa" as const,
+    movements: [{
+      id: crypto.randomUUID(),
+      date: today,
+      type: "aporte" as const,
+      amount: wi.amount,
+    }] as InvestmentMovement[],
+    currentValue: wi.amount,
+    lastUpdated: today,
+    createdAt: today,
+    ...(wi.tna !== undefined && { tna: wi.tna }),
+    ...(wi.plazoDias !== undefined && { plazoDias: wi.plazoDias }),
+    ...(wi.type === "Plazo Fijo" && { startDate: today }),
+  }));
+
   // Build monthlyData
   const monthlyData = {
     salaries: {},
     expenses: [],
     extraIncomes: [],
-    investments: [],
+    investments: mappedInvestments,
     usdPurchases,
     transfers,
     loans: [],
@@ -154,7 +214,7 @@ export function useSetupWizard() {
   );
   const [currentStep, setCurrentStepRaw] = useState<number>(draft?.step ?? 0);
 
-  // Steps: 0=welcome, 1=ARS, 2=USD, 3=income, 4=summary
+  // Steps: 0=welcome, 1=ARS, 2=USD, 3=income, 4=investments, 5=summary
   const setCurrentStep = (step: number) => {
     setCurrentStepRaw(step);
     saveDraft(wizardData, step);
@@ -177,6 +237,7 @@ export function useSetupWizard() {
       case 1: return validateArsStep(wizardData);
       case 2: return validateUsdStep(wizardData);
       case 3: return validateIncomeStep(wizardData);
+      case 4: return validateInvestmentsStep(wizardData);
       default: return {};
     }
   };
