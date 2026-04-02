@@ -81,7 +81,7 @@ export function useBudgetTracker(
   // --- Spending computation ---
 
   const { budgetProgress, totalBudgeted, totalSpent } = useMemo(() => {
-    if (budgetData.definitions.length === 0) {
+    if (!budgetData.definitions || budgetData.definitions.length === 0) {
       return { budgetProgress: [] as BudgetProgress[], totalBudgeted: 0, totalSpent: 0 };
     }
 
@@ -193,7 +193,8 @@ export function useBudgetTracker(
   // --- Categories without budget ---
 
   const categoriesWithoutBudget = useMemo(() => {
-    const budgeted = new Set(budgetData.definitions.map((d) => d.category));
+    const defs = budgetData.definitions || [];
+    const budgeted = new Set(defs.map((d) => d.category));
     return ALL_CATEGORIES.filter((c) => !budgeted.has(c));
   }, [budgetData.definitions]);
 

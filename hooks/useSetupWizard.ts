@@ -137,7 +137,7 @@ export function commitWizardData(data: WizardData): void {
     payDay: data.payDay || 1,
   }));
   localStorage.setItem("recurringExpenses", JSON.stringify([]));
-  localStorage.setItem("budgetData", JSON.stringify({}));
+  localStorage.setItem("budgetData", JSON.stringify({ definitions: [], snapshots: {} }));
   localStorage.setItem("lastUsedUsdRate", String(data.globalUsdRate || 0));
 
   // Clear draft after successful commit
