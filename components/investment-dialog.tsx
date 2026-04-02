@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { cn } from "@/lib/utils";
 import { CurrencyType, Investment } from "@/hooks/useMoneyTracker";
 import {
   INVESTMENT_TYPES,
@@ -56,6 +57,7 @@ export function InvestmentDialog({
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyType>(
     editingInvestment?.currencyType ?? CurrencyType.ARS
   );
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Sync state when editingInvestment changes or dialog opens
   useEffect(() => {
@@ -66,6 +68,7 @@ export function InvestmentDialog({
       setSelectedType("");
       setSelectedCurrency(CurrencyType.ARS);
     }
+    setErrors({});
   }, [editingInvestment, open]);
 
   // Enforce currency when type changes
@@ -99,11 +102,27 @@ export function InvestmentDialog({
       }
       onUpdate(editingInvestment.id, updates);
     } else {
+      const newErrors: Record<string, string> = {};
+      const amount = Number(formData.get("amount"));
+      if (isNaN(amount) || amount <= 0) {
+        newErrors.amount = "El monto debe ser mayor a 0";
+      }
+      if (isPlazoFijo) {
+        const tna = Number(formData.get("tna"));
+        if (isNaN(tna) || tna <= 0) {
+          newErrors.tna = "La TNA debe ser mayor a 0";
+        }
+      }
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        return;
+      }
+
       const data: Parameters<typeof onAdd>[0] = {
         name: formData.get("name") as string,
         type: selectedType as InvestmentType,
         currencyType: selectedCurrency,
-        initialAmount: Number(formData.get("amount")),
+        initialAmount: amount,
         date: formData.get("date") as string,
       };
       if (isPlazoFijo) {
@@ -141,14 +160,20 @@ export function InvestmentDialog({
             required
           />
           {!editingInvestment && (
-            <Input
-              type="number"
-              name="amount"
-              placeholder="Monto inicial"
-              step="0.01"
-              min="0"
-              required
-            />
+            <div className="space-y-1">
+              <Input
+                type="number"
+                name="amount"
+                placeholder="Monto inicial"
+                step="0.01"
+                min="0"
+                className={cn(errors.amount && "border-red-500")}
+                required
+              />
+              {errors.amount && (
+                <p className="text-xs text-red-500">{errors.amount}</p>
+              )}
+            </div>
           )}
           <Select
             value={selectedType}
@@ -181,15 +206,21 @@ export function InvestmentDialog({
           </Select>
           {isPlazoFijo && (
             <>
-              <Input
-                type="number"
-                name="tna"
-                placeholder="TNA anual (%)"
-                step="0.01"
-                min="0"
-                defaultValue={editingInvestment?.tna}
-                required
-              />
+              <div className="space-y-1">
+                <Input
+                  type="number"
+                  name="tna"
+                  placeholder="TNA anual (%)"
+                  step="0.01"
+                  min="0"
+                  defaultValue={editingInvestment?.tna}
+                  className={cn(errors.tna && "border-red-500")}
+                  required
+                />
+                {errors.tna && (
+                  <p className="text-xs text-red-500">{errors.tna}</p>
+                )}
+              </div>
               <Input
                 type="number"
                 name="plazoDias"

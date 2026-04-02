@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { cn } from "@/lib/utils";
 import { CATEGORIES } from "@/constants/colors";
 import { CurrencyType } from "@/constants/investments";
 import type { Category } from "@/hooks/useMoneyTracker";
@@ -41,17 +42,31 @@ export function RecurringDialog({
     CurrencyType.ARS
   );
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const name = formData.get("name") as string;
+    const name = (formData.get("name") as string) || "";
     const amount = Number(formData.get("amount"));
 
-    if (!name || amount <= 0 || !selectedCategory) return;
+    const newErrors: Record<string, string> = {};
+    if (!name.trim()) {
+      newErrors.name = "El nombre es requerido";
+    }
+    if (isNaN(amount) || amount <= 0) {
+      newErrors.amount = "El monto debe ser mayor a 0";
+    }
+    if (!selectedCategory) {
+      newErrors.category = "Selecciona una categoria";
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
     onAdd({
-      name,
+      name: name.trim(),
       amount,
       category: selectedCategory as Category,
       currencyType: selectedCurrency,
@@ -60,6 +75,7 @@ export function RecurringDialog({
     // Reset and close
     setSelectedCurrency(CurrencyType.ARS);
     setSelectedCategory("");
+    setErrors({});
     onOpenChange(false);
   };
 
@@ -74,25 +90,43 @@ export function RecurringDialog({
           className="space-y-4"
           key={open ? "open" : "closed"}
         >
-          <Input
-            type="text"
-            name="name"
-            placeholder="Nombre (ej: Netflix, Alquiler)"
-            required
-          />
-          <Input
-            type="number"
-            name="amount"
-            placeholder="Monto mensual"
-            step="0.01"
-            min="0.01"
-            required
-          />
-          <Select
+          <div className="space-y-1">
+            <Input
+              type="text"
+              name="name"
+              placeholder="Nombre (ej: Netflix, Alquiler)"
+              className={cn(errors.name && "border-red-500")}
+              onChange={() => setErrors((prev) => { const next = { ...prev }; delete next.name; return next; })}
+              required
+            />
+            {errors.name && (
+              <p className="text-xs text-red-500">{errors.name}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <Input
+              type="number"
+              name="amount"
+              placeholder="Monto mensual"
+              step="0.01"
+              min="0.01"
+              className={cn(errors.amount && "border-red-500")}
+              onChange={() => setErrors((prev) => { const next = { ...prev }; delete next.amount; return next; })}
+              required
+            />
+            {errors.amount && (
+              <p className="text-xs text-red-500">{errors.amount}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <Select
               value={selectedCategory}
-              onValueChange={setSelectedCategory}
+              onValueChange={(val) => {
+                setSelectedCategory(val);
+                setErrors((prev) => { const next = { ...prev }; delete next.category; return next; });
+              }}
             >
-              <SelectTrigger>
+              <SelectTrigger className={cn(errors.category && "border-red-500")}>
                 <SelectValue placeholder="Seleccionar categoria" />
               </SelectTrigger>
               <SelectContent>
@@ -103,6 +137,10 @@ export function RecurringDialog({
                 ))}
               </SelectContent>
             </Select>
+            {errors.category && (
+              <p className="text-xs text-red-500">{errors.category}</p>
+            )}
+          </div>
           <div className="flex gap-2">
               <Button
                 type="button"
