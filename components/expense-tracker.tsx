@@ -72,6 +72,8 @@ import { UsdPurchaseDialog } from "./usd-purchase-dialog";
 import { ExchangeSummary } from "./exchange-summary";
 import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
+import { useHydration } from "@/hooks/useHydration";
+import { SetupWizard } from "@/components/setup-wizard/setup-wizard";
 
 function validateField(
   name: string,
@@ -330,9 +332,9 @@ export function ExpenseTracker() {
   const incomeHasErrors = Object.keys(incomeErrors).length > 0;
 
   return (
-    <div className=" p-4 ">
+    <div className=" p-4 pb-20">
       <div className="mx-auto max-w-7xl space-y-8 ">
-        <div className="flex items-center gap-6 rounded-2xl bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg shadow-black/5 px-4 py-2 mx-2">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-6 rounded-2xl bg-background/80 backdrop-blur-md border border-border/50 shadow-lg shadow-black/20 px-4 py-2">
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
@@ -340,36 +342,36 @@ export function ExpenseTracker() {
           >
             <TabsList>
               <TabsTrigger value="table">
-                <Coins className="mr-2 h-4 w-4" />
-                Gastos
+                <Coins className={cn("h-4 w-4", activeTab === "table" && "mr-2")} />
+                {activeTab === "table" && "Gastos"}
               </TabsTrigger>
               <TabsTrigger value="incomes">
-                <DollarSign className="mr-2 h-4 w-4" />
-                Ingresos
+                <DollarSign className={cn("h-4 w-4", activeTab === "incomes" && "mr-2")} />
+                {activeTab === "incomes" && "Ingresos"}
               </TabsTrigger>
               <TabsTrigger value="investments">
-                <ChartNoAxesCombined className="mr-2 h-4 w-4" />
-                Inversiones
+                <ChartNoAxesCombined className={cn("h-4 w-4", activeTab === "investments" && "mr-2")} />
+                {activeTab === "investments" && "Inversiones"}
               </TabsTrigger>
               <TabsTrigger value="charts">
-                <PieChart className="mr-2 h-4 w-4" />
-                Charts
+                <PieChart className={cn("h-4 w-4", activeTab === "charts" && "mr-2")} />
+                {activeTab === "charts" && "Charts"}
               </TabsTrigger>
               <TabsTrigger value="movements">
-                <ArrowLeftRight className="h-4 w-4 mr-1" />
-                Movimientos
+                <ArrowLeftRight className={cn("h-4 w-4", activeTab === "movements" && "mr-1")} />
+                {activeTab === "movements" && "Movimientos"}
               </TabsTrigger>
               <TabsTrigger value="recurrentes">
-                <Repeat className="h-4 w-4 mr-2" />
-                Recurrentes
+                <Repeat className={cn("h-4 w-4", activeTab === "recurrentes" && "mr-2")} />
+                {activeTab === "recurrentes" && "Recurrentes"}
               </TabsTrigger>
               <TabsTrigger value="budgets">
-                <Target className="h-4 w-4 mr-1" />
-                Presupuestos
+                <Target className={cn("h-4 w-4", activeTab === "budgets" && "mr-1")} />
+                {activeTab === "budgets" && "Presupuestos"}
               </TabsTrigger>
               <TabsTrigger value="loans">
-                <Handshake className="mr-2 h-4 w-4" />
-                Prestamos
+                <Handshake className={cn("h-4 w-4", activeTab === "loans" && "mr-2")} />
+                {activeTab === "loans" && "Prestamos"}
               </TabsTrigger>
             </TabsList>
           </Tabs>
