@@ -7,8 +7,8 @@ last_updated: "2026-04-02T13:17:42.204Z"
 progress:
   total_phases: 3
   completed_phases: 3
-  total_plans: 12
-  completed_plans: 12
+  total_plans: 16
+  completed_plans: 13
 ---
 
 # Project State
@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** Reflejar la realidad financiera exacta del usuario en todo momento — nunca perderse un peso ni un dolar.
-**Current focus:** Phase 3: Dual Currency Engine
+**Current focus:** Phase 4: Income & Pay Date
 
 ## Current Position
 
-Phase: 3 of 10 (Dual Currency Engine) -- COMPLETE
-Plan: 4 of 4 in current phase (03-01, 03-02, 03-03, 03-04 complete)
-Status: Phase 3 Complete
-Last activity: 2026-04-02 -- Completed 03-04 (Retroactive Rate Editing & Validation)
+Phase: 4 of 10 (Income & Pay Date) -- IN PROGRESS
+Plan: 1 of 4 in current phase (04-01 complete)
+Status: Executing Phase 4
+Last activity: 2026-04-02 -- Completed 04-01 (Income Model & Terminology)
 
-Progress: [████████████] 42%
+Progress: [█████████████] 46%
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Progress: [████████████] 42%
 | Phase 03 P02 | 3min | 2 tasks | 6 files |
 | Phase 03 P03 | 2min | 2 tasks | 3 files |
 | Phase 03 P04 | 4min | 2 tasks | 6 files |
+| Phase 04 P01 | 3min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,9 @@ Recent decisions affecting current work:
 - 03-03: Effective rate computed live as user types ARS and USD amounts
 - 03-04: Pencil icon always visible with muted color + hover:blue for rate editing discoverability
 - 03-04: USD purchase auto-calc uses globalUsdRate but user can freely override either field
+- 04-01: Dual-write to salaryHistory and legacy salaries map for backward compat during transition
+- 04-01: Migration v4 deduplicates entries — only creates new SalaryEntry when amount/rate changes
+- 04-01: getSalaryForMonth uses string comparison for yyyy-MM ordering
 
 ### Pending Todos
 
@@ -106,5 +110,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 03-04-PLAN.md (Retroactive Rate Editing & Validation) -- Phase 3 COMPLETE
-Resume file: Next phase (04)
+Stopped at: Completed 04-01-PLAN.md (Income Model & Terminology)
+Resume file: 04-02-PLAN.md
