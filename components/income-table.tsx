@@ -1,7 +1,9 @@
 "use client";
 
-import { Trash2, Pencil } from "lucide-react";
+import { useState } from "react";
+import { Trash2, Pencil, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -21,29 +23,89 @@ interface IncomeTableProps {
   incomes: ExtraIncome[];
   onDeleteIncome: (id: string) => void;
   onEditIncome: (income: ExtraIncome) => void;
+  onUpdateUsdRate: (incomeId: string, newRate: number) => void;
+}
+
+function InlineRateEditor({
+  currentRate,
+  onSave,
+  onCancel,
+}: {
+  currentRate: number;
+  onSave: (newRate: number) => void;
+  onCancel: () => void;
+}) {
+  const [value, setValue] = useState(String(currentRate));
+
+  const handleSave = () => {
+    const num = parseFloat(value);
+    if (!isNaN(num) && num > 0) {
+      onSave(num);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1">
+      <Input
+        type="number"
+        step="0.01"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleSave();
+          }
+          if (e.key === "Escape") onCancel();
+        }}
+        className="h-6 w-20 text-xs"
+        autoFocus
+      />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6"
+        onClick={handleSave}
+      >
+        <Check className="h-3 w-3" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6"
+        onClick={onCancel}
+      >
+        <X className="h-3 w-3" />
+      </Button>
+    </div>
+  );
 }
 
 export default function IncomeTable({
   incomes,
   onDeleteIncome,
   onEditIncome,
+  onUpdateUsdRate,
 }: IncomeTableProps) {
   const isHydrated = useHydration();
+  const [editingRateId, setEditingRateId] = useState<string | null>(null);
   const className = "text-center";
+
   if (!isHydrated) {
     return (
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead className={className}>Fecha</TableHead>
-            <TableHead className={className}>Descripción</TableHead>
+            <TableHead className={className}>Descripcion</TableHead>
             <TableHead className={className}>Monto</TableHead>
+            <TableHead className={className}>Cotizacion</TableHead>
             <TableHead className={className}>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell colSpan={4} className="text-center">
+            <TableCell colSpan={5} className="text-center">
               Cargando...
             </TableCell>
           </TableRow>
@@ -57,15 +119,16 @@ export default function IncomeTable({
       <TableHeader>
         <TableRow>
           <TableHead className={className}>Fecha</TableHead>
-          <TableHead className={className}>Descripción</TableHead>
+          <TableHead className={className}>Descripcion</TableHead>
           <TableHead className={className}>Monto</TableHead>
+          <TableHead className={className}>Cotizacion</TableHead>
           <TableHead className={className}>Acciones</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {incomes.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={4} className="text-center">
+            <TableCell colSpan={5} className="text-center">
               No hay ingresos extra este mes
             </TableCell>
           </TableRow>
@@ -86,6 +149,36 @@ export default function IncomeTable({
                     currency={currencySymbol(income.currencyType || CurrencyType.ARS)}
                   />
                 </span>
+              </TableCell>
+              <TableCell className={className}>
+                {editingRateId === income.id ? (
+                  <InlineRateEditor
+                    currentRate={income.usdRate}
+                    onSave={(newRate) => {
+                      onUpdateUsdRate(income.id, newRate);
+                      setEditingRateId(null);
+                    }}
+                    onCancel={() => setEditingRateId(null)}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">
+                      {income.usdRate > 0
+                        ? `$${income.usdRate.toLocaleString()}`
+                        : "-"}
+                    </span>
+                    {income.usdRate > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => setEditingRateId(income.id)}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                )}
               </TableCell>
               <TableCell className={className}>
                 <div className="flex justify-center gap-2">

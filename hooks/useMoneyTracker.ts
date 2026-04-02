@@ -347,6 +347,10 @@ export function useMoneyTracker() {
     handleEditExpense: expensesTracker.handleEditExpense,
     editingExpense: expensesTracker.editingExpense,
     handleUpdateExpense: expensesTracker.handleUpdateExpense,
+    handleUpdateUsdRate: expensesTracker.handleUpdateUsdRate,
+
+    // Funciones de useIncomes (rate editing)
+    handleUpdateIncomeUsdRate: incomesTracker.handleUpdateIncomeUsdRate,
 
     // Funciones de useInvestmentsTracker
     openInvestment: investmentsTracker.openInvestment,

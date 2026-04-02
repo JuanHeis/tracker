@@ -144,6 +144,16 @@ export function useExpensesTracker(
     setEditingExpense(null);
   };
 
+  const handleUpdateUsdRate = (expenseId: string, newRate: number) => {
+    if (newRate <= 0) return;
+    updateMonthlyData({
+      ...monthlyData,
+      expenses: monthlyData.expenses.map((expense) =>
+        expense.id === expenseId ? { ...expense, usdRate: newRate } : expense
+      ),
+    });
+  };
+
   return {
     open,
     setOpen,
@@ -157,5 +167,6 @@ export function useExpensesTracker(
     handleEditExpense,
     handleUpdateExpense,
     handleCloseModal,
+    handleUpdateUsdRate,
   };
 }

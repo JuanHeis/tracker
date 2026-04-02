@@ -128,6 +128,16 @@ export function useIncomes(
     return incomeDate >= monthStart && incomeDate <= monthEnd;
   });
 
+  const handleUpdateIncomeUsdRate = (incomeId: string, newRate: number) => {
+    if (newRate <= 0) return;
+    updateMonthlyData({
+      ...monthlyData,
+      extraIncomes: monthlyData.extraIncomes.map((income) =>
+        income.id === incomeId ? { ...income, usdRate: newRate } : income
+      ),
+    });
+  };
+
   return {
     showSalaryForm,
     setShowSalaryForm,
@@ -142,5 +152,6 @@ export function useIncomes(
     handleOpenIncomeModal,
     handleEditIncome,
     handleUpdateIncome,
+    handleUpdateIncomeUsdRate,
   };
 }

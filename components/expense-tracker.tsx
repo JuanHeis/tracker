@@ -133,6 +133,9 @@ export function ExpenseTracker() {
     handleRegisterUntrackedUsd,
     handleDeleteUsdPurchase,
     calculateExchangeGainLoss,
+    // Retroactive rate editing
+    handleUpdateUsdRate,
+    handleUpdateIncomeUsdRate,
   } = useMoneyTracker();
 
   // USD purchase dialog state
@@ -349,6 +352,7 @@ export function ExpenseTracker() {
                     expenses={filteredExpenses}
                     onDeleteExpense={handleDeleteExpense}
                     onEditExpense={handleEditExpense}
+                    onUpdateUsdRate={handleUpdateUsdRate}
                   />
                 </CardContent>
               </Card>
@@ -363,6 +367,7 @@ export function ExpenseTracker() {
                     incomes={filteredIncomes}
                     onDeleteIncome={handleDeleteIncome}
                     onEditIncome={handleEditIncome}
+                    onUpdateUsdRate={handleUpdateIncomeUsdRate}
                   />
                 </CardContent>
               </Card>

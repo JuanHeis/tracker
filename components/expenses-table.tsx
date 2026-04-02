@@ -1,8 +1,10 @@
 "use client";
 
-import { Trash2, Pencil } from "lucide-react";
+import { useState } from "react";
+import { Trash2, Pencil, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -23,16 +25,74 @@ interface ExpensesTableProps {
   expenses: Expense[];
   onDeleteExpense: (id: string) => void;
   onEditExpense: (expense: Expense) => void;
+  onUpdateUsdRate: (expenseId: string, newRate: number) => void;
 }
 
 const className = "text-center";
+
+function InlineRateEditor({
+  currentRate,
+  onSave,
+  onCancel,
+}: {
+  currentRate: number;
+  onSave: (newRate: number) => void;
+  onCancel: () => void;
+}) {
+  const [value, setValue] = useState(String(currentRate));
+
+  const handleSave = () => {
+    const num = parseFloat(value);
+    if (!isNaN(num) && num > 0) {
+      onSave(num);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1">
+      <Input
+        type="number"
+        step="0.01"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleSave();
+          }
+          if (e.key === "Escape") onCancel();
+        }}
+        className="h-6 w-20 text-xs"
+        autoFocus
+      />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6"
+        onClick={handleSave}
+      >
+        <Check className="h-3 w-3" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6"
+        onClick={onCancel}
+      >
+        <X className="h-3 w-3" />
+      </Button>
+    </div>
+  );
+}
 
 export function ExpensesTable({
   expenses,
   onDeleteExpense,
   onEditExpense,
+  onUpdateUsdRate,
 }: ExpensesTableProps) {
   const isHydrated = useHydration();
+  const [editingRateId, setEditingRateId] = useState<string | null>(null);
 
   if (!isHydrated) {
     return (
@@ -41,14 +101,15 @@ export function ExpensesTable({
           <TableRow>
             <TableHead className={className}>Fecha</TableHead>
             <TableHead className={className}>Nombre</TableHead>
-            <TableHead className={className}>Categoría</TableHead>
+            <TableHead className={className}>Categoria</TableHead>
             <TableHead className={className}>Monto</TableHead>
+            <TableHead className={className}>Cotizacion</TableHead>
             <TableHead className={className}>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell colSpan={5} className="text-center">
+            <TableCell colSpan={6} className="text-center">
               Cargando...
             </TableCell>
           </TableRow>
@@ -63,20 +124,22 @@ export function ExpensesTable({
         <TableRow>
           <TableHead className={className}>Fecha</TableHead>
           <TableHead className={className}>Nombre</TableHead>
-          <TableHead className={className}>Categoría</TableHead>
+          <TableHead className={className}>Categoria</TableHead>
           <TableHead className={className}>Monto</TableHead>
+          <TableHead className={className}>Cotizacion</TableHead>
           <TableHead className={className}>Acciones</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {expenses.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={5} className="text-center">
+            <TableCell colSpan={6} className="text-center">
               No hay gastos cargados este mes
             </TableCell>
           </TableRow>
         ) : (
           expenses.map((expense) => {
+            const isUsd = expense.currencyType === CurrencyType.USD;
             return (
               <TableRow key={expense.id}>
                 <TableCell className={className}>
@@ -103,13 +166,43 @@ export function ExpensesTable({
                 <TableCell className={className}>
                   <span className={cn(
                     "font-medium",
-                    expense.currencyType === CurrencyType.USD && "text-green-600 dark:text-green-400"
+                    isUsd && "text-green-600 dark:text-green-400"
                   )}>
                     <FormattedAmount
                       value={expense.amount}
                       currency={currencySymbol(expense.currencyType || CurrencyType.ARS)}
                     />
                   </span>
+                </TableCell>
+                <TableCell className={className}>
+                  {editingRateId === expense.id ? (
+                    <InlineRateEditor
+                      currentRate={expense.usdRate}
+                      onSave={(newRate) => {
+                        onUpdateUsdRate(expense.id, newRate);
+                        setEditingRateId(null);
+                      }}
+                      onCancel={() => setEditingRateId(null)}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center gap-1">
+                      <span className="text-xs text-muted-foreground">
+                        {expense.usdRate > 0
+                          ? `$${expense.usdRate.toLocaleString()}`
+                          : "-"}
+                      </span>
+                      {expense.usdRate > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => setEditingRateId(expense.id)}
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell className={className}>
                   <div className="flex justify-center gap-0">
