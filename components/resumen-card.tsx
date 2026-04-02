@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FormattedAmount } from "./formatted-amount";
+import { cn } from "@/lib/utils";
 import {
   TooltipContent,
   TooltipProvider,
@@ -115,21 +116,35 @@ export function ResumenCard({
             {/* Ingreso fijo */}
             <div className="flex justify-between">
               <span>Ingreso fijo:</span>
-              <span className={`font-medium text-green-600 dark:text-green-400 ${isPendiente ? "opacity-50" : ""}`}>
-                <FormattedAmount value={ingresoFijo} currency="ARS" />
-                {ingresoFijoIsOverride && (
-                  <span className="ml-1 text-xs text-muted-foreground">(ajuste)</span>
-                )}
-              </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className={cn("font-medium text-green-600 dark:text-green-400 cursor-help", isPendiente && "opacity-50")}>
+                    <FormattedAmount value={ingresoFijo} currency="ARS" />
+                    {ingresoFijoIsOverride && (
+                      <span className="ml-1 text-xs text-muted-foreground">(ajuste)</span>
+                    )}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>Ingreso fijo mensual{ingresoFijoIsOverride ? " (ajuste manual)" : " (desde historial)"}</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
 
             {/* Otros ingresos */}
             {otrosIngresos > 0 && (
               <div className="flex justify-between">
                 <span>Otros ingresos:</span>
-                <span className="font-medium text-green-600 dark:text-green-400">
-                  <FormattedAmount value={otrosIngresos} currency="ARS" />
-                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="font-medium text-green-600 dark:text-green-400 cursor-help">
+                      <FormattedAmount value={otrosIngresos} currency="ARS" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Suma de otros ingresos en ARS del periodo</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             )}
 
@@ -203,30 +218,62 @@ export function ResumenCard({
             {/* Gastos */}
             <div className="flex justify-between">
               <span>Gastos:</span>
-              <span className="font-medium text-red-500">
-                <FormattedAmount value={totalGastos} currency="ARS" />
-              </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="font-medium text-red-500 cursor-help">
+                    <FormattedAmount value={totalGastos} currency="ARS" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>Total gastos en ARS del periodo</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
 
             {/* Aportes inversiones */}
             {aportesInversiones > 0 && (
               <div className="flex justify-between">
                 <span>Aportes inversiones:</span>
-                <span className="font-medium text-blue-500 dark:text-blue-400">
-                  <FormattedAmount value={-aportesInversiones} currency="ARS" />
-                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="font-medium text-blue-500 dark:text-blue-400 cursor-help">
+                      <FormattedAmount value={-aportesInversiones} currency="ARS" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Aportes a inversiones en ARS del periodo</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             )}
 
             <hr className="border-border" />
 
             {/* Disponible */}
-            <div className="flex justify-between">
-              <span className="font-bold">Disponible:</span>
-              <span className={`font-bold ${disponible >= 0 ? "text-green-500" : "text-red-500"}`}>
-                <FormattedAmount value={disponible} currency="ARS" />
-              </span>
-            </div>
+            <Tooltip>
+              <TooltipTrigger className="w-full">
+                <div className="flex justify-between w-full">
+                  <span className="font-bold">Disponible:</span>
+                  <span className={cn("font-bold", disponible >= 0 ? "text-green-500" : "text-red-500")}>
+                    <FormattedAmount value={disponible} currency="ARS" />
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm">
+                <p className="font-bold mb-1">Disponible = Ingresos - Egresos</p>
+                <p>Ingreso fijo: <FormattedAmount value={ingresoFijo} currency="$" /></p>
+                <p>+ Otros ingresos: <FormattedAmount value={otrosIngresos} currency="$" /></p>
+                {aguinaldoAmount != null && (
+                  <p>+ Aguinaldo: <FormattedAmount value={aguinaldoAmount} currency="$" /></p>
+                )}
+                <p className="text-red-400">- Gastos: <FormattedAmount value={totalGastos} currency="$" /></p>
+                {aportesInversiones > 0 && (
+                  <p className="text-blue-400">- Aportes inv.: <FormattedAmount value={aportesInversiones} currency="$" /></p>
+                )}
+                <hr className="my-1 border-border" />
+                <p className="font-bold">= <FormattedAmount value={disponible} currency="$" /></p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </CardContent>
       </TooltipProvider>

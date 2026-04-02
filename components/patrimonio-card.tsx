@@ -8,6 +8,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface PatrimonioCardProps {
   arsBalance: number;
@@ -53,39 +59,82 @@ export function PatrimonioCard({
         </Badge>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          <div className="flex justify-between">
-            <span>Liquido ARS:</span>
-            <span className="font-medium">{formatArs(arsBalance)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Liquido USD:</span>
-            <span className="font-medium">{formatUsd(usdBalance)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Inversiones ARS:</span>
-            <span className="font-medium text-blue-500 dark:text-blue-400">
-              {formatArs(arsInvestments)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Inversiones USD:</span>
-            <span className="font-medium text-blue-500 dark:text-blue-400">
-              {formatUsd(usdInvestments)}
-            </span>
-          </div>
-          <hr className="border-border" />
-          {globalUsdRate > 0 ? (
+        <TooltipProvider>
+          <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="font-semibold">Patrimonio Total:</span>
-              <span className="font-bold">{formatArs(patrimonio)}</span>
+              <span>Liquido ARS:</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="font-medium cursor-help">{formatArs(arsBalance)}</span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Saldo liquido en pesos del periodo actual</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
-          ) : (
-            <p className="text-sm text-amber-600 dark:text-amber-400">
-              Configure cotizacion USD para ver patrimonio total
-            </p>
-          )}
-        </div>
+            <div className="flex justify-between">
+              <span>Liquido USD:</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="font-medium cursor-help">{formatUsd(usdBalance)}</span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Saldo acumulado en dolares (todos los meses)</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="flex justify-between">
+              <span>Inversiones ARS:</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="font-medium text-blue-500 dark:text-blue-400 cursor-help">
+                    {formatArs(arsInvestments)}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Valor actual de inversiones activas en ARS</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="flex justify-between">
+              <span>Inversiones USD:</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="font-medium text-blue-500 dark:text-blue-400 cursor-help">
+                    {formatUsd(usdInvestments)}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Valor actual de inversiones activas en USD</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <hr className="border-border" />
+            {globalUsdRate > 0 ? (
+              <Tooltip>
+                <TooltipTrigger className="w-full">
+                  <div className="flex justify-between w-full">
+                    <span className="font-semibold">Patrimonio Total:</span>
+                    <span className="font-bold cursor-help">{formatArs(patrimonio)}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-sm">
+                  <p className="font-bold mb-1">Patrimonio Total</p>
+                  <p>Liquido ARS: {formatArs(arsBalance)}</p>
+                  <p>Liquido USD: US$ {usdBalance.toLocaleString()} x ${globalUsdRate.toLocaleString()} = {formatArs(usdBalance * globalUsdRate)}</p>
+                  <p className="text-blue-400">Inv. ARS: {formatArs(arsInvestments)}</p>
+                  <p className="text-blue-400">Inv. USD: US$ {usdInvestments.toLocaleString()} x ${globalUsdRate.toLocaleString()} = {formatArs(usdInvestments * globalUsdRate)}</p>
+                  <hr className="my-1 border-border" />
+                  <p className="font-bold">= {formatArs(patrimonio)}</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                Configure cotizacion USD para ver patrimonio total
+              </p>
+            )}
+          </div>
+        </TooltipProvider>
       </CardContent>
     </Card>
   );
