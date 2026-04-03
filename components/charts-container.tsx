@@ -10,6 +10,7 @@ import { SalaryByMonth } from "./charts/salary-by-month";
 import { PatrimonyChart } from "./charts/patrimony-chart";
 import { ChartControls } from "./charts/chart-controls";
 import { ChartDisclaimer } from "./charts/chart-disclaimer";
+import { InvestmentChart } from "./charts/investment-chart";
 
 interface ChartsContainerProps {
   monthlyData: MonthlyData;
@@ -61,6 +62,14 @@ export default function ChartsContainer({
         data={projection.patrimonyData}
         currentMonthIndex={projection.currentMonthIndex}
         visibleScenarios={visibleScenarios}
+      />
+      <ChartDisclaimer globalUsdRate={globalUsdRate} />
+      <InvestmentChart
+        projections={projection.investmentProjections}
+        monthLabels={projection.patrimonyData
+          .slice(projection.currentMonthIndex)
+          .map((p) => p.month)}
+        globalUsdRate={globalUsdRate}
       />
       <ChartDisclaimer globalUsdRate={globalUsdRate} />
     </div>
