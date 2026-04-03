@@ -6,24 +6,24 @@
 
 ## Summary
 
-Phase 15 is a pure computation phase: build a single hook (`useProjectionEngine`) that reads existing localStorage data (MonthlyData, salaryHistory, recurringExpenses, incomeConfig) and produces projection data series ready for chart consumption by Phase 16. No UI changes, no new localStorage keys, no schema mutations.
+Phase 15 is a pure computation phase: build all projection math and data orchestration as pure TypeScript functions exposed through a single `useProjectionEngine` hook. No UI rendering beyond what Phase 14 already established. The hook reads existing localStorage data (MonthlyData, salaryHistory, recurringExpenses, globalUsdRate, incomeConfig) in a strictly read-only manner and outputs projection data series ready for chart consumption in Phase 16.
 
-The math is straightforward: compound interest for investment projections, flat-line linear projection for income, and arithmetic for monthly net savings. Historical patrimony is reconstructed by iterating existing monthlyData month keys. The main complexity is orchestrating multiple data sources (investments, salary, recurring expenses, USD rate) into a coherent time-series output.
+The math is straightforward: compound interest for investments, flat-line projection for income, monthly net savings minus recurring expenses for patrimony growth, and three scenario variants with different growth rate assumptions. No external math libraries needed -- all formulas are standard compound interest (`FV = PV * (1 + r/n)^(nt)`) and arithmetic in ~200 lines of plain TypeScript.
 
-The project already decided (STATE.md): "No external math libraries -- compound interest + linear regression in ~100 lines plain TS." Growth rates come from "configurable defaults per type, NOT derived from movements." This keeps the engine simple and predictable.
+The key design challenge is historical patrimony reconstruction: since per-month investment values are NOT stored (only current value + movements), historical patrimony must be reconstructed from movements, expenses, incomes, and salary history on a month-by-month basis using the same logic as `calculateDualBalances()`.
 
-**Primary recommendation:** Create a single `hooks/useProjectionEngine.ts` hook with pure helper functions for each projection type (investment compound interest, income flat line, patrimony net savings, historical reconstruction, scenario variants). All functions are pure and testable. The hook reads from existing data sources and returns typed arrays for chart consumption.
+**Primary recommendation:** Create a `lib/projection-engine.ts` with pure functions for each projection type, plus a `hooks/useProjectionEngine.ts` hook that orchestrates data reads and returns chart-ready data series. All functions must be pure (inputs in, outputs out) for testability.
 
 <phase_requirements>
 ## Phase Requirements
 
 | ID | Description | Research Support |
 |----|-------------|-----------------|
-| PROJ-01 | User ve proyeccion de cada inversion activa con interes compuesto (PF usa TNA, otras usan rendimiento observado) | Investment interface has `tna` field for PF. For other types, use configurable default rates per type (STATE.md decision). Compound interest formula: `FV = PV * (1 + r/n)^(n*t)` with monthly compounding. See Code Examples section. |
-| PROJ-02 | User puede activar "aportes futuros" por inversion -- proyecta aportes mensuales recurrentes (default: monto del ultimo aporte) | Investment.movements array is sorted by date. Last aporte amount = `movements.filter(m => m.type === "aporte").at(-1)?.amount`. Future contributions add to principal each month before compounding. See Code Examples section. |
-| PROJ-03 | User ve proyeccion lineal de ingresos futuros basada en su ingreso fijo actual | salaryHistory.entries + getSalaryForMonth() already resolve current salary. Flat-line projection = repeat current amount for N future months. See Architecture Patterns. |
-| PROJ-04 | Proyeccion de patrimonio deduce gastos recurrentes del ahorro mensual neto | recurringExpenses (localStorage key) has active recurring expenses with amounts. Monthly net savings = ingreso fijo - sum(active recurring amounts). See Architecture Patterns. |
-| PROJ-05 | User ve patrimonio historico reconstruido mes a mes desde monthlyData en linea solida | monthlyData contains ALL historical data in a single object. Expenses and incomes have date fields (yyyy-MM-dd). Group by month, compute running patrimony. See Architecture Patterns. |
+| PROJ-01 | User ve proyeccion de cada inversion activa con interes compuesto (PF usa TNA, otras usan rendimiento observado) | Investment interface has `tna` field for PF. For other types, use configurable default rates per type (STATE.md decision: "Growth rates from configurable defaults per type, NOT derived from movements"). Compound interest formula with monthly compounding. See Code Examples. |
+| PROJ-02 | User puede activar "aportes futuros" por inversion -- proyecta aportes mensuales recurrentes (default: monto del ultimo aporte) | Investment.movements array available. Last non-initial aporte = `movements.filter(m => m.type === "aporte" && !m.isInitial).at(-1)?.amount`. Toggle state lives in hook (not persisted -- INFRA-03 compliance). See Architecture Patterns: Future Contributions. |
+| PROJ-03 | User ve proyeccion lineal de ingresos futuros basada en su ingreso fijo actual | SalaryHistory + getSalaryForMonth() already exist and resolve current salary correctly. Income projection = flat line at current salary for N months. See Architecture Patterns. |
+| PROJ-04 | Proyeccion de patrimonio deduce gastos recurrentes del ahorro mensual neto | RecurringExpense[] available from localStorage key "recurringExpenses". Sum active recurring amounts = monthly outflow. Net savings = salary - recurring expenses. See Architecture Patterns. |
+| PROJ-05 | User ve patrimonio historico reconstruido mes a mes desde monthlyData en linea solida | monthlyData contains ALL historical data in a single object. Expenses, incomes, investments with dates. Must iterate months and compute running patrimony mirroring calculateDualBalances() logic. See Architecture Patterns: Historical Patrimony. |
 </phase_requirements>
 
 ## Standard Stack
@@ -33,255 +33,249 @@ The project already decided (STATE.md): "No external math libraries -- compound 
 | Library | Version | Purpose | Why Standard |
 |---------|---------|---------|--------------|
 | Plain TypeScript | (project TS) | All projection math | STATE.md decision: "No external math libraries -- compound interest + linear regression in ~100 lines plain TS" |
-| date-fns | ^4.1.0 | Month iteration, date formatting | Already installed and used throughout the project |
+| date-fns | ^4.1.0 | Month iteration, date math | Already installed and used throughout the project |
 
 ### Already Installed (No Changes)
 
 | Library | Version | Purpose | Why Relevant |
 |---------|---------|---------|--------------|
-| recharts | ^3.8.1 | Chart rendering (Phase 16) | The hook output format must match what Recharts expects: array of objects with named keys |
-| React 18 | ^18 | Hook runtime | useProjectionEngine will be a standard React hook |
+| recharts | ^3.8.1 | Chart rendering (Phase 16) | Hook output format must match Recharts expectations: array of objects with named keys |
+| React 18 | ^18 | Hook runtime | useProjectionEngine is a standard React hook with useMemo |
 
 ### Alternatives Considered
 
 | Instead of | Could Use | Tradeoff |
 |------------|-----------|----------|
-| Plain TS math | financial.js / finance-math | Overkill -- only need compound interest formula. Adding a dependency for one formula is wrong |
-| Single hook | Redux slice | Project uses useLocalStorage pattern, not Redux for state. Adding Redux for projections would break consistency |
-| Pure functions + hook wrapper | Class-based calculator | Project convention is functional hooks. Classes would be alien to codebase |
+| Plain TS math | financial.js / mathjs | Overkill -- only need compound interest formula. One dependency for one formula is wrong |
+| Pure functions in lib/ | Everything inline in hook | Pure functions are testable without React. Hook is just orchestration glue |
 
 **Installation:**
-No new packages needed.
+```bash
+# No new packages needed
+```
 
 ## Architecture Patterns
 
 ### Recommended Project Structure
 
 ```
-hooks/
-  useProjectionEngine.ts    # Main hook: orchestrates all projections
 lib/
-  projection/
-    compound-interest.ts    # Pure: investment projection math
-    income-projection.ts    # Pure: flat-line income projection
-    patrimony-history.ts    # Pure: historical patrimony reconstruction
-    scenario-engine.ts      # Pure: optimista/base/pesimista variants
-    types.ts                # Shared projection types
-```
-
-Alternative (simpler, fits project convention better -- all hooks are single files):
-
-```
+  projection-engine.ts       # Pure functions: all projection math + types
 hooks/
-  useProjectionEngine.ts    # Everything in one file (~200-300 lines)
+  useProjectionEngine.ts     # Hook: reads data, calls pure functions, returns chart-ready series
 ```
 
-**Recommendation:** Single file. The project has NO `lib/projection/` folder convention. Every hook is a single file in `hooks/`. The math is simple enough (~100 lines of pure functions + ~100 lines of hook orchestration). Split only if it exceeds 400 lines.
+**Why two files instead of one:** The project has `lib/utils.ts` already. Pure math functions with zero React dependency belong in `lib/`. The hook in `hooks/` orchestrates data reads and memoization. This separation enables testing the math without React test infrastructure.
 
-### Pattern 1: Investment Compound Interest Projection
+### Pattern 1: Investment Compound Interest Projection (PROJ-01)
 
-**What:** Project future value of each active investment using compound interest
-**When to use:** PROJ-01, PROJ-02
+**What:** Project each active investment forward using compound interest.
+**Rate resolution per investment type:**
+- **Plazo Fijo:** Use `investment.tna` (TNA percentage). Monthly rate = `(1 + tna/100/365)^30 - 1` (PF compounds daily in Argentina).
+- **FCI / Acciones / Crypto / Cuenta remunerada:** Use configurable default annual rates per type. Monthly rate = `annualRate / 12`.
 
 ```typescript
-// Pure function -- no React dependencies
-interface InvestmentProjection {
+// Default annual rates (decimal). PF uses its own TNA, so 0 here.
+const DEFAULT_ANNUAL_RATES: Record<InvestmentType, ScenarioRates> = {
+  "Plazo Fijo":        { base: 0, optimista: 0, pesimista: 0 }, // Uses TNA
+  "FCI":               { base: 0.40, optimista: 0.60, pesimista: 0.20 },
+  "Crypto":            { base: 0.15, optimista: 0.40, pesimista: -0.10 },
+  "Acciones":          { base: 0.12, optimista: 0.25, pesimista: -0.05 },
+  "Cuenta remunerada": { base: 0.35, optimista: 0.45, pesimista: 0.25 },
+};
+```
+
+**Note on rates:** These defaults reflect Argentine 2025-2026 market context (high nominal rates). They are hardcoded constants. "Editor custom de parametros de escenarios" is explicitly out of scope per REQUIREMENTS.md.
+
+### Pattern 2: Future Contributions Toggle (PROJ-02)
+
+**What:** Per-investment toggle that adds monthly contributions to compound growth.
+**Default amount:** Last non-initial aporte in the movements array.
+**State storage:** In-memory `useState` within useProjectionEngine (NOT persisted to localStorage -- INFRA-03).
+
+```typescript
+function getLastAporteAmount(investment: Investment): number {
+  const aportes = investment.movements
+    .filter(m => m.type === "aporte" && !m.isInitial);
+  if (aportes.length === 0) return 0;
+  return aportes[aportes.length - 1].amount;
+}
+```
+
+### Pattern 3: Income Projection (PROJ-03)
+
+**What:** Flat line at current ingreso fijo extended forward.
+**Data source:** `getSalaryForMonth(currentMonth, salaryHistory.entries, salaryOverrides)` returns current salary.
+
+```typescript
+function projectIncome(
+  currentSalary: number,
+  horizonMonths: number,
+  startMonth: string,  // "yyyy-MM"
+): Array<{ month: string; amount: number }> {
+  const points: Array<{ month: string; amount: number }> = [];
+  let cursor = parse(startMonth, "yyyy-MM", new Date());
+  for (let i = 0; i < horizonMonths; i++) {
+    cursor = addMonths(cursor, 1);
+    points.push({ month: format(cursor, "yyyy-MM"), amount: currentSalary });
+  }
+  return points;
+}
+```
+
+### Pattern 4: Patrimony Projection with Scenarios (PROJ-04)
+
+**What:** Monthly net savings + investment growth drives patrimony forward.
+**Three scenarios affect ONLY investment growth rates, not income or expenses.**
+
+```typescript
+function monthlyNetSavings(
+  currentSalary: number,
+  recurringExpenses: RecurringExpense[],
+  globalUsdRate: number,
+): number {
+  const totalRecurring = recurringExpenses
+    .filter(r => r.status === "Activa")
+    .reduce((sum, r) => {
+      if (r.currencyType === CurrencyType.USD) return sum + r.amount * globalUsdRate;
+      return sum + r.amount;
+    }, 0);
+  return Math.max(0, currentSalary - totalRecurring);
+}
+```
+
+Patrimony at month N = Patrimony at month N-1 + net savings + investment growth for that month.
+
+### Pattern 5: Historical Patrimony Reconstruction (PROJ-05)
+
+**What:** Iterate all months with data in monthlyData and compute patrimony for each.
+**Strategy:** Mirror the logic of `calculateDualBalances()` (lines 351-525 of useMoneyTracker.ts) but parameterized per month.
+
+Key points:
+1. Find the earliest month with any data (expense date, income date, salary entry, investment movement).
+2. For each month from earliest to current month:
+   - Salary: resolve via `getSalaryForMonth(monthKey, salaryHistory, overrides)`
+   - Expenses: filter `expenses.filter(e => e.date.startsWith(monthKey))`
+   - Extra incomes: filter by month
+   - Investment movements: filter by month, separate ARS/USD
+   - Transfers: filter by month
+   - Loans: filter by month
+3. Compute cumulative running balances (ARS liquid, USD liquid, investment capital deployed).
+4. For the CURRENT month only: replace investment capital deployed with actual `currentValue` sums.
+5. Total patrimony = ARS liquid + (USD liquid * globalUsdRate) + investment value.
+
+**Simplification for isLiquid investments:** Liquid investments (`isLiquid: true`) add their currentValue to liquid balance, not investment balance -- matching calculateDualBalances() behavior.
+
+### Pattern 6: Hook Output Shape (Chart-Ready)
+
+```typescript
+export interface ProjectionPoint {
+  month: string;              // "yyyy-MM"
+  label: string;              // "Ene 26" for chart display
+  historico: number | null;   // null for future months
+  base: number | null;        // null for past months (except overlap at current)
+  optimista: number | null;
+  pesimista: number | null;
+}
+
+export interface InvestmentProjection {
   investmentId: string;
   investmentName: string;
   type: InvestmentType;
   currencyType: CurrencyType;
   currentValue: number;
-  monthlyContribution: number;  // 0 if aportes futuros disabled
-  projectedValues: number[];    // Array indexed by future month (0 = current)
+  points: Array<{
+    month: string;
+    base: number;
+    optimista: number;
+    pesimista: number;
+  }>;
 }
 
-function projectInvestment(
-  investment: Investment,
-  monthlyRate: number,         // Annual rate / 12
-  horizonMonths: number,
-  includeContributions: boolean
-): InvestmentProjection {
-  const values: number[] = [investment.currentValue];
-  let balance = investment.currentValue;
-
-  // Default contribution = last aporte amount
-  const lastAporte = investment.movements
-    .filter(m => m.type === "aporte")
-    .at(-1);
-  const monthlyContribution = includeContributions && lastAporte
-    ? lastAporte.amount
-    : 0;
-
-  for (let m = 1; m <= horizonMonths; m++) {
-    balance = (balance + monthlyContribution) * (1 + monthlyRate);
-    values.push(Math.round(balance));
-  }
-
-  return {
-    investmentId: investment.id,
-    investmentName: investment.name,
-    type: investment.type,
-    currencyType: investment.currencyType,
-    currentValue: investment.currentValue,
-    monthlyContribution,
-    projectedValues: values,
-  };
-}
-```
-
-**Rate resolution per investment type:**
-- **Plazo Fijo**: Use `investment.tna` (TNA percentage). Monthly rate = `tna / 100 / 365 * 30` (TNA is nominal annual, PF compounds daily but we approximate monthly)
-- **FCI / Acciones / Crypto / Cuenta remunerada**: Use configurable default rates per type
-
-### Pattern 2: Default Growth Rates Configuration
-
-**What:** Configurable default annual growth rates per investment type
-**When to use:** PROJ-01 (non-PF investments)
-
-```typescript
-// Hardcoded defaults -- NOT stored in localStorage (INFRA-03 compliance)
-const DEFAULT_ANNUAL_RATES: Record<InvestmentType, number> = {
-  "Plazo Fijo": 0,        // Uses TNA from investment, not this default
-  "FCI": 0.05,            // 5% annual default
-  "Crypto": 0.10,         // 10% annual default
-  "Acciones": 0.08,       // 8% annual default
-  "Cuenta remunerada": 0.02,  // 2% annual default (low yield, liquid)
-};
-```
-
-**Note:** STATE.md says "configurable defaults per type." Since INFRA-03 prohibits new localStorage schema, "configurable" means constants in code that a user could change by editing config or that Phase 16 could expose via UI toggles. For Phase 15, hardcode sensible defaults as constants.
-
-### Pattern 3: Historical Patrimony Reconstruction
-
-**What:** Rebuild month-by-month patrimony from existing monthlyData
-**When to use:** PROJ-05
-
-The tricky part: monthlyData is a SINGLE object (not per-month). All expenses, incomes, and investments live in arrays with date strings. To reconstruct history:
-
-1. Collect all unique months from expenses, extraIncomes, salaryHistory entries
-2. For each month (chronologically), compute: salary + extraIncomes - expenses +/- investment movements +/- transfers +/- loans
-3. Running cumulative balance = patrimony at that month
-
-**Key insight from STATE.md blocker:** "Historical investment values not stored per month -- need interpolation strategy." For historical months, we only know the investment's `currentValue` (today). We do NOT know what it was worth in February. Strategy: use sum of movements (aportes - retiros) as historical investment value proxy, apply currentValue only for the latest month.
-
-```typescript
-interface HistoricalPoint {
-  month: string;         // "yyyy-MM"
-  patrimony: number;     // Total patrimony in ARS (USD converted at current rate)
-  isHistorical: true;
-}
-```
-
-### Pattern 4: Scenario Variants
-
-**What:** Three scenarios with different growth rate multipliers
-**When to use:** Success criteria #5
-
-```typescript
-interface ScenarioConfig {
-  name: "optimista" | "base" | "pesimista";
-  rateMultiplier: number;  // Applied to all growth rates
-  savingsMultiplier: number; // Applied to monthly net savings
+export interface ProjectionConfig {
+  horizonMonths: number;
+  futureContributions: Record<string, boolean>;
+  contributionAmounts: Record<string, number>;
 }
 
-const SCENARIOS: ScenarioConfig[] = [
-  { name: "optimista", rateMultiplier: 1.5, savingsMultiplier: 1.1 },
-  { name: "base", rateMultiplier: 1.0, savingsMultiplier: 1.0 },
-  { name: "pesimista", rateMultiplier: 0.5, savingsMultiplier: 0.8 },
-];
-```
-
-### Pattern 5: Hook Output Shape (Chart-Ready)
-
-**What:** The hook returns data arrays directly consumable by Recharts
-**When to use:** All requirements
-
-```typescript
-interface ProjectionDataPoint {
-  month: string;              // "Ene 26", "Feb 26" etc. for display
-  monthKey: string;           // "2026-01" for internal use
-  // Historical (null for future months)
-  historicalPatrimony: number | null;
-  // Projected (null for past months, overlaps at current month)
-  proyeccionOptimista: number | null;
-  proyeccionBase: number | null;
-  proyeccionPesimista: number | null;
-}
-
-interface UseProjectionEngineReturn {
-  // Main chart data (historical + projected patrimony)
-  patrimonyData: ProjectionDataPoint[];
+export interface UseProjectionEngineReturn {
+  // Main patrimony series (historical + projected)
+  patrimonyData: ProjectionPoint[];
   // Per-investment projections
   investmentProjections: InvestmentProjection[];
-  // Current month marker
-  currentMonthIndex: number;
+  // Income projection
+  incomeProjection: Array<{ month: string; amount: number }>;
   // Summary values
   currentPatrimony: number;
-  projectedPatrimony: { optimista: number; base: number; pesimista: number };
-  // Config
-  horizonMonths: number;
+  monthlyNetSavings: number;
+  // Config state + setters
+  config: ProjectionConfig;
+  setHorizon: (months: number) => void;
+  toggleContributions: (investmentId: string) => void;
+  setContributionAmount: (investmentId: string, amount: number) => void;
 }
 ```
 
 ### Anti-Patterns to Avoid
 
-- **Mutating localStorage from projection hook:** Projections are READ-ONLY. Never write to monthlyData, salaryHistory, or recurringExpenses from the projection engine.
-- **Fetching live exchange rates:** Out of scope (REQUIREMENTS.md Out of Scope). Use globalUsdRate from existing useCurrencyEngine.
-- **Per-investment historical value tracking:** We do NOT have historical `currentValue` snapshots. Don't try to reconstruct what we don't have. Use movement-based approximation.
-- **Complex state management:** This hook should have ZERO internal state. It's a pure computation from existing data. Use `useMemo` for caching, not `useState`.
+- **Mutating localStorage:** INFRA-03 is absolute. The projection engine reads data only. Zero writes to monthlyData, salaryHistory, recurringExpenses, or any existing key.
+- **Storing projection results:** Projections are derived on every render via useMemo. Never persist them.
+- **Computing inside chart components:** All math in the hook/lib. Chart components (Phase 16) receive data arrays only.
+- **Using investment.currentValue for historical months:** currentValue is today's snapshot. Historical months must use movement-based capital (sum of aportes - retiros up to that month).
+- **Treating TNA as monthly rate:** TNA is annual nominal. Must convert: monthly effective = `(1 + TNA/100/365)^30 - 1`.
 
 ## Don't Hand-Roll
 
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
-| Month iteration | Custom date math | `date-fns` `addMonths`, `format`, `parse` | Already used throughout project, handles edge cases (month boundaries, leap years) |
-| Number formatting | Custom formatters | Existing pattern from resumen-card.tsx (`.toLocaleString("es-AR")`) | Consistency with existing UI |
+| Month iteration | Manual string math | `date-fns` addMonths, format, parse | Already in project, handles edge cases |
+| Salary resolution | Custom lookup | `getSalaryForMonth()` from useSalaryHistory.ts | Already exists, handles overrides correctly |
+| Number formatting | Custom formatters | `.toLocaleString("es-AR")` pattern from existing components | Consistency with existing UI |
 
-**Key insight:** The actual math IS hand-rolled (compound interest formula) because it's trivial (~5 lines). The complexity is in data orchestration, not math.
+**Key insight:** The only genuinely complex computation is historical patrimony reconstruction. Even that is just iterating months and summing known quantities -- it's tedious, not algorithmically difficult.
 
 ## Common Pitfalls
 
-### Pitfall 1: Plazo Fijo TNA Calculation
-
-**What goes wrong:** TNA (Tasa Nominal Anual) is NOT the effective annual rate. PF compounds daily in Argentina.
-**Why it happens:** Confusing TNA with TEA (Tasa Efectiva Anual).
-**How to avoid:** For monthly projection: `monthlyRate = (1 + tna/100/365)^30 - 1`. This converts daily-compounding TNA to a monthly effective rate.
-**Warning signs:** Projected PF values significantly different from what banks show.
+### Pitfall 1: Plazo Fijo TNA vs Monthly Rate
+**What goes wrong:** Using `tna` directly as monthly rate produces absurdly inflated projections.
+**Why it happens:** TNA is "Tasa Nominal Anual" as a percentage. E.g., TNA 75% means 0.75 annual, but daily-compounding.
+**How to avoid:** Monthly rate = `Math.pow(1 + tna / 100 / 365, 30) - 1`. For TNA 75%, monthly effective is ~6.4%.
+**Warning signs:** A 1M ARS Plazo Fijo projecting to 100M+ in 12 months.
 
 ### Pitfall 2: Currency Mixing in Patrimony
-
-**What goes wrong:** Adding ARS and USD amounts without conversion produces meaningless totals.
+**What goes wrong:** Adding ARS amounts and USD amounts without conversion.
 **Why it happens:** Investments can be ARS or USD. Patrimony must be a single number.
-**How to avoid:** Convert ALL USD values to ARS using `globalUsdRate` before summing. Add a visible disclaimer (Phase 16 responsibility, but the hook should do the conversion).
-**Warning signs:** Patrimony changes wildly when USD rate changes.
+**How to avoid:** Convert ALL USD values to ARS using `globalUsdRate` before summing. The hook does the conversion; charts display in ARS.
+**Warning signs:** Patrimony changes wildly when USD rate changes (expected but should show disclaimer).
 
-### Pitfall 3: Double-Counting Investment Values
+### Pitfall 3: isInitial Movements in Last Aporte
+**What goes wrong:** Counting wizard-loaded initial movements as regular aportes for PROJ-02 defaults.
+**Why it happens:** `isInitial: true` movements are wizard patrimony entries, not real monthly contributions.
+**How to avoid:** Filter out `isInitial === true` when finding the last aporte.
+**Warning signs:** Huge default monthly contribution amount matching initial capital.
 
-**What goes wrong:** Counting both investment `currentValue` AND liquid balance impact from movements.
-**Why it happens:** Investment aportes reduce liquid ARS. The currentValue is the investment's worth. These are separate.
-**How to avoid:** Patrimony = liquid ARS + liquid USD * rate + sum(investment currentValues). Don't add movement amounts on top.
-**Warning signs:** Patrimony inflated by 2x investment values.
+### Pitfall 4: isLiquid Investment Double-Counting
+**What goes wrong:** Liquid investments counted both as cash AND as investments in patrimony.
+**Why it happens:** `calculateDualBalances()` adds isLiquid investment currentValue to arsBalance/usdBalance, NOT to arsInvestments/usdInvestments.
+**How to avoid:** Mirror the same logic: isLiquid investments go to liquid balance, not investment total.
+**Warning signs:** Patrimony inflated by the value of Cuenta remunerada investments.
 
-### Pitfall 4: Empty Data Edge Cases
+### Pitfall 5: Negative Compound Growth
+**What goes wrong:** Pessimistic scenario with negative rate (e.g., -10% Crypto) can reduce value below zero.
+**Why it happens:** `(1 + r)^n` where r is negative approaches zero for large n.
+**How to avoid:** Clamp projected values to >= 0 with `Math.max(0, value)`.
 
-**What goes wrong:** Division by zero, empty arrays, no salary history.
-**Why it happens:** New user with minimal data, or user skipped wizard steps.
-**How to avoid:** Default to 0 for missing salary, empty array for no investments, guard against empty monthlyData. The hook should return valid (empty) data even with zero history.
+### Pitfall 6: Empty Data Edge Cases
+**What goes wrong:** Division by zero, NaN, empty arrays when user has minimal data.
+**Why it happens:** New user, skipped wizard steps, no salary history, no investments.
+**How to avoid:** Default to 0 for missing salary. Return empty arrays for no investments. Guard every division. The hook must return valid (empty) data even with zero history.
 **Warning signs:** NaN or Infinity in projected values.
 
-### Pitfall 5: Stale Historical Reconstruction
-
-**What goes wrong:** Historical patrimony reconstruction produces different values than what resumen-card shows for the current month.
+### Pitfall 7: Historical Patrimony vs Current Month Mismatch
+**What goes wrong:** Reconstructed patrimony for current month differs from what resumen-card shows.
 **Why it happens:** Using different calculation logic than `calculateDualBalances()`.
-**How to avoid:** Reuse the SAME calculation approach as `calculateDualBalances()` (from useMoneyTracker) but parameterized per month. Extract the core logic into a pure function if needed.
-**Warning signs:** Current month historical value != current patrimony shown in UI.
-
-### Pitfall 6: Recurring Expense Projection Mismatch
-
-**What goes wrong:** Projecting monthly expenses based on current recurring list, but not accounting for paused/cancelled status.
-**Why it happens:** Not filtering by `status === "Activa"`.
-**How to avoid:** Only sum recurring expenses where `status === "Activa"` for future projections.
-**Warning signs:** Projected expenses include paused subscriptions.
+**How to avoid:** The historical reconstruction must produce a value for the current month that matches the actual patrimony displayed in the UI. This is the "seam" point -- validate it.
+**Warning signs:** Historical line's last point doesn't connect to projected line's first point.
 
 ## Code Examples
 
@@ -289,20 +283,20 @@ interface UseProjectionEngineReturn {
 
 ```typescript
 /**
- * Project future value with compound interest and optional monthly contributions.
- * Contribution is added at the START of each month (before interest).
+ * Future value with compound interest + optional monthly contributions.
+ * Returns array of values per month (index 0 = current, 1 = month 1, etc.)
  */
 function compoundGrowth(
   principal: number,
   monthlyRate: number,
   months: number,
-  monthlyContribution: number = 0
+  monthlyContribution: number = 0,
 ): number[] {
   const values: number[] = [principal];
   let balance = principal;
   for (let i = 1; i <= months; i++) {
     balance = (balance + monthlyContribution) * (1 + monthlyRate);
-    values.push(Math.round(balance));
+    values.push(Math.max(0, Math.round(balance)));
   }
   return values;
 }
@@ -312,114 +306,123 @@ function compoundGrowth(
 
 ```typescript
 /**
- * Convert TNA (Tasa Nominal Anual) to monthly effective rate.
- * Argentine PFs compound daily: TEA = (1 + TNA/365)^365 - 1
- * Monthly: (1 + TNA/365)^30 - 1
+ * Convert TNA (Tasa Nominal Anual, percentage) to monthly effective rate.
+ * Argentine PFs compound daily: monthly = (1 + TNA/100/365)^30 - 1
  */
 function pfMonthlyRate(tnaPercent: number): number {
+  if (!tnaPercent || tnaPercent <= 0) return 0;
   return Math.pow(1 + tnaPercent / 100 / 365, 30) - 1;
 }
 ```
 
-### Monthly Net Savings Estimate
+### Future Value Formula (Closed-Form with Annuity)
 
 ```typescript
-function estimateMonthlyNetSavings(
-  currentSalary: number,
-  activeRecurringExpenses: RecurringExpense[]
+/**
+ * Single future value calculation (no intermediate points).
+ * FV = PV * (1+r)^n + PMT * [((1+r)^n - 1) / r]
+ */
+function futureValue(
+  principal: number,
+  monthlyRate: number,
+  months: number,
+  monthlyContribution: number = 0,
 ): number {
-  const totalRecurring = activeRecurringExpenses
-    .filter(r => r.status === "Activa" && r.currencyType === CurrencyType.ARS)
-    .reduce((sum, r) => sum + r.amount, 0);
-  return Math.max(0, currentSalary - totalRecurring);
+  if (monthlyRate === 0) return principal + monthlyContribution * months;
+  const growth = Math.pow(1 + monthlyRate, months);
+  const fv = principal * growth + monthlyContribution * ((growth - 1) / monthlyRate);
+  return Math.max(0, Math.round(fv));
 }
 ```
 
-### Historical Month Iteration
+### Historical Month Discovery
 
 ```typescript
-import { addMonths, format, parse } from "date-fns";
-
-function getHistoricalMonths(monthlyData: MonthlyData): string[] {
-  const months = new Set<string>();
-
-  // Collect all months with activity
-  monthlyData.expenses.forEach(e => months.add(e.date.substring(0, 7)));
-  monthlyData.extraIncomes.forEach(i => months.add(i.date.substring(0, 7)));
+function getEarliestMonth(monthlyData: MonthlyData, salaryHistory: SalaryEntry[]): string {
+  const months: string[] = [];
+  
+  monthlyData.expenses.forEach(e => months.push(e.date.substring(0, 7)));
+  monthlyData.extraIncomes.forEach(i => months.push(i.date.substring(0, 7)));
   (monthlyData.investments || []).forEach(inv =>
-    inv.movements.forEach(m => months.add(m.date.substring(0, 7)))
+    inv.movements.forEach(m => months.push(m.date.substring(0, 7)))
   );
+  (monthlyData.transfers || []).forEach(t => months.push(t.date.substring(0, 7)));
+  (monthlyData.loans || []).forEach(l => months.push(l.date.substring(0, 7)));
+  salaryHistory.forEach(e => months.push(e.effectiveDate.substring(0, 7)));
 
-  return Array.from(months).sort();
+  if (months.length === 0) return format(new Date(), "yyyy-MM");
+  return months.sort()[0];
 }
 ```
 
 ## Data Source Mapping
 
-Critical for the planner -- which localStorage keys feed which projections:
+Which localStorage keys feed which projections (planner must ensure all are read):
 
 | Projection | Data Source | localStorage Key | Access Pattern |
 |------------|-----------|-----------------|----------------|
-| Investment compound interest | Investment[] (active, with currentValue + tna) | `monthlyData` → `.investments` | Read via useMoneyTracker |
-| Future contributions | InvestmentMovement[] (last aporte amount) | `monthlyData` → `.investments[].movements` | Read via useMoneyTracker |
-| Income flat line | SalaryHistory.entries + incomeConfig | `salaryHistory`, `incomeConfig` | Read via useSalaryHistory |
+| Investment compound interest | Investment[] (active, currentValue + tna) | `monthlyData` -> `.investments` | Read via useMoneyTracker |
+| Future contributions | InvestmentMovement[] (last aporte) | `monthlyData` -> `.investments[].movements` | Read via useMoneyTracker |
+| Income flat line | SalaryHistory.entries + IncomeConfig | `salaryHistory`, `incomeConfig` | Read via useSalaryHistory |
 | Recurring expense deduction | RecurringExpense[] (active) | `recurringExpenses` | Read via useRecurringExpenses |
-| Historical patrimony | All of MonthlyData (expenses, incomes, investments, transfers, loans) | `monthlyData` | Read via useMoneyTracker |
+| Historical patrimony | All of MonthlyData | `monthlyData` | Read via useMoneyTracker |
 | USD conversion | globalUsdRate | `globalUsdRate` | Read via useCurrencyEngine |
 | Scenario variants | Computed from base projections | None (pure math) | N/A |
 
 ## Key Codebase Facts
 
-These are verified facts from reading the codebase that the planner needs:
+Verified facts from reading the codebase:
 
-1. **Investment.tna exists** as optional `number` on the Investment interface (confirmed in useMoneyTracker.ts line 75). Only present for Plazo Fijo.
-2. **Investment.plazoDias exists** as optional `number` (line 76). Relevant for PF maturity but NOT needed for continuous projection.
-3. **Investment.isLiquid** flag exists (line 73). Liquid investments count as cash, not as investments in patrimony. The projection engine must handle this distinction.
-4. **InvestmentMovement.isInitial** flag exists (line 60). Initial wizard movements should be excluded from "last aporte" calculation for PROJ-02.
-5. **MonthlyData is a SINGLE object** -- not keyed by month. All data lives in one localStorage entry. Historical reconstruction must filter by date.
-6. **salaryHistory** is a separate localStorage key with `{ entries: SalaryEntry[] }`.
-7. **recurringExpenses** is a separate localStorage key with `RecurringExpense[]`.
-8. **globalUsdRate** is stored as a separate localStorage key (number).
-9. **INVESTMENT_TYPES** = `["Plazo Fijo", "FCI", "Crypto", "Acciones", "Cuenta remunerada"]` -- 5 types total.
-10. **calculateDualBalances()** in useMoneyTracker.ts (line 351-525) is the authoritative patrimony calculation. Historical reconstruction should mirror its logic.
+1. **Investment.tna** exists as optional `number` (useMoneyTracker.ts line 75). Only present for Plazo Fijo.
+2. **Investment.plazoDias** exists as optional `number` (line 76). Relevant for PF maturity but not needed for continuous projection.
+3. **Investment.isLiquid** flag exists (line 73). Liquid investments count as cash in patrimonio, not as separate investments.
+4. **InvestmentMovement.isInitial** flag exists (line 60). Must be excluded from "last aporte" for PROJ-02.
+5. **MonthlyData is a SINGLE object** (not per-month). All data in one localStorage entry. Historical reconstruction must filter by date.
+6. **salaryHistory** is a separate localStorage key: `{ entries: SalaryEntry[] }`.
+7. **recurringExpenses** is a separate localStorage key: `RecurringExpense[]`.
+8. **globalUsdRate** is a separate localStorage key (number).
+9. **INVESTMENT_TYPES** = `["Plazo Fijo", "FCI", "Crypto", "Acciones", "Cuenta remunerada"]` (5 types).
+10. **calculateDualBalances()** in useMoneyTracker.ts (lines 351-525) is the authoritative patrimony calculation. Historical reconstruction MUST mirror its logic.
+11. **Projection skeleton** (`components/charts/projection-skeleton.tsx`) already exists from Phase 14 with `ComposedChart` + `Line` pattern using mock data.
+12. **RecurringExpense.currencyType** can be USD -- must convert at globalUsdRate when summing for net savings.
 
 ## Open Questions
 
 1. **Aportes futuros toggle storage**
-   - What we know: PROJ-02 says user "puede activar" aportes futuros per investment
-   - What's unclear: Where is this toggle stored? INFRA-03 says zero changes to localStorage interfaces
-   - Recommendation: Store as in-memory state within the projection hook (not persisted). Default: off. This is a projection parameter, not financial data. Alternatively, pass as a parameter from the chart UI (Phase 16).
+   - What we know: PROJ-02 says user "puede activar" per investment. INFRA-03 prohibits localStorage changes.
+   - What's unclear: Should toggle persist across sessions?
+   - Recommendation: In-memory `useState` in the hook. Not persisted. Default: all OFF. This is a projection parameter, not financial data.
 
-2. **Horizon months default**
-   - What we know: CHART-04 (Phase 16) says user can select 3, 6, 12, 24 months
-   - What's unclear: What should the default be in Phase 15?
-   - Recommendation: Default to 12 months. The hook should accept `horizonMonths` as parameter.
+2. **Default annual rates exactness**
+   - What we know: Rates are hardcoded constants (no custom editor per REQUIREMENTS.md out-of-scope).
+   - What's unclear: Exact percentages for FCI/Crypto/Acciones/Cuenta remunerada in Argentine context.
+   - Recommendation: Use reasonable defaults (listed above). These are projection assumptions, not promises. Phase 16 will show them with disclaimers.
 
 3. **Historical patrimony depth**
-   - What we know: Need to reconstruct from monthlyData
-   - What's unclear: How far back? All available data, or capped?
-   - Recommendation: All available months. The data is finite (user-entered only) and won't be performance-heavy.
+   - What we know: Need to reconstruct from all monthlyData.
+   - What's unclear: Performance with many months of data.
+   - Recommendation: Process all available months. Data is user-entered and finite. Memoize with useMemo.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Codebase inspection: `hooks/useMoneyTracker.ts` -- Investment interface, MonthlyData interface, calculateDualBalances()
-- Codebase inspection: `hooks/useInvestmentsTracker.ts` -- Investment CRUD operations, PF fields
-- Codebase inspection: `hooks/useSalaryHistory.ts` -- SalaryEntry, getSalaryForMonth()
-- Codebase inspection: `hooks/useRecurringExpenses.ts` -- RecurringExpense interface, status filtering
-- Codebase inspection: `constants/investments.ts` -- INVESTMENT_TYPES, CurrencyType, CURRENCY_ENFORCEMENT
-- Codebase inspection: `components/charts/projection-skeleton.tsx` -- Phase 14 chart pattern (ComposedChart + Line)
-
-### Secondary (MEDIUM confidence)
-- `.planning/STATE.md` -- Project decisions on growth rates and math approach
-- `.planning/REQUIREMENTS.md` -- PROJ-01 through PROJ-05 specifications
+- Codebase: `hooks/useMoneyTracker.ts` -- Investment, MonthlyData, calculateDualBalances()
+- Codebase: `hooks/useInvestmentsTracker.ts` -- Investment CRUD, PF fields
+- Codebase: `hooks/useSalaryHistory.ts` -- SalaryEntry, getSalaryForMonth()
+- Codebase: `hooks/useRecurringExpenses.ts` -- RecurringExpense interface
+- Codebase: `constants/investments.ts` -- INVESTMENT_TYPES, CurrencyType
+- Codebase: `hooks/useCurrencyEngine.ts` -- globalUsdRate storage pattern
+- Codebase: `components/charts/projection-skeleton.tsx` -- Phase 14 chart pattern
+- `.planning/STATE.md` -- Design decisions (rates, no external math libs)
+- `.planning/REQUIREMENTS.md` -- PROJ-01 through PROJ-05, INFRA-03, out-of-scope items
 
 ## Metadata
 
 **Confidence breakdown:**
-- Standard stack: HIGH - No new libraries needed, plain TS math confirmed by project decision
-- Architecture: HIGH - Hook pattern matches existing codebase, data sources fully mapped
-- Pitfalls: HIGH - All identified from actual codebase reading (currency mixing, PF TNA, empty data)
+- Standard stack: HIGH - No new libraries, pure TS math confirmed by project decision
+- Architecture: HIGH - Two-file pattern (lib/ + hooks/) matches existing codebase conventions
+- Pitfalls: HIGH - All identified from actual codebase reading (TNA conversion, isInitial, isLiquid, currency mixing)
+- Historical reconstruction: MEDIUM - Approach is sound but involves approximation for historical investment values
 
 **Research date:** 2026-04-03
 **Valid until:** 2026-05-03 (stable -- no external dependencies to change)
