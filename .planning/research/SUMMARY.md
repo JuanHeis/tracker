@@ -1,190 +1,208 @@
 # Project Research Summary
 
-**Project:** Expense Tracker v1.1 — Setup Wizard & Onboarding
-**Domain:** First-time setup wizard integrated into existing localStorage-based personal finance SPA
-**Researched:** 2026-04-02
+**Project:** Expense Tracker v1.2 — Graficos Predictivos
+**Domain:** Predictive financial charts for a localStorage-based personal finance app (ARS/USD, investments, income, expenses)
+**Researched:** 2026-04-03
 **Confidence:** HIGH
 
 ## Executive Summary
 
-The setup wizard is a gateway layer, not a refactor. The correct approach is to build a 4-5 step linear wizard that runs inside the existing app, collects initial financial data in a draft object, and commits it all to localStorage in one atomic batch on final confirmation. Zero new npm packages are needed — the project's existing shadcn/ui components (Dialog, Button, Input, Select, Card) plus a custom `useWizard` hook (~30 lines) handle everything. All 8 existing dialogs use the `useState + FormData` pattern; the wizard must follow this same pattern to stay consistent.
+This milestone adds projection charts to an existing Next.js expense tracker. The app is already well-equipped: Recharts 2.13.3 + shadcn ChartContainer are installed and working; date-fns with Spanish locale is in use; hooks expose investments, salary history, recurring expenses, and monthly data. The recommended approach is surgical — upgrade Recharts to 3.x (minimal breaking changes), write 4 small projection utility functions in plain TypeScript (~100 lines total), add one orchestrator hook (`useProjections`), and build two chart components. Zero new library dependencies beyond the Recharts upgrade.
 
-The recommended approach is: (1) detect first-time users by checking for the absence of both `monthlyData` AND `salaryHistory` localStorage keys, (2) render a `SetupWizard` component in place of the normal UI, (3) accumulate user inputs in a `WizardData` object stored in `sessionStorage` for refresh resilience, (4) on final confirmation write all keys (`monthlyData`, `salaryHistory`, `incomeConfig`, `globalUsdRate`) in one synchronous block, then (5) trigger a component remount via a React `key` change in `app/page.tsx` so all existing hooks re-initialize from the newly written data. No existing hooks need modification.
+The core challenge is not visualization (Recharts handles it) but data wrangling: historical patrimony must be reconstructed from `monthlyData` since it was never stored, investment growth rates must come from field data or sensible defaults (not from movements), and ARS/USD mixing requires a deliberate currency strategy. The recommended approach keeps every chart read-only — no localStorage schema changes — and uses current `globalUsdRate` for all currency conversions with a visible disclaimer.
 
-The primary risk is data integrity: partial writes on wizard abandonment, re-run mode overwriting months of transaction history, and currency enforcement rules not being applied to wizard-created investments. All three are Phase 1 concerns that must be solved architecturally before any wizard UI is built. A secondary risk is SSR hydration mismatch — the wizard must use the existing `useHydration` pattern to avoid a flash of content mismatch in the Next.js App Router.
+The primary risk is false precision: projections that look authoritative but rest on rough assumptions. Mitigation is baked into the visual language — dashed lines for all projections, a "Hoy" reference line, scenario labels that show the assumed rate (e.g., "Base (10% anual)"), and a disclaimer note on each chart. A secondary risk is deriving growth rates from investment movements, which conflate user deposits with market returns. This is solved by using `currentValue` as the starting point and configurable default rates per investment type.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The wizard requires zero new dependencies. The project already has everything needed: Dialog for the modal container, Button for navigation, Input and Select for form fields, and Card for the summary step. A custom `useWizard` hook manages step state (a number that increments/decrements) and a `StepIndicator` component is roughly 20 lines of Tailwind. Adding any wizard npm package would be unjustifiable overhead for a 4-step linear form.
+Recharts 3.x is a worthwhile upgrade over the currently installed 2.13.3. The 3.x rewrite removed two external dependencies (`react-smooth`, `recharts-scale`), rewrote internal state management with 3500+ tests, and the official migration guide states "most applications should not require any changes." The project uses only stable public API (`BarChart`, `Bar`, `XAxis`, `YAxis`, `ChartTooltip`) so migration should be seamless. All visualization needs (ComposedChart, Area, Line, ReferenceLine, dashed lines) are native to Recharts — nothing else required.
+
+For projection math, no library is justified. Compound interest is one formula (`FV = PV × (1 + r/n)^(n×t)`) and linear regression is ~25 lines. Adding `simple-statistics` (37KB) for two functions is wasteful; `financejs` is unmaintained since 2017.
 
 **Core technologies:**
-- `shadcn/ui` (Dialog, Button, Input, Select, Card): wizard UI — already installed, zero overhead
-- `useState` custom `useWizard` hook: step navigation — sufficient for 4-5 linear steps
-- `sessionStorage`: wizard draft persistence — survives refresh within tab, clears on close (correct lifecycle)
-- `localStorage` (direct writes): final data commit — matches how `importData` works in the existing codebase
+- `recharts` ^3.8.1: Chart rendering — upgrade from 2.13.3 for smaller bundle and better perf; minimal migration cost
+- `date-fns` ^4.1.0 (already installed): Date axis labels — reuse existing `format(date, "MMM yy", { locale: es })` pattern
+- `shadcn ChartContainer` (already installed): Responsive wrapper — already handles `ResponsiveContainer`, theming, and tooltip helpers
+- Plain TypeScript math: Projection engine — compound interest + linear regression fit in ~100 lines, no library needed
 
-**What NOT to add:** `react-hook-form`, `zod`, `framer-motion`, or any wizard/stepper npm package.
+**New custom modules to write:**
+- `lib/projections/compound-interest.ts` — FV calculation (~15 lines)
+- `lib/projections/linear-projection.ts` — slope/intercept linear regression (~25 lines)
+- `lib/projections/patrimony-projection.ts` — combines all projections
+- `lib/projections/historical-reconstruction.ts` — derives past patrimony from `monthlyData`
+- `lib/projections/scenarios.ts` — optimista/base/pesimista config object
 
 ### Expected Features
 
-Research across YNAB, Wallet, Mint, and NN/g guidelines yields a clear MVP feature set. Wizards with more than 5 steps see significant abandonment; each additional step reduces completion approximately 10-15%.
-
 **Must have (table stakes):**
-- Auto-detect first-time user (no data = show wizard automatically)
-- Welcome screen with brief value proposition and "Let's go" CTA
-- ARS liquid balance capture (foundational number; everything derives from this)
-- USD holdings + exchange rate (Argentina-specific; two inputs, huge accuracy impact)
-- Employment type + salary amount + pay day (powers monthly summary, aguinaldo, pay-period views)
-- Progress indicator (step dots or "Step X of Y")
-- Skip option per optional step (only ARS balance should be required)
-- Summary/confirmation step (shows all entered values before committing)
+- Historical patrimony timeline — every finance app shows "where you've been"
+- Future patrimony projection (dashed line) — the core ask; solid = real, dashed = projected
+- Investment projection with compound interest — compound growth per investment type
+- "Hoy" reference line — universal visual separator between real and projected data
+- Hover tooltip with values — basic chart interactivity already established
+- Configurable horizon — 3, 6, 12, 24 months; segmented control or select
+- Scenario bands (optimista/base/pesimista) — shows uncertainty honestly; essential for Argentina's volatile context
 
 **Should have (differentiators):**
-- Existing investments quick-add (makes patrimonio card accurate from minute one)
-- Existing loans quick-add (same rationale as investments)
-- Contextual help text per step (YNAB-style "why this matters" microcopy)
-- Import-as-alternative link on welcome screen (already built; just needs exposure)
-- Re-run wizard from Settings (PROJECT.md lists this as a target feature)
+- Shaded area under historical data — visual weight distinguishing past from future
+- Per-investment type grouping — stacked area with color-coded FCI/Crypto/PF/Acciones breakdown
+- Expense deduction in patrimony projection — more realistic: grows by (salary - expenses), not just salary
+- Interactive legend (toggle lines on/off) — user controls which scenarios are visible
 
-**Defer (v2+):**
-- Recurring expenses quick-add (useful but not critical for first impression)
-- Budget target setup (users need 2-4 weeks of data first)
-- Category customization (overwhelming for day one)
-- Detailed transaction history entry (use JSON import instead)
+**Defer to v2+:**
+- Per-investment individual projection charts — added complexity, charts tab is already busy
+- Drill-down tooltips with full desglose — nice-to-have, not blocking
+- Animation on chart load — Recharts handles basic animations; custom animation is premature
 
-**Wizard step count target:** 4-5 steps maximum for MVP. Step ordering: Welcome > ARS Balance > USD + Rate > Income Config > Summary. Optional investments/loans steps can follow income if included.
+**Anti-features (never build):**
+- Monte Carlo simulation — overkill; users won't interpret probability distributions
+- Custom scenario parameter editor — predefined optimista/base/pesimista with sensible defaults is sufficient
+- Real-time market data — app is offline/localStorage only
+- Inflation-adjusted projections — speculative without reliable IPC source; misleading precision
+- AI/ML prediction — massively over-engineered for a localStorage app
 
 ### Architecture Approach
 
-The wizard is a conditional render inside `ExpenseTracker`, not a new route or a lifted hook. When first-time state is detected, `ExpenseTracker` renders `<SetupWizard />` in place of the normal tabbed UI. The wizard accumulates all user data in a local `WizardData` object, then on final confirmation calls `commitWizardData()` which writes to all four localStorage keys in a single synchronous block. The parent `app/page.tsx` holds a `key` prop on `ExpenseTracker` and increments it after wizard completion, forcing all hooks to re-mount and re-read from the newly populated localStorage. Zero existing hooks are modified.
+The feature is layered cleanly on top of the existing architecture without modifying it. Existing hooks (`useInvestmentsTracker`, `useSalaryHistory`, `useRecurringExpenses`, `useCurrencyEngine`, `useMoneyTracker`) are consumed read-only by a new `useProjections` orchestrator hook, which calls pure projection functions and returns chart-ready data arrays. Chart components consume only that hook. The only existing files that change are `charts-container.tsx` (adds new chart components) and potentially `expense-tracker.tsx` (passes additional hook data down).
 
 **Major components:**
-1. `useSetupWizard` hook — owns `WizardData` state, step index, sessionStorage draft, `commitWizardData()` logic
-2. `SetupWizard` container — step navigation, progress indicator, conditional step rendering
-3. `WizardStep*` components (Income, Currency, Balance, Usd, Investments, Summary) — controlled forms that report up to `SetupWizard`
-4. Modified `ExpenseTracker` — first-time detection gate, conditional render
-5. Modified `app/page.tsx` — holds remount key, passes `onWizardComplete` callback
+1. `lib/projections/` (5 files) — pure TypeScript math functions; no React dependency; testable in isolation
+2. `hooks/useProjections.ts` — orchestrator that reads existing hooks, calls projection functions, memoizes results with `useMemo`
+3. `components/charts/patrimony-projection-chart.tsx` — hero chart: ComposedChart with Area (historical, filled) + Line (projected, dashed)
+4. `components/charts/investment-projection-chart.tsx` — investment portfolio ComposedChart, stacked areas by type
+5. `components/charts/projection-controls.tsx` — horizon selector + scenario toggles shared by both charts
 
-**File layout:**
-```
-components/setup-wizard/
-  setup-wizard.tsx
-  wizard-step-income.tsx
-  wizard-step-currency.tsx
-  wizard-step-balance.tsx
-  wizard-step-usd.tsx
-  wizard-step-investments.tsx
-  wizard-step-summary.tsx
-hooks/
-  useSetupWizard.ts
-```
+**Key design constraints:**
+- All chart components must be `"use client"` (Recharts uses DOM APIs)
+- Use existing `useHydration()` guard before rendering chart content
+- Chart preferences (horizon, selected scenarios) live in component state, NOT localStorage
+- Projections are pure derivations — zero mutations to any existing data structure
 
 ### Critical Pitfalls
 
-1. **Naive first-time detection triggers for returning users** — Check BOTH `monthlyData` AND `salaryHistory` key absence. Do NOT use a dedicated `wizardCompleted` flag (gets out of sync when users clear data or import backups). Detecting actual data presence is the correct signal.
+1. **Deriving growth rates from movements (P1 — HIGH RISK)** — Investment `movements[]` mix user deposits with market returns; calculating a rate from them is mathematically wrong. Fix: use `currentValue` as projection start; use explicit `rate` field for Plazo Fijo; use configurable defaults per type (FCI 10%, Crypto 15%, Acciones 12%) for others.
 
-2. **Wizard writes to localStorage per-step (partial state on abandon)** — The wizard must treat itself as an atomic transaction. All writes happen in one synchronous batch on the final "Confirm" step only. Use a `WizardData` draft object; never call `setMonthlyData` or other hook methods from within wizard steps.
+2. **ARS/USD mixing without exchange rate projection (P2 — HIGH RISK)** — Projecting combined ARS+USD patrimony requires projecting the future exchange rate, which is unreliable for Argentina. Fix: use current `globalUsdRate` for all future points (consistent with existing PatrimonioCard), add visible disclaimer "Proyeccion a cotizacion actual (${rate} ARS/USD)".
 
-3. **Re-run mode overwrites months of transaction history** — First-run and re-run are fundamentally different operations. Re-run must merge into existing data, not overwrite it. Defer re-run mode to a separate phase and build it with explicit merge logic.
+3. **localStorage schema safety (P7 — CRITICAL)** — User is actively using the app with real financial data. Fix: treat as absolute invariant — charts are read-only, projection functions never mutate inputs, chart config never touches existing localStorage keys. Run JSON export/import test after each phase.
 
-4. **Wizard investment form bypasses currency enforcement rules** — `CURRENCY_ENFORCEMENT` constants from `constants/investments.ts` must apply in the wizard. Extract the validation into a shared utility used by both the wizard and the main investment dialog; validate again inside `commitWizardData()` before any write.
+4. **Overpromising projection accuracy (P6 — UX RISK)** — Projections that look authoritative create false confidence. Fix: dashed lines for all projected data, clear "Hoy" divider, scenario labels showing assumed rates, disclaimer text on each chart.
 
-5. **SSR hydration mismatch on wizard visibility** — The wizard's visibility depends on localStorage which is unavailable during SSR. Apply the existing `useHydration` pattern: render `null` until client hydration completes. This is already the project's established pattern.
+5. **Recharts SSR / hydration (P3 — MEDIUM RISK)** — Recharts uses DOM APIs; Next.js renders on server first. Fix: all chart components must be `"use client"`; use existing `useHydration()` guard; copy the pattern from `salary-by-month.tsx` exactly.
 
-6. **Wizard-created data not including `_migrationVersion: 7`** — If the migration version is missing or wrong, `migrateData()` will re-run migrations on wizard-generated data and potentially corrupt amounts. Always write `_migrationVersion: 7` (current version) into `monthlyData` at commit time.
-
-7. **New localStorage keys omitted from `useDataPersistence` export** — Any key added by the wizard (`wizardDraft` in sessionStorage is exempt, but any persistent key) must be added to `STORAGE_KEYS` in `useDataPersistence.ts`. Failing to do so means import/export doesn't round-trip correctly and users who import a backup will see the wizard trigger again.
+6. **Edge cases with sparse data (P5 — MEDIUM RISK)** — 8 distinct scenarios where data is missing or minimal (no investments, no salary, globalUsdRate = 0, only 1 month of data, etc.). Fix: build empty states alongside each chart component, not deferred to a cleanup phase.
 
 ## Implications for Roadmap
 
-Based on combined research, the wizard naturally decomposes into three phases with clear dependency ordering.
+Based on combined research, 4 phases are suggested. The ordering follows the dependency chain identified in both ARCHITECTURE.md and FEATURES.md: pure math before orchestration before visualization before polish.
 
-### Phase 1: Wizard Infrastructure and Data Model
+### Phase 1: Projection Engine + Historical Reconstruction
 
-**Rationale:** The data model changes and architectural decisions must exist before any wizard UI. Specifically: the `adjustment_ars` transfer pattern for initial ARS balance, the `untracked` USD purchase pattern, the `commitWizardData()` atomic write function, and the `app/page.tsx` remount mechanism. Building UI first and then trying to wire it to data is the most common failure mode for wizard implementations.
+**Rationale:** The projection functions are the foundation everything else depends on. They have no UI dependencies and can be verified in isolation. Historical reconstruction is the single hardest algorithmic problem in this milestone — doing it first prevents it from becoming a hidden risk inside a chart phase.
 
-**Delivers:** A working wizard that covers the 4-5 must-have MVP steps. First-time detection, all required steps (Welcome, ARS Balance, USD + Rate, Income Config, Summary), progress indicator, skip options, and correct atomic localStorage commit.
+**Delivers:** `lib/projections/` with all 5 utility modules (compound interest, linear projection, patrimony projection, historical reconstruction, scenario config). No UI, but the math is testable.
 
-**Features addressed:** Auto-detect first time, welcome screen, ARS balance, USD + rate, employment type + salary + pay day, summary/confirmation, progress indicator, skip option.
+**Addresses:** Investment projection math, patrimony projection math, scenario config.
 
-**Pitfalls to prevent:** Pitfall 1 (detection), Pitfall 2 (draft persistence via sessionStorage), Pitfall 3 (atomic commit), Pitfall 5 (currency enforcement), Pitfall 6 (migration version), Pitfall 7 (export sync), Pitfall 8 (SSR hydration).
+**Avoids:** P1 (growth rate from movements), P7 (schema safety — pure functions with no side effects).
 
-**Research flag:** Standard patterns. No additional research-phase needed. Architecture is fully documented from codebase analysis.
+**Research flag:** Standard patterns. Compound interest and linear regression are well-documented. No further research needed.
 
-### Phase 2: Investments and Loans Quick-Add
+### Phase 2: useProjections Hook
 
-**Rationale:** Investment quick-add is "medium complexity" per FEATURES.md — it needs the full investment type/currency enforcement UI and the `CURRENCY_ENFORCEMENT` logic extracted as a shared utility. Deferring it keeps Phase 1 to pure must-haves and avoids the complexity of the dynamic investment list builder during initial delivery.
+**Rationale:** The orchestrator hook wires existing data hooks to the projection engine and shapes data for Recharts. Separating this from the chart components allows data correctness to be verified before visual concerns are introduced.
 
-**Delivers:** Optional wizard steps for adding existing investments and loans. Patrimonio card shows accurate initial state from minute one rather than requiring users to add investments separately after wizard completion.
+**Delivers:** `hooks/useProjections.ts` returning `{ historicalData[], projectionData[], scenarios }` — memoized, chart-ready.
 
-**Features addressed:** Existing investments quick-add, existing loans quick-add.
+**Uses:** All existing hooks (read-only) + projection engine from Phase 1.
 
-**Pitfalls to prevent:** Pitfall 5 (currency enforcement — this is where it becomes most complex).
+**Implements:** The data flow from ARCHITECTURE.md. Resolves the ARS/USD currency strategy (P2) before it reaches the UI.
 
-**Research flag:** Standard patterns. Currency enforcement rules are already documented in `constants/investments.ts`.
+**Avoids:** P2 (currency mixing — apply globalUsdRate disclaimer logic here), performance traps (useMemo with proper deps).
 
-### Phase 3: Re-Run from Settings and UX Polish
+**Research flag:** Standard patterns. Hook composition and useMemo are well-established. No research needed.
 
-**Rationale:** Re-run mode is architecturally distinct from first-run (merge vs. overwrite). PITFALLS.md is explicit: these must be separate implementation phases. Re-run also requires the wizard to pre-populate all fields with current values, which adds complexity. UX polish (contextual help text, import-as-alternative on welcome, step navigation on indicator dots) belongs here as well — these are low-effort improvements on top of a working foundation.
+### Phase 3: Chart Components
 
-**Delivers:** "Re-ejecutar wizard" button in ConfigCard, pre-populated re-run mode with merge semantics, contextual help microcopy per step, import-as-alternative path on welcome screen.
+**Rationale:** With data ready and shaped for Recharts, chart components become straightforward assembly of known Recharts primitives. Patrimony chart first (hero chart, highest user value), then investments chart, then controls.
 
-**Features addressed:** Re-run from settings (PROJECT.md target feature), contextual help text, import-as-alternative.
+**Delivers:** `patrimony-projection-chart.tsx`, `investment-projection-chart.tsx`, `projection-controls.tsx`. Integrated into `charts-container.tsx`. All with proper empty states.
 
-**Pitfalls to prevent:** Pitfall 4 (re-run data destruction — the entire phase is designed around this).
+**Uses:** Recharts 3.x (upgraded), shadcn ChartContainer, date-fns, `useProjections` hook.
 
-**Research flag:** Needs attention during planning. The merge semantics for ARS/USD balances in re-run mode (which are derived values, not stored directly) require careful design. An "Adjust initial balance" adjustment entry will be created, which interacts with existing transaction history in ways that need to be explicitly designed.
+**Implements:** ComposedChart with Area (historical) + Line (dashed, projected), ReferenceLine for "Hoy", scenario bands, horizon selector.
+
+**Avoids:** P3 (SSR — `"use client"` + `useHydration()` guard), P4 (ResponsiveContainer height — copy existing pattern), P5 (empty states built alongside, not deferred), P6 (dashed lines + disclaimers in design from start).
+
+**Research flag:** Standard patterns. Recharts ComposedChart API is well-documented. shadcn wrapper already in codebase.
+
+### Phase 4: Recharts Upgrade + Polish
+
+**Rationale:** Upgrade Recharts last, after charts are working on 2.x, to isolate any unexpected migration issues. Polish (interactive legend, visual refinements, shaded areas) is deferred until core functionality is confirmed working.
+
+**Delivers:** Recharts upgraded to ^3.8.1. Interactive legend (toggle scenarios on/off). Visual polish: shaded historical area, muted projection colors, refined tooltips. Verified existing charts still work post-upgrade.
+
+**Uses:** Recharts 3.x migration (minimal — project uses only stable public API).
+
+**Avoids:** Migration risk isolated to dedicated phase; existing charts verified as regression check.
+
+**Research flag:** Standard patterns. Migration guide is clear. No research needed — run `npm install recharts@^3.8.1` and verify existing charts.
 
 ### Phase Ordering Rationale
 
-- Phase 1 before Phase 2: the atomic commit pattern and `WizardData` type must exist before the investments step is added. Investments are the most complex wizard step and adding them to an untested foundation is risky.
-- Phase 2 before Phase 3: the investment step's currency enforcement utility must be built and tested before the re-run mode pre-populates existing investments.
-- Re-run explicitly last: PITFALLS.md identifies it as the highest-risk operation (overwriting months of history). A functioning first-run must be stable before re-run mode is implemented.
+- **Engine before UI:** Pure functions can be tested without rendering. Bugs in math are caught before they become visual bugs that are harder to diagnose.
+- **Historical reconstruction in Phase 1, not Phase 3:** It's the most complex logic in the milestone. Burying it inside a chart component would hide its complexity and make it hard to test.
+- **Recharts upgrade last:** Charts can be built and verified on the existing 2.13.3 installation. Upgrading last isolates migration risk to a single, dedicated step with a clear regression check.
+- **All phases treat localStorage as immutable:** P7 is an invariant, not a phase-specific concern. Every phase enforces read-only access.
 
 ### Research Flags
 
-Phases needing deeper research during planning:
-- **Phase 3 (re-run mode):** Merge semantics for derived balance values (ARS liquid balance is calculated, not stored) need explicit design. The question of whether to create a new adjustment entry or update the original wizard entry on re-run is not resolved and has UX implications.
+Phases with standard patterns (skip research-phase for all):
+- **Phase 1:** Compound interest and linear regression are solved math, documented across multiple sources.
+- **Phase 2:** Hook composition and useMemo are standard React patterns.
+- **Phase 3:** Recharts ComposedChart, Area, Line, ReferenceLine all have official documentation. shadcn wrapper already in codebase.
+- **Phase 4:** Recharts 3.x migration guide is explicit and comprehensive.
 
-Phases with standard patterns (no additional research needed):
-- **Phase 1:** Fully documented. All patterns verified against existing codebase. Build order is specified in ARCHITECTURE.md.
-- **Phase 2:** Currency enforcement rules are in `constants/investments.ts`. Investment data shape is verified from codebase analysis. No unknowns.
+No phase requires a `/gsd:research-phase` deep dive. All patterns are well-documented or already proven in the existing codebase.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All findings verified against official shadcn/ui registry and existing codebase. No speculation. |
-| Features | HIGH | Multiple authoritative sources (YNAB, Wallet, NN/g, Eleken, CleverTap). Feature-to-data-structure mapping verified against codebase. |
-| Architecture | HIGH | All integration points verified directly from source code (`useMoneyTracker`, `useLocalStorage`, `useSalaryHistory`, `useCurrencyEngine`, `useDataPersistence`). |
-| Pitfalls | HIGH | Pitfalls derived from direct codebase analysis plus well-documented patterns. All 8 pitfalls have specific prevention strategies tied to actual code paths. |
+| Stack | HIGH | All technology choices verified against official docs. Recharts 3.x migration guide is authoritative. Math utilities are standard formulas. |
+| Features | HIGH | Grounded in analysis of real apps (Fintual, Personal Capital, YNAB). Anti-features list is opinionated and justified. |
+| Architecture | HIGH | Based on actual codebase analysis — existing hooks, components, and patterns verified. No speculative components. |
+| Pitfalls | HIGH | P1 and P2 are Argentina-specific and well-reasoned. P3/P4 are documented Recharts gotchas. P7 is explicit user requirement (MEMORY.md confirms active data). |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Re-run balance merge semantics:** How should re-run mode handle ARS/USD balance correction? Two options exist (create a new adjustment entry vs. update the original wizard entry) and neither is clearly better without knowing how the balance history should appear in the UI. Resolve during Phase 3 planning.
-- **Optional step ordering in MVP:** The ARCHITECTURE.md step order (Income > Currency > ARS > USD > Investments > Summary) differs slightly from the FEATURES.md dependency chain (ARS > USD > Income > Investments > Summary). The architecture rationale (income first because most universally applicable) is sound, but this should be validated with a real user flow before Phase 1 implementation is locked.
-- **Wizard draft sessionStorage on mobile:** sessionStorage behavior in Safari's private browsing mode and iOS WebView contexts can be restrictive. Since this is a Next.js SPA likely used on mobile browsers, the sessionStorage draft persistence assumption should be tested early in Phase 1.
+- **Historical investment values:** `currentValue` is stored but not historical values per month. The proposed workaround (interpolate from movements; accept ~1% estimation error with "estimado" label) needs validation during Phase 1. If the approximation is too rough, the historical portion of the investment chart may need to be omitted or clearly flagged.
+
+- **Plazo Fijo rate field:** Phase 1 assumes PF investments have an explicit `rate` (TNA) field. Confirm this against the actual `Investment` interface before starting Phase 1.
+
+- **Recharts 3.x + shadcn/ui compatibility:** The shadcn `ChartContainer` uses `import * as RechartsPrimitive from "recharts"`. This pattern should work with 3.x but must be verified against the installed shadcn version after upgrade in Phase 4.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Codebase analysis: `hooks/useMoneyTracker.ts`, `hooks/useLocalStorage.ts`, `hooks/useSalaryHistory.ts`, `hooks/useCurrencyEngine.ts`, `hooks/useDataPersistence.ts`, `constants/investments.ts` — all integration points verified from source
-- [shadcn/ui Official Components List](https://ui.shadcn.com/docs/components) — confirmed no stepper component in official registry
+- [Recharts 3.0 Migration Guide](https://github.com/recharts/recharts/wiki/3.0-migration-guide) — breaking changes, migration path
+- [Recharts npm page](https://www.npmjs.com/package/recharts) — React 18 compatibility, current version 3.8.1
+- [Recharts Line API](https://recharts.github.io/en-US/api/Line/) — strokeDasharray for dashed/dotted lines
+- Existing codebase — hooks API, chart patterns, data structures, shadcn wrapper
 
 ### Secondary (MEDIUM confidence)
-- [YNAB Ultimate Get Started Guide](https://www.ynab.com/guide/the-ultimate-get-started-guide) — onboarding flow structure and step ordering
-- [Eleken: Wizard UI Pattern](https://www.eleken.co/blog-posts/wizard-ui-pattern-explained) — when and how to use wizards
-- [UX Design Institute: Onboarding Best Practices 2025](https://www.uxdesigninstitute.com/blog/ux-onboarding-best-practices-guide/) — skip options, progressive disclosure
-- [CleverTap: Fintech App Onboarding](https://clevertap.com/blog/onboarding-fintech-app-users/) — abandonment statistics
+- Fintual (Chile) — per-fund projection patterns, scenario display
+- Personal Capital — net worth timeline + retirement planner with scenario bands
+- YNAB — net worth chart (historical only), tooltip patterns
+- [Compound Interest in JavaScript](https://megafauna.dev/posts/javascript-compound-interest) — confirms plain math approach
 
 ### Tertiary (LOW confidence)
-- [shadcn-stepper by damianricobelli](https://github.com/damianricobelli/shadcn-stepper) — evaluated and rejected; community package, not official
-- [LogRocket: Multi-Step Form with RHF + Zod](https://blog.logrocket.com/building-reusable-multi-step-form-react-hook-form-zod/) — alternative approach, not recommended for this project
+- Mint — net worth historical chart patterns (service discontinued 2024; patterns inferred from archived docs)
 
 ---
-*Research completed: 2026-04-02*
+*Research completed: 2026-04-03*
 *Ready for roadmap: yes*
