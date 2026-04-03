@@ -550,6 +550,9 @@ export function ExpenseTracker() {
                   <ChartsContainer
                     monthlyData={monthlyData}
                     selectedYear={selectedYear}
+                    salaryEntries={salaryHistory.entries}
+                    recurringExpenses={recurringExpenses}
+                    globalUsdRate={globalUsdRate}
                   />
                 </CardContent>
               </Card>
