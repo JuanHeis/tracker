@@ -1,6 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { Pencil, Trash2, AlertTriangle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -20,6 +31,14 @@ interface BudgetRowProps {
 
 export function BudgetRow({ progress, onEdit, onDelete }: BudgetRowProps) {
   const { category, limit, spent, percentage, expenses } = progress;
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      onDelete(deleteTarget as Category);
+      setDeleteTarget(null);
+    }
+  };
   const categoryColor = CATEGORIES[category]?.color ?? "#888";
 
   const barColor =
@@ -33,6 +52,7 @@ export function BudgetRow({ progress, onEdit, onDelete }: BudgetRowProps) {
     percentage >= 100 ? "text-red-500" : "text-amber-500";
 
   return (
+    <>
     <div className="space-y-1.5 py-2">
       {/* Row 1: Info line */}
       <div className="flex items-center gap-2">
@@ -71,7 +91,7 @@ export function BudgetRow({ progress, onEdit, onDelete }: BudgetRowProps) {
           <Pencil className="h-4 w-4" />
         </button>
         <button
-          onClick={() => onDelete(category)}
+          onClick={() => setDeleteTarget(category)}
           className="text-muted-foreground hover:text-red-500 transition-colors"
         >
           <Trash2 className="h-4 w-4" />
@@ -110,5 +130,26 @@ export function BudgetRow({ progress, onEdit, onDelete }: BudgetRowProps) {
         </Tooltip>
       </TooltipProvider>
     </div>
+
+    <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Eliminar categoria?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Se eliminara esta categoria del presupuesto. Esta accion no se puede deshacer.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirmDelete}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

@@ -1,6 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Card,
   CardContent,
@@ -29,6 +40,14 @@ export function ExchangeSummary({
   onDelete,
 }: ExchangeSummaryProps) {
   const totalUsd = usdPurchases.reduce((sum, p) => sum + p.usdAmount, 0);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      onDelete(deleteTarget);
+      setDeleteTarget(null);
+    }
+  };
 
   const getGainLossForPurchase = (id: string): number | null => {
     const entry = exchangeGainLoss.perPurchase.find((p) => p.id === id);
@@ -42,6 +61,7 @@ export function ExchangeSummary({
     `US$${value.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
+    <>
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base">Dolares</CardTitle>
@@ -119,7 +139,7 @@ export function ExchangeSummary({
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 shrink-0"
-                    onClick={() => onDelete(purchase.id)}
+                    onClick={() => setDeleteTarget(purchase.id)}
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -130,5 +150,26 @@ export function ExchangeSummary({
         )}
       </CardContent>
     </Card>
+
+    <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Eliminar compra de USD?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Se eliminara este registro de compra de dolares. Esta accion no se puede deshacer.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirmDelete}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

@@ -5,6 +5,16 @@ import { Pencil, Check, X, Plus, Trash2, Scale, Download, Upload, RotateCcw } fr
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Card,
   CardContent,
   CardHeader,
@@ -58,6 +68,16 @@ export function ConfigCard({
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [entryAmountInput, setEntryAmountInput] = useState("");
   const [entryRateInput, setEntryRateInput] = useState("");
+
+  // Delete confirmation
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      onDeleteSalaryEntry(deleteTarget);
+      setDeleteTarget(null);
+    }
+  };
 
   // Import file input ref
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -152,6 +172,7 @@ export function ConfigCard({
   );
 
   return (
+    <>
     <Card className="h-fit">
       <CardHeader>
         <CardTitle>Configuracion</CardTitle>
@@ -373,7 +394,7 @@ export function ConfigCard({
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 text-muted-foreground hover:text-red-500"
-                            onClick={() => onDeleteSalaryEntry(entry.id)}
+                            onClick={() => setDeleteTarget(entry.id)}
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -524,5 +545,26 @@ export function ConfigCard({
         </div>
       </CardContent>
     </Card>
+
+    <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Eliminar entrada de sueldo?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Se eliminara esta entrada del historial de sueldos. Esta accion no se puede deshacer.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirmDelete}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
