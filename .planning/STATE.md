@@ -89,6 +89,7 @@ None.
 | 7 | Cuenta remunerada type + isLiquid flag | 2026-04-03 | c8d3782 | quick/7-... |
 | 8 | Add delete confirmation dialogs to all 9 delete buttons | 2026-04-03 | e858a19 | quick/8-... |
 | 9 | Move config settings from card to taskbar dialog | 2026-04-03 | 1736434 | quick/9-... |
+| 10 | Investment chart toggle contributions + type visibility | 2026-04-03 | 9e7236a | quick/10-... |
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
 | Phase 15 P02 | 3min | 1 task | 1 file |
 | Phase 16 P01 | 3min | 2 tasks | 5 files |
@@ -97,5 +98,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed 16-02-PLAN.md — InvestmentChart + ChartsContainer update
-Resume file: None — Phase 16 complete
+Stopped at: Completed quick-10 — Investment chart contributions toggle + type visibility
+Resume file: None
