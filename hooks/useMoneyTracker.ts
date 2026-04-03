@@ -19,21 +19,29 @@ export { CurrencyType } from "@/constants/investments";
 
 export type Category =
   | "Alquiler"
-  | "Supermercado"
+  | "Comida"
+  | "Electronica"
   | "Entretenimiento"
-  | "Salidas"
-  | "Vacaciones"
-  | "Servicios"
-  | "Vestimenta"
-  | "Subscripciones"
-  | "Insumos"
   | "Estudio"
-  | "Otros"
   | "Gym"
-  | "Seguros"
+  | "Hogar"
   | "Impuestos"
+  | "Insumos"
+  | "Mascotas"
+  | "Otros"
+  | "Reembolso"
+  | "Regalos"
+  | "Salidas"
+  | "Salud"
+  | "Seguros"
+  | "Servicios"
+  | "Subscripciones"
+  | "Supermercado"
+  | "Telefonia"
   | "Transporte"
-  | "Salud";
+  | "Vacaciones"
+  | "Vestimenta"
+  | "Viajes";
 
 export interface Expense {
   id: string;

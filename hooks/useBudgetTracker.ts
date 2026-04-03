@@ -32,10 +32,12 @@ export interface BudgetProgress {
 
 // All possible categories for categoriesWithoutBudget computation
 const ALL_CATEGORIES: Category[] = [
-  "Alquiler", "Supermercado", "Entretenimiento", "Salidas",
-  "Vacaciones", "Servicios", "Vestimenta", "Subscripciones",
-  "Insumos", "Estudio", "Otros", "Gym",
-  "Seguros", "Impuestos", "Transporte", "Salud",
+  "Alquiler", "Comida", "Electronica", "Entretenimiento",
+  "Estudio", "Gym", "Hogar", "Impuestos",
+  "Insumos", "Mascotas", "Otros", "Reembolso",
+  "Regalos", "Salidas", "Salud", "Seguros",
+  "Servicios", "Subscripciones", "Supermercado", "Telefonia",
+  "Transporte", "Vacaciones", "Vestimenta", "Viajes",
 ];
 
 export function useBudgetTracker(
