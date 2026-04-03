@@ -33,6 +33,7 @@ export default function ChartsContainer({
   const [useRealRates, setUseRealRates] = useState(false);
   const [horizonMonths, setHorizonMonths] = useState(12);
   const [includeContributions, setIncludeContributions] = useState(false);
+  const [contributionOverrides, setContributionOverrides] = useState<Record<string, number>>({});
   const [visibleScenarios, setVisibleScenarios] = useState({
     optimista: true,
     base: true,
@@ -44,8 +45,22 @@ export default function ChartsContainer({
     salaryEntries,
     recurringExpenses,
     globalUsdRate,
-    { horizonMonths, includeContributions, customAnnualRates, useRealRates }
+    { horizonMonths, includeContributions, customAnnualRates, useRealRates, contributionOverrides }
   );
+
+  const handleContributionOverrideChange = (investmentId: string, value: number) => {
+    setContributionOverrides((prev) => ({ ...prev, [investmentId]: value }));
+  };
+
+  const handleToggleContributions = () => {
+    setIncludeContributions((prev) => {
+      if (prev) {
+        // Toggling OFF — clear overrides
+        setContributionOverrides({});
+      }
+      return !prev;
+    });
+  };
 
   const handleToggleScenario = (
     s: "optimista" | "base" | "pesimista"
@@ -76,7 +91,9 @@ export default function ChartsContainer({
           .map((p) => p.month)}
         globalUsdRate={globalUsdRate}
         includeContributions={includeContributions}
-        onToggleContributions={() => setIncludeContributions((prev) => !prev)}
+        onToggleContributions={handleToggleContributions}
+        contributionOverrides={contributionOverrides}
+        onContributionOverrideChange={handleContributionOverrideChange}
         investments={monthlyData.investments.filter(
           (i) => i.status === "Activa" && !i.isLiquid
         )}

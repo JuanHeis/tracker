@@ -22,6 +22,7 @@ import {
   pfMonthlyRate,
   getDefaultMonthlyRate,
   projectInvestment,
+  computeObservedMonthlyRate,
 } from "@/lib/projection/compound-interest";
 import {
   projectIncome,
@@ -42,7 +43,8 @@ function computeInvestmentGrowth(
   includeContributions: boolean,
   globalUsdRate: number,
   customRates?: CustomAnnualRates,
-  useRealRates?: boolean
+  useRealRates?: boolean,
+  contributionOverrides?: Record<string, number>
 ): { growth: number[]; projections: InvestmentProjection[] } {
   if (investments.length === 0) {
     return {
@@ -53,15 +55,23 @@ function computeInvestmentGrowth(
 
   const projections = investments.map((inv) => {
     let rate: number;
-    if (useRealRates && inv.tna != null) {
-      // Use the investment's own TNA regardless of type
-      rate = pfMonthlyRate(inv.tna) * rateMultiplier;
+    if (useRealRates) {
+      if (inv.tna != null) {
+        // PF or any investment with explicit TNA: use it directly
+        rate = pfMonthlyRate(inv.tna) * rateMultiplier;
+      } else {
+        // Non-PF: derive rate from actual performance (movements vs currentValue)
+        const observedRate = computeObservedMonthlyRate(inv);
+        rate = observedRate != null
+          ? observedRate * rateMultiplier
+          : getDefaultMonthlyRate(inv.type, rateMultiplier, customRates);
+      }
     } else if (inv.type === "Plazo Fijo" && inv.tna != null) {
       rate = pfMonthlyRate(inv.tna) * rateMultiplier;
     } else {
       rate = getDefaultMonthlyRate(inv.type, rateMultiplier, customRates);
     }
-    return projectInvestment(inv, rate, horizonMonths, includeContributions, customRates);
+    return projectInvestment(inv, rate, horizonMonths, includeContributions, customRates, contributionOverrides?.[inv.id]);
   });
 
   // Sum projected values per month, converting USD to ARS
@@ -109,12 +119,14 @@ export function useProjectionEngine(
     includeContributions?: boolean;
     customAnnualRates?: CustomAnnualRates;
     useRealRates?: boolean;
+    contributionOverrides?: Record<string, number>;
   }
 ): UseProjectionEngineReturn {
   const horizonMonths = options?.horizonMonths ?? 12;
   const includeContributions = options?.includeContributions ?? false;
   const customAnnualRates = options?.customAnnualRates;
   const useRealRates = options?.useRealRates ?? false;
+  const contributionOverrides = options?.contributionOverrides;
 
   return useMemo(() => {
     // 1. Current month
@@ -165,7 +177,8 @@ export function useProjectionEngine(
       includeContributions,
       globalUsdRate,
       customAnnualRates,
-      useRealRates
+      useRealRates,
+      contributionOverrides
     );
     const investmentProjections = baseResult.projections;
 
@@ -176,7 +189,8 @@ export function useProjectionEngine(
       includeContributions,
       globalUsdRate,
       customAnnualRates,
-      useRealRates
+      useRealRates,
+      contributionOverrides
     ).growth;
 
     const pesimistaGrowth = computeInvestmentGrowth(
@@ -186,7 +200,8 @@ export function useProjectionEngine(
       includeContributions,
       globalUsdRate,
       customAnnualRates,
-      useRealRates
+      useRealRates,
+      contributionOverrides
     ).growth;
 
     // 9. Patrimony scenarios (savings only)
@@ -284,6 +299,7 @@ export function useProjectionEngine(
     includeContributions,
     customAnnualRates,
     useRealRates,
+    contributionOverrides,
   ]);
 }
 
