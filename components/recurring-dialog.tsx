@@ -9,6 +9,7 @@ import {
   DialogFooter,
 } from "./ui/dialog";
 import { Input } from "./ui/input";
+import { CurrencyInput } from "./currency-input";
 import { Button } from "./ui/button";
 import {
   Select,
@@ -104,14 +105,11 @@ export function RecurringDialog({
             )}
           </div>
           <div className="space-y-1">
-            <Input
-              type="number"
+            <CurrencyInput
               name="amount"
               placeholder="Monto mensual"
-              step="0.01"
-              min="0.01"
               className={cn(errors.amount && "border-red-500")}
-              onChange={() => setErrors((prev) => { const next = { ...prev }; delete next.amount; return next; })}
+              onValueChange={() => setErrors((prev) => { const next = { ...prev }; delete next.amount; return next; })}
               required
             />
             {errors.amount && (

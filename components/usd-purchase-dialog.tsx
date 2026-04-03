@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -39,23 +40,21 @@ export function UsdPurchaseDialog({
       ? (parseFloat(arsAmount) / parseFloat(usdAmount)).toFixed(2)
       : null;
 
-  const handleArsChange = (value: string) => {
-    setArsAmount(value);
+  const handleArsChange = (n: number) => {
+    setArsAmount(String(n));
     setLastEdited("ars");
     setErrors((prev) => { const next = { ...prev }; delete next.arsAmount; return next; });
-    const ars = parseFloat(value);
-    if (!isNaN(ars) && ars > 0 && globalUsdRate > 0) {
-      setUsdAmount((ars / globalUsdRate).toFixed(2));
+    if (!isNaN(n) && n > 0 && globalUsdRate > 0) {
+      setUsdAmount((n / globalUsdRate).toFixed(2));
     }
   };
 
-  const handleUsdChange = (value: string) => {
-    setUsdAmount(value);
+  const handleUsdChange = (n: number) => {
+    setUsdAmount(String(n));
     setLastEdited("usd");
     setErrors((prev) => { const next = { ...prev }; delete next.usdAmount; return next; });
-    const usd = parseFloat(value);
-    if (!isNaN(usd) && usd > 0 && globalUsdRate > 0) {
-      setArsAmount((usd * globalUsdRate).toFixed(2));
+    if (!isNaN(n) && n > 0 && globalUsdRate > 0) {
+      setArsAmount((n * globalUsdRate).toFixed(2));
     }
   };
 
@@ -148,14 +147,11 @@ export function UsdPurchaseDialog({
         {mode === "buy" ? (
           <form onSubmit={handleBuySubmit} className="space-y-4" key={`buy-${open}`}>
             <div>
-              <Input
-                type="number"
+              <CurrencyInput
                 placeholder="Monto en ARS"
                 name="arsAmount"
-                step="0.01"
-                min="0.01"
-                value={arsAmount}
-                onChange={(e) => handleArsChange(e.target.value)}
+                value={parseFloat(arsAmount) || ""}
+                onValueChange={handleArsChange}
                 className={cn(errors.arsAmount && "border-red-500")}
                 required
               />
@@ -164,14 +160,11 @@ export function UsdPurchaseDialog({
               )}
             </div>
             <div>
-              <Input
-                type="number"
+              <CurrencyInput
                 placeholder="Monto en USD"
                 name="usdAmount"
-                step="0.01"
-                min="0.01"
-                value={usdAmount}
-                onChange={(e) => handleUsdChange(e.target.value)}
+                value={parseFloat(usdAmount) || ""}
+                onValueChange={handleUsdChange}
                 className={cn(errors.usdAmount && "border-red-500")}
                 required
               />
@@ -202,12 +195,9 @@ export function UsdPurchaseDialog({
         ) : (
           <form onSubmit={handleRegisterSubmit} className="space-y-4" key={`register-${open}`}>
             <div>
-              <Input
-                type="number"
+              <CurrencyInput
                 placeholder="Monto en USD"
                 name="usdAmount"
-                step="0.01"
-                min="0.01"
                 className={cn(errors.usdAmount && "border-red-500")}
                 required
               />

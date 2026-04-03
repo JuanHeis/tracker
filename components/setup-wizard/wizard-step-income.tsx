@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import {
   Card,
   CardContent,
@@ -48,16 +49,13 @@ export function WizardStepIncome({
           <label htmlFor="salaryAmount" className="text-sm font-medium">
             Monto mensual
           </label>
-          <Input
+          <CurrencyInput
             id="salaryAmount"
-            type="number"
-            min="0"
-            step="0.01"
             value={data.salaryAmount || ""}
-            onChange={(e) =>
+            onValueChange={(n) =>
               onChange({
                 ...data,
-                salaryAmount: parseFloat(e.target.value) || 0,
+                salaryAmount: n || 0,
               })
             }
             placeholder="0.00"

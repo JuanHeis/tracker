@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
+import { CurrencyInput } from "./currency-input";
 import { Button } from "./ui/button";
 import {
   Select,
@@ -171,12 +172,9 @@ export function InvestmentDialog({
           />
           {!editingInvestment && (
             <div className="space-y-1">
-              <Input
-                type="number"
+              <CurrencyInput
                 name="amount"
                 placeholder="Monto inicial"
-                step="0.01"
-                min="0"
                 className={cn(errors.amount && "border-red-500")}
                 required
               />

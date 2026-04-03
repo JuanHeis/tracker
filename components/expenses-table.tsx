@@ -5,6 +5,7 @@ import { Trash2, Pencil, Check, X, Repeat, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,11 +62,9 @@ function InlineRateEditor({
 
   return (
     <div className="flex items-center gap-1">
-      <Input
-        type="number"
-        step="0.01"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
+      <CurrencyInput
+        value={parseFloat(value) || ""}
+        onValueChange={(n) => setValue(String(n))}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();

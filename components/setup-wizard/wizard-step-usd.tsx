@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import {
   Card,
   CardContent,
@@ -42,14 +42,11 @@ export function WizardStepUsd({
           <label htmlFor="usdAmount" className="text-sm font-medium">
             Monto en USD
           </label>
-          <Input
+          <CurrencyInput
             id="usdAmount"
-            type="number"
-            min="0"
-            step="0.01"
             value={data.usdAmount || ""}
-            onChange={(e) =>
-              onChange({ ...data, usdAmount: parseFloat(e.target.value) || 0 })
+            onValueChange={(n) =>
+              onChange({ ...data, usdAmount: n || 0 })
             }
             placeholder="0.00"
           />
@@ -61,16 +58,13 @@ export function WizardStepUsd({
           <label htmlFor="globalUsdRate" className="text-sm font-medium">
             Cotizacion USD actual
           </label>
-          <Input
+          <CurrencyInput
             id="globalUsdRate"
-            type="number"
-            min="0"
-            step="0.01"
             value={data.globalUsdRate || ""}
-            onChange={(e) =>
+            onValueChange={(n) =>
               onChange({
                 ...data,
-                globalUsdRate: parseFloat(e.target.value) || 0,
+                globalUsdRate: n || 0,
               })
             }
             placeholder="0.00"

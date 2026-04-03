@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import {
   Dialog,
   DialogContent,
@@ -101,11 +102,9 @@ export function AdjustmentDialog({
                 <label className="text-sm text-muted-foreground">Tu saldo real:</label>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{currencyPrefix}</span>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={realBalance}
-                    onChange={(e) => setRealBalance(e.target.value)}
+                  <CurrencyInput
+                    value={parseFloat(realBalance) || ""}
+                    onValueChange={(n) => setRealBalance(String(n))}
                     placeholder="0"
                     className="flex-1"
                     autoFocus

@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CATEGORIES } from "@/constants/colors";
@@ -139,13 +140,10 @@ export function BudgetDialog({
             <label className="text-sm font-medium">
               Limite mensual (ARS)
             </label>
-            <Input
-              type="number"
-              min={1}
-              step={1000}
-              value={limitValue}
-              onChange={(e) => {
-                setLimitValue(e.target.value);
+            <CurrencyInput
+              value={parseFloat(limitValue) || ""}
+              onValueChange={(n) => {
+                setLimitValue(String(n));
                 setErrors((prev) => { const next = { ...prev }; delete next.limit; return next; });
               }}
               placeholder="Ej: 50000"

@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { Pencil, Check, X, Plus, Trash2, Scale, Download, Upload, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -289,11 +290,9 @@ export function SettingsPanel({
             <span className="text-sm text-muted-foreground">Valor actual:</span>
             {editingRate ? (
               <div className="flex items-center gap-1">
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={rateInput}
-                  onChange={(e) => setRateInput(e.target.value)}
+                <CurrencyInput
+                  value={parseFloat(rateInput) || ""}
+                  onValueChange={(n) => setRateInput(String(n))}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -466,10 +465,9 @@ export function SettingsPanel({
                         <span className="text-xs text-muted-foreground shrink-0">
                           {formatEffectiveDate(entry.effectiveDate)}:
                         </span>
-                        <Input
-                          type="number"
-                          value={entryAmountInput}
-                          onChange={(e) => setEntryAmountInput(e.target.value)}
+                        <CurrencyInput
+                          value={parseFloat(entryAmountInput) || ""}
+                          onValueChange={(n) => setEntryAmountInput(String(n))}
                           placeholder="Monto"
                           className="h-7 w-24 text-xs"
                           autoFocus
@@ -481,12 +479,10 @@ export function SettingsPanel({
                             if (e.key === "Escape") handleCancelEntryEdit();
                           }}
                         />
-                        <Input
-                          type="number"
-                          value={entryRateInput}
-                          onChange={(e) => setEntryRateInput(e.target.value)}
+                        <CurrencyInput
+                          value={parseFloat(entryRateInput) || ""}
+                          onValueChange={(n) => setEntryRateInput(String(n))}
                           placeholder="USD"
-                          step="0.01"
                           className="h-7 w-20 text-xs"
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
@@ -545,19 +541,16 @@ export function SettingsPanel({
                 className="h-7 text-xs"
               />
               <div className="flex gap-1">
-                <Input
-                  type="number"
+                <CurrencyInput
                   placeholder="Monto"
-                  value={newEntryAmount}
-                  onChange={(e) => setNewEntryAmount(e.target.value)}
+                  value={parseFloat(newEntryAmount) || ""}
+                  onValueChange={(n) => setNewEntryAmount(String(n))}
                   className="h-7 text-xs"
                 />
-                <Input
-                  type="number"
+                <CurrencyInput
                   placeholder="Cotiz USD"
-                  step="0.01"
-                  value={newEntryRate}
-                  onChange={(e) => setNewEntryRate(e.target.value)}
+                  value={parseFloat(newEntryRate) || ""}
+                  onValueChange={(n) => setNewEntryRate(String(n))}
                   className="h-7 text-xs"
                 />
               </div>

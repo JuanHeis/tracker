@@ -6,6 +6,7 @@ import { es } from "date-fns/locale";
 import { Plus } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { CurrencyInput } from "./currency-input";
 import { cn } from "@/lib/utils";
 import { DATE_FORMAT } from "@/constants/date";
 import { currencySymbol } from "@/constants/investments";
@@ -79,16 +80,12 @@ export function LoanPayments({ loan, onAddPayment }: LoanPaymentsProps) {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs text-muted-foreground">Monto</label>
-            <Input
-              type="number"
+            <CurrencyInput
               name="amount"
               required
-              min="0.01"
-              step="0.01"
-              max={remaining}
               placeholder={`Max ${symbol}${remaining.toLocaleString()}`}
               className={cn("h-8 w-36 text-sm", paymentError && "border-red-500")}
-              onChange={() => setPaymentError("")}
+              onValueChange={() => setPaymentError("")}
             />
           </div>
           <Button type="submit" size="sm" className="h-8">

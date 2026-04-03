@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { LoanType } from "@/hooks/useMoneyTracker";
@@ -152,15 +153,12 @@ export function LoanDialog({
           {/* Monto */}
           <div className="space-y-1">
             <label htmlFor="loan-amount" className="text-sm font-medium">Monto</label>
-            <Input
+            <CurrencyInput
               id="loan-amount"
-              type="number"
               placeholder="Monto"
-              step="0.01"
-              min="0.01"
-              value={amount}
-              onChange={(e) => {
-                setAmount(e.target.value);
+              value={parseFloat(amount) || ""}
+              onValueChange={(n) => {
+                setAmount(String(n));
                 setErrors((prev) => { const next = { ...prev }; delete next.amount; return next; });
               }}
               className={cn(errors.amount && "border-red-500")}

@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -59,21 +60,19 @@ export function TransferDialog({
       ? (parseFloat(arsAmount) / parseFloat(usdAmount)).toFixed(2)
       : null;
 
-  const handleArsChange = (value: string) => {
-    setArsAmount(value);
+  const handleArsChange = (n: number) => {
+    setArsAmount(String(n));
     setErrors((prev) => { const next = { ...prev }; delete next.arsAmount; return next; });
-    const ars = parseFloat(value);
-    if (!isNaN(ars) && ars > 0 && globalUsdRate > 0) {
-      setUsdAmount((ars / globalUsdRate).toFixed(2));
+    if (!isNaN(n) && n > 0 && globalUsdRate > 0) {
+      setUsdAmount((n / globalUsdRate).toFixed(2));
     }
   };
 
-  const handleUsdChange = (value: string) => {
-    setUsdAmount(value);
+  const handleUsdChange = (n: number) => {
+    setUsdAmount(String(n));
     setErrors((prev) => { const next = { ...prev }; delete next.usdAmount; return next; });
-    const usd = parseFloat(value);
-    if (!isNaN(usd) && usd > 0 && globalUsdRate > 0) {
-      setArsAmount((usd * globalUsdRate).toFixed(2));
+    if (!isNaN(n) && n > 0 && globalUsdRate > 0) {
+      setArsAmount((n * globalUsdRate).toFixed(2));
     }
   };
 
@@ -181,13 +180,10 @@ export function TransferDialog({
           {isCurrencyType && (
             <>
               <div>
-                <Input
-                  type="number"
+                <CurrencyInput
                   placeholder="Monto en ARS"
-                  step="0.01"
-                  min="0.01"
-                  value={arsAmount}
-                  onChange={(e) => handleArsChange(e.target.value)}
+                  value={parseFloat(arsAmount) || ""}
+                  onValueChange={handleArsChange}
                   className={cn(errors.arsAmount && "border-red-500")}
                 />
                 {errors.arsAmount && (
@@ -195,13 +191,10 @@ export function TransferDialog({
                 )}
               </div>
               <div>
-                <Input
-                  type="number"
+                <CurrencyInput
                   placeholder="Monto en USD"
-                  step="0.01"
-                  min="0.01"
-                  value={usdAmount}
-                  onChange={(e) => handleUsdChange(e.target.value)}
+                  value={parseFloat(usdAmount) || ""}
+                  onValueChange={handleUsdChange}
                   className={cn(errors.usdAmount && "border-red-500")}
                 />
                 {errors.usdAmount && (
@@ -217,14 +210,11 @@ export function TransferDialog({
           {!isCurrencyType && (
             <>
               <div>
-                <Input
-                  type="number"
+                <CurrencyInput
                   placeholder="Monto"
-                  step="0.01"
-                  min="0.01"
-                  value={amount}
-                  onChange={(e) => {
-                    setAmount(e.target.value);
+                  value={parseFloat(amount) || ""}
+                  onValueChange={(n) => {
+                    setAmount(String(n));
                     setErrors((prev) => { const next = { ...prev }; delete next.amount; return next; });
                   }}
                   className={cn(errors.amount && "border-red-500")}

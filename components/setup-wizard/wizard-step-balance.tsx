@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import {
   Card,
   CardContent,
@@ -37,14 +37,11 @@ export function WizardStepBalance({
           <label htmlFor="arsBalance" className="text-sm font-medium">
             Saldo actual ARS
           </label>
-          <Input
+          <CurrencyInput
             id="arsBalance"
-            type="number"
-            min="0"
-            step="0.01"
             value={data.arsBalance || ""}
-            onChange={(e) =>
-              onChange({ ...data, arsBalance: parseFloat(e.target.value) || 0 })
+            onValueChange={(n) =>
+              onChange({ ...data, arsBalance: n || 0 })
             }
             placeholder="0.00"
           />

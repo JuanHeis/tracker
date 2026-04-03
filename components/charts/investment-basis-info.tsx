@@ -1,5 +1,5 @@
 import { Info } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import type { InvestmentProjection } from "@/lib/projection/types";
 import type { Investment } from "@/hooks/useMoneyTracker";
 
@@ -56,10 +56,17 @@ export function InvestmentBasisInfo({
       </div>
       <div className="space-y-0.5">
         {projections.map((p) => {
-          const rateLabel =
-            p.type === "Plazo Fijo"
-              ? `TNA ${(p.annualRate * 100).toFixed(0)}%`
-              : `${(p.annualRate * 100).toFixed(0)}% anual`;
+          const ratePercent = (p.annualRate * 100).toFixed(0);
+          let rateLabel: string;
+          if (p.rateSource === "tna") {
+            rateLabel = `TNA ${ratePercent}%`;
+          } else if (p.rateSource === "observed") {
+            rateLabel = `${ratePercent}% anual (tasa real observada)`;
+          } else if (p.rateSource === "custom") {
+            rateLabel = `${ratePercent}% anual (configurada)`;
+          } else {
+            rateLabel = `${ratePercent}% anual (por defecto)`;
+          }
           const status = getUpdateStatus(p, investments);
 
           const currencySymbol = p.currencyType === "USD" ? "USD" : "$";
@@ -80,12 +87,9 @@ export function InvestmentBasisInfo({
                 <span className="flex items-center gap-1">
                   <span className="text-muted-foreground">Aporte mensual:</span>
                   <span className="text-muted-foreground">{currencySymbol}</span>
-                  <Input
-                    type="number"
-                    min={0}
+                  <CurrencyInput
                     value={displayContribution}
-                    onChange={(e) => {
-                      const val = e.target.value === "" ? 0 : Number(e.target.value);
+                    onValueChange={(val) => {
                       onContributionOverrideChange(p.investmentId, val);
                     }}
                     className="h-6 w-24 text-xs px-1 inline"

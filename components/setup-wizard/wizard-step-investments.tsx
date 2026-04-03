@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -210,13 +211,10 @@ export function WizardStepInvestments({
             <label htmlFor="inv-amount" className="text-sm font-medium">
               Monto actual
             </label>
-            <Input
+            <CurrencyInput
               id="inv-amount"
-              type="number"
-              min="0"
-              step="0.01"
               value={formAmount || ""}
-              onChange={(e) => setFormAmount(parseFloat(e.target.value) || 0)}
+              onValueChange={(n) => setFormAmount(n || 0)}
               placeholder="0.00"
             />
             {formErrors.amount && (

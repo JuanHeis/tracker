@@ -6,6 +6,7 @@ import { es } from "date-fns/locale";
 import { Pencil, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import {
   Card,
   CardContent,
@@ -156,10 +157,9 @@ export function ResumenCard({
                 </span>
                 {editingAguinaldo ? (
                   <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
-                      value={aguinaldoInput}
-                      onChange={(e) => setAguinaldoInput(e.target.value)}
+                    <CurrencyInput
+                      value={parseFloat(aguinaldoInput) || ""}
+                      onValueChange={(n) => setAguinaldoInput(String(n))}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
@@ -251,8 +251,8 @@ export function ResumenCard({
 
             {/* Disponible */}
             <Tooltip>
-              <TooltipTrigger className="w-full">
-                <div className="flex justify-between w-full">
+              <TooltipTrigger asChild>
+                <div className="flex justify-between w-full cursor-help">
                   <span className="font-bold">Disponible:</span>
                   <span className={cn("font-bold", disponible >= 0 ? "text-green-500" : "text-red-500")}>
                     <FormattedAmount value={disponible} currency="ARS" />

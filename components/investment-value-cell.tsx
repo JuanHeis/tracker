@@ -6,6 +6,7 @@ import { differenceInDays } from "date-fns";
 import { Pencil } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
+import { CurrencyInput } from "./currency-input";
 import { useHydration } from "@/hooks/useHydration";
 import type { Investment } from "@/hooks/useMoneyTracker";
 import { currencySymbol } from "@/constants/investments";
@@ -96,12 +97,11 @@ export function InvestmentValueCell({
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
         {editing ? (
-          <Input
-            type="number"
+          <CurrencyInput
             autoFocus
             className="w-28 h-7 text-sm"
             value={value}
-            onChange={(e) => setValue(Number(e.target.value))}
+            onValueChange={(n) => setValue(n)}
             onKeyDown={handleKeyDown}
             onBlur={handleSave}
           />

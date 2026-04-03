@@ -6,6 +6,7 @@ import { Trash2, Plus } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { CurrencyInput } from "./currency-input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -101,12 +102,9 @@ export function InvestmentMovements({
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs text-muted-foreground">Monto</label>
-            <Input
-              type="number"
+            <CurrencyInput
               name="amount"
               required
-              min="0.01"
-              step="0.01"
               placeholder="Monto"
               className="h-8 w-28 text-sm"
             />

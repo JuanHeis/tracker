@@ -39,6 +39,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/currency-input";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -711,13 +712,10 @@ export function ExpenseTracker() {
             />
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <Input
-                  type="number"
+                <CurrencyInput
                   placeholder="Monto"
                   name="amount"
-                  step="0.01"
                   defaultValue={editingExpense?.amount}
-                  onBlur={handleExpenseBlur}
                   className={cn(expenseErrors.amount && "border-red-500")}
                   required
                 />
@@ -728,16 +726,13 @@ export function ExpenseTracker() {
                 )}
               </div>
               <div>
-                <Input
-                  type="number"
+                <CurrencyInput
                   placeholder="Valor USD"
                   name="usdRate"
-                  step="0.01"
                   defaultValue={
                     editingExpense?.usdRate ??
                     (lastUsedUsdRate || undefined)
                   }
-                  onBlur={handleExpenseBlur}
                   className={cn(
                     expenseErrors.usdRate && "border-red-500"
                   )}
@@ -843,13 +838,10 @@ export function ExpenseTracker() {
             />
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <Input
-                  type="number"
+                <CurrencyInput
                   placeholder="Monto"
                   name="amount"
-                  step="0.01"
                   defaultValue={editingIncome?.amount}
-                  onBlur={handleIncomeBlur}
                   className={cn(incomeErrors.amount && "border-red-500")}
                   required
                 />
@@ -860,16 +852,13 @@ export function ExpenseTracker() {
                 )}
               </div>
               <div>
-                <Input
-                  type="number"
+                <CurrencyInput
                   placeholder="Valor USD"
                   name="usdRate"
-                  step="0.01"
                   defaultValue={
                     editingIncome?.usdRate ??
                     (lastUsedUsdRate || undefined)
                   }
-                  onBlur={handleIncomeBlur}
                   className={cn(
                     incomeErrors.usdRate && "border-red-500"
                   )}
