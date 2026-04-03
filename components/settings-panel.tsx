@@ -19,6 +19,9 @@ import { STORAGE_KEYS } from "@/hooks/useDataPersistence";
 import { format, parse } from "date-fns";
 import { es } from "date-fns/locale";
 import type { SalaryEntry, IncomeConfig } from "@/hooks/useSalaryHistory";
+import { INVESTMENT_TYPES } from "@/constants/investments";
+import { DEFAULT_ANNUAL_RATES } from "@/lib/projection/types";
+import type { CustomAnnualRates } from "@/lib/projection/types";
 
 interface SettingsPanelProps {
   incomeConfig: IncomeConfig;
@@ -34,6 +37,8 @@ interface SettingsPanelProps {
   onExport?: () => void;
   onImport?: (file: File) => void;
   onResetAllData: () => void;
+  customAnnualRates: CustomAnnualRates;
+  onUpdateCustomAnnualRates: (rates: CustomAnnualRates) => void;
 }
 
 export function SettingsPanel({
@@ -50,6 +55,8 @@ export function SettingsPanel({
   onExport,
   onImport,
   onResetAllData,
+  customAnnualRates,
+  onUpdateCustomAnnualRates,
 }: SettingsPanelProps) {
   // Employment config editing
   const [editingEmploymentType, setEditingEmploymentType] = useState(false);
@@ -67,6 +74,10 @@ export function SettingsPanel({
 
   // Delete confirmation
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  // Projection rate editing
+  const [editingRateType, setEditingRateType] = useState<string | null>(null);
+  const [projRateInput, setProjRateInput] = useState("");
 
   // Reset confirmation
   const [confirmReset, setConfirmReset] = useState(false);
@@ -317,6 +328,124 @@ export function SettingsPanel({
                 </Button>
               </div>
             )}
+          </div>
+        </div>
+
+        <hr className="border-border" />
+
+        {/* Section 2b: Tasas de proyeccion */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">Tasas de proyeccion</h4>
+          <div className="space-y-1.5 text-sm">
+            {INVESTMENT_TYPES.map((type) => {
+              if (type === "Plazo Fijo") {
+                return (
+                  <div key={type} className="flex items-center justify-between">
+                    <span className="text-muted-foreground">{type}:</span>
+                    <span className="text-xs text-muted-foreground italic">
+                      Usa TNA de cada inversion
+                    </span>
+                  </div>
+                );
+              }
+
+              const effectiveRate = customAnnualRates[type] ?? DEFAULT_ANNUAL_RATES[type];
+              const isCustom = customAnnualRates[type] != null;
+
+              if (editingRateType === type) {
+                return (
+                  <div key={type} className="flex items-center justify-between">
+                    <span className="text-muted-foreground">{type}:</span>
+                    <div className="flex items-center gap-1">
+                      <Input
+                        type="number"
+                        step="1"
+                        value={projRateInput}
+                        onChange={(e) => setProjRateInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            const val = parseFloat(projRateInput);
+                            if (!isNaN(val) && val >= 0) {
+                              onUpdateCustomAnnualRates({
+                                ...customAnnualRates,
+                                [type]: val / 100,
+                              });
+                            }
+                            setEditingRateType(null);
+                          }
+                          if (e.key === "Escape") setEditingRateType(null);
+                        }}
+                        className="h-7 w-20 text-sm"
+                        autoFocus
+                      />
+                      <span className="text-xs text-muted-foreground">%</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => {
+                          const val = parseFloat(projRateInput);
+                          if (!isNaN(val) && val >= 0) {
+                            onUpdateCustomAnnualRates({
+                              ...customAnnualRates,
+                              [type]: val / 100,
+                            });
+                          }
+                          setEditingRateType(null);
+                        }}
+                      >
+                        <Check className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => setEditingRateType(null)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div key={type} className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{type}:</span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-medium">
+                      {(effectiveRate * 100).toFixed(0)}%
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-blue-500"
+                      onClick={() => {
+                        setProjRateInput(String((effectiveRate * 100).toFixed(0)));
+                        setEditingRateType(type);
+                      }}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    {isCustom && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-orange-500"
+                        onClick={() => {
+                          const updated = { ...customAnnualRates };
+                          delete updated[type];
+                          onUpdateCustomAnnualRates(updated);
+                        }}
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

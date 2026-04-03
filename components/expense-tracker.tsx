@@ -73,6 +73,8 @@ import { ExchangeSummary } from "./exchange-summary";
 import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
 import { useHydration } from "@/hooks/useHydration";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import type { CustomAnnualRates } from "@/lib/projection/types";
 import { SetupWizard } from "@/components/setup-wizard/setup-wizard";
 
 function validateField(
@@ -206,6 +208,7 @@ export function ExpenseTracker() {
   } = useMoneyTracker();
 
   const { exportData, importData } = useDataPersistence();
+  const [customAnnualRates, setCustomAnnualRates] = useLocalStorage<CustomAnnualRates>("customAnnualRates", {});
 
   const handleImport = async (file: File) => {
     const result = await importData(file);
@@ -461,6 +464,8 @@ export function ExpenseTracker() {
                   onExport={() => { exportData(); }}
                   onImport={(file) => { handleImport(file); }}
                   onResetAllData={handleResetAllData}
+                  customAnnualRates={customAnnualRates}
+                  onUpdateCustomAnnualRates={setCustomAnnualRates}
                 />
               </DialogContent>
             </Dialog>
