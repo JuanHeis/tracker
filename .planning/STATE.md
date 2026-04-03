@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Graficos Predictivos
 status: unknown
-last_updated: "2026-04-03T14:45:20.889Z"
+last_updated: "2026-04-03T15:49:53.835Z"
 progress:
-  total_phases: 14
+  total_phases: 15
   completed_phases: 14
-  total_plans: 39
-  completed_plans: 39
+  total_plans: 41
+  completed_plans: 40
 ---
 
 # Project State
@@ -22,12 +22,12 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 
 ## Current Position
 
-Phase: 14 of 16 (Recharts Upgrade & Chart Infrastructure)
-Plan: 2 of 2 complete
-Status: Phase 14 complete — all plans executed
-Last activity: 2026-04-03 — Completed quick task 9: Move config settings to taskbar dialog
+Phase: 15 of 16 (Projection Engine)
+Plan: 1 of 2 complete
+Status: Plan 15-01 complete — projection math foundation
+Last activity: 2026-04-03 — Completed 15-01: Projection types and pure math functions
 
-Progress: [██████████] 100% (2/2 plans in phase 14)
+Progress: [█████░░░░░] 50% (1/2 plans in phase 15)
 
 ## Performance Metrics
 
@@ -58,6 +58,10 @@ Recent decisions affecting current work:
 - [14-01]: Used Partial<TooltipContentProps> for Recharts 3.x compatibility in chart.tsx
 - [14-01]: Inlined LegendPayload[] type — Recharts 3.x removed payload from LegendProps
 - [Phase 14]: [14-02]: ComposedChart pattern proven: 'use client' + useHydration + ChartContainer + ComposedChart with dual Lines
+- [15-01]: All projection functions are pure TypeScript with zero React dependencies
+- [15-01]: Historical patrimony uses simplified cumulative running totals (not full calculateDualBalances)
+- [15-01]: Scenario engine outputs savings-only projections; investment growth layered by hook
+- [Phase 15]: All projection functions are pure TypeScript with zero React dependencies
 
 ### Pending Todos
 
@@ -80,9 +84,10 @@ None.
 | 7 | Cuenta remunerada type + isLiquid flag | 2026-04-03 | c8d3782 | quick/7-... |
 | 8 | Add delete confirmation dialogs to all 9 delete buttons | 2026-04-03 | e858a19 | quick/8-... |
 | 9 | Move config settings from card to taskbar dialog | 2026-04-03 | 1736434 | quick/9-... |
+| Phase 15 P01 | 3min | 3 tasks | 5 files |
 
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed quick-9 — Move config settings to taskbar dialog
-Resume file: None — next step: Phase 15 (Projection Engine)
+Stopped at: Completed 15-01-PLAN.md — Projection math foundation
+Resume file: None — next step: 15-02 (useProjectionEngine hook)

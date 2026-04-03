@@ -117,11 +117,11 @@
 
 ### Motor de Proyeccion
 
-- [ ] **PROJ-01**: User ve proyeccion de cada inversion activa con interes compuesto (PF usa TNA, otras usan rendimiento observado)
-- [ ] **PROJ-02**: User puede activar "aportes futuros" por inversion — proyecta aportes mensuales recurrentes (por default: monto del ultimo aporte)
-- [ ] **PROJ-03**: User ve proyeccion lineal de ingresos futuros basada en su ingreso fijo actual
-- [ ] **PROJ-04**: Proyeccion de patrimonio deduce gastos recurrentes del ahorro mensual neto
-- [ ] **PROJ-05**: User ve patrimonio historico reconstruido mes a mes desde monthlyData en linea solida
+- [x] **PROJ-01**: User ve proyeccion de cada inversion activa con interes compuesto (PF usa TNA, otras usan rendimiento observado)
+- [x] **PROJ-02**: User puede activar "aportes futuros" por inversion — proyecta aportes mensuales recurrentes (por default: monto del ultimo aporte)
+- [x] **PROJ-03**: User ve proyeccion lineal de ingresos futuros basada en su ingreso fijo actual
+- [x] **PROJ-04**: Proyeccion de patrimonio deduce gastos recurrentes del ahorro mensual neto
+- [x] **PROJ-05**: User ve patrimonio historico reconstruido mes a mes desde monthlyData en linea solida
 
 ### Charts UI
 
@@ -246,11 +246,11 @@
 | INFRA-01 | Phase 14 | Complete |
 | INFRA-02 | Phase 14 | Complete |
 | INFRA-03 | Phase 14 | Complete |
-| PROJ-01 | Phase 15 | Pending |
-| PROJ-02 | Phase 15 | Pending |
-| PROJ-03 | Phase 15 | Pending |
-| PROJ-04 | Phase 15 | Pending |
-| PROJ-05 | Phase 15 | Pending |
+| PROJ-01 | Phase 15 | Complete |
+| PROJ-02 | Phase 15 | Complete |
+| PROJ-03 | Phase 15 | Complete |
+| PROJ-04 | Phase 15 | Complete |
+| PROJ-05 | Phase 15 | Complete |
 | CHART-01 | Phase 16 | Pending |
 | CHART-02 | Phase 16 | Pending |
 | CHART-03 | Phase 16 | Pending |
