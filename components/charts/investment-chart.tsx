@@ -35,6 +35,8 @@ interface InvestmentChartProps {
   globalUsdRate: number;
   includeContributions: boolean;
   onToggleContributions: () => void;
+  contributionOverrides: Record<string, number>;
+  onContributionOverrideChange: (investmentId: string, value: number) => void;
   investments: Investment[];
   useRealRates: boolean;
   onToggleRealRates: () => void;
@@ -83,6 +85,8 @@ export function InvestmentChart({
   globalUsdRate,
   includeContributions,
   onToggleContributions,
+  contributionOverrides,
+  onContributionOverrideChange,
   investments,
   useRealRates,
   onToggleRealRates,
@@ -249,6 +253,9 @@ export function InvestmentChart({
           <InvestmentBasisInfo
             projections={filteredProjections}
             investments={investments}
+            includeContributions={includeContributions}
+            contributionOverrides={contributionOverrides}
+            onContributionOverrideChange={onContributionOverrideChange}
           />
         )}
       </CardContent>

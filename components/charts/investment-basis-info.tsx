@@ -1,10 +1,14 @@
 import { Info } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import type { InvestmentProjection } from "@/lib/projection/types";
 import type { Investment } from "@/hooks/useMoneyTracker";
 
 interface InvestmentBasisInfoProps {
   projections: InvestmentProjection[];
   investments: Investment[];
+  includeContributions: boolean;
+  contributionOverrides: Record<string, number>;
+  onContributionOverrideChange: (investmentId: string, value: number) => void;
 }
 
 function formatCurrency(value: number, currencyType: string): string {
@@ -36,6 +40,9 @@ function getUpdateStatus(
 export function InvestmentBasisInfo({
   projections,
   investments,
+  includeContributions,
+  contributionOverrides,
+  onContributionOverrideChange,
 }: InvestmentBasisInfoProps) {
   if (projections.length === 0) {
     return null;
@@ -55,14 +62,36 @@ export function InvestmentBasisInfo({
               : `${(p.annualRate * 100).toFixed(0)}% anual`;
           const status = getUpdateStatus(p, investments);
 
+          const currencySymbol = p.currencyType === "USD" ? "USD" : "$";
+          const displayContribution =
+            contributionOverrides[p.investmentId] !== undefined
+              ? contributionOverrides[p.investmentId]
+              : p.monthlyContribution;
+
           return (
             <div
               key={p.investmentId}
-              className="flex flex-wrap gap-x-4 gap-y-0.5"
+              className="flex flex-wrap items-center gap-x-4 gap-y-0.5"
             >
               <span className="font-medium">{p.investmentName}</span>
               <span>{formatCurrency(p.currentValue, p.currencyType)}</span>
               <span>{rateLabel}</span>
+              {includeContributions && (
+                <span className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Aporte mensual:</span>
+                  <span className="text-muted-foreground">{currencySymbol}</span>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={displayContribution}
+                    onChange={(e) => {
+                      const val = e.target.value === "" ? 0 : Number(e.target.value);
+                      onContributionOverrideChange(p.investmentId, val);
+                    }}
+                    className="h-6 w-24 text-xs px-1 inline"
+                  />
+                </span>
+              )}
               <span
                 className={
                   status.isWarning
