@@ -14,11 +14,22 @@ Reflejar la realidad financiera exacta del usuario en todo momento — nunca per
 
 ### Validated
 
-(None yet — ship to validate)
+<!-- v1.0 MVP — 46 requirements shipped -->
+- ✓ Bug fixes (7), Inversiones (10), Moneda dual (8), Ingresos (8), Card mensual (5) — v1.0
+- ✓ Recurrentes (4), Préstamos (4), Presupuestos (3), Transferencias (2), Ajustes/Persistencia (3), UX (2) — v1.0
+- ✓ Setup Wizard (10), Manual (1) — v1.1
 
 ### Active
 
-**Bugs críticos (cálculos rotos):**
+**Gráficos Predictivos (v1.2):**
+- [ ] Gráfico de inversiones con proyección interés compuesto
+- [ ] Gráfico de patrimonio con proyección lineal + compuesta
+- [ ] Escenarios múltiples (optimista/base/pesimista)
+- [ ] Histórico real + proyección futura combinados
+- [ ] Horizonte configurable (3, 6, 12, 24 meses)
+- [ ] Integración Recharts
+
+**Bugs críticos (cálculos rotos) — RESUELTOS v1.0:**
 - [ ] Fix inversiones que siempre se guardan como ARS (ignorando moneda original)
 - [ ] Fix tipos de inversión que no coinciden entre dialog y types
 - [ ] Fix "Total disponible" que mezcla todos los meses y estados de inversión
@@ -124,19 +135,20 @@ Reflejar la realidad financiera exacta del usuario en todo momento — nunca per
 - Cálculo automático de impuestos (monotributo, ganancias) — demasiado complejo y varía por situación
 - Sincronización multi-dispositivo — sin backend, solo export/import
 
-## Current Milestone: v1.1 — Setup Wizard & Manual
+## Current Milestone: v1.2 — Gráficos Predictivos
 
-**Goal:** Permitir al usuario configurar su situación financiera inicial con un wizard paso a paso y documentar cómo usar la app.
+**Goal:** Visualizar la evolución financiera pasada y proyectar el futuro con gráficos interactivos usando datos reales del usuario.
 
 **Target features:**
-- Wizard multi-step de primera vez (ARS líquido, USD + cotización, inversiones existentes, resumen)
-- Auto-detección de primera vez (sin datos → mostrar wizard)
-- Re-ejecutable desde Configuración
-- Manual de uso como archivo de referencia (MANUAL.md)
+- Gráfico de inversiones: histórico real (línea sólida) + proyección interés compuesto (línea punteada)
+- Gráfico de patrimonio: evolución real + proyección futura (sueldo neto - gastos recurrentes + crecimiento inversiones)
+- Escenarios múltiples: optimista / base / pesimista con diferentes líneas
+- Horizonte configurable: 3, 6, 12, 24 meses
+- Librería Recharts para visualización
 
 ## Context
 
-**Estado actual:** App completa con todas las features de v1.0 (inversiones, dual ARS/USD, ingresos, gastos recurrentes, préstamos, presupuestos, transferencias, export/import). Falta onboarding — el usuario nuevo no tiene forma guiada de cargar su situación inicial.
+**Estado actual:** App completa con v1.0 + v1.1. Todas las features core funcionando: inversiones, dual ARS/USD, ingresos, gastos recurrentes, préstamos, presupuestos, transferencias, export/import, setup wizard, manual. El usuario ya está usando la app con datos reales.
 
 **Stack:** Next.js, TypeScript, localStorage. UI con componentes propios sobre fondo oscuro con gradiente.
 
@@ -170,4 +182,4 @@ Reflejar la realidad financiera exacta del usuario en todo momento — nunca per
 | localStorage + export/import | Sin backend, pero con backup manual en JSON | — Pending |
 
 ---
-*Last updated: 2026-04-02 — milestone v1.1 started*
+*Last updated: 2026-04-02 — milestone v1.2 started*

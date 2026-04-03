@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Setup Wizard & Manual
-status: unknown
-last_updated: "2026-04-03T00:32:03.646Z"
+milestone: v1.2
+milestone_name: "Gr\xE1ficos Predictivos"
+status: defining_requirements
+last_updated: "2026-04-02T00:00:00.000Z"
 progress:
-  total_phases: 13
-  completed_phases: 13
-  total_plans: 37
-  completed_plans: 37
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Reflejar la realidad financiera exacta del usuario en todo momento — nunca perderse un peso ni un dolar.
-**Current focus:** v1.1 — Setup Wizard & Manual
+**Current focus:** v1.2 — Gráficos Predictivos
 
 ## Current Position
 
-Phase: 13 of 13 (Manual de Uso)
-Plan: 1 of 1 completed in current phase
-Status: Phase 13 Complete — v1.1 Milestone Complete
-Last activity: 2026-04-03 - Completed quick task 6: Homogeneizar tabs Prestamos y Recurrentes
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements — PAUSED mid-workflow
+Last activity: 2026-04-02 — Milestone v1.2 started, PROJECT.md updated, user answers collected
 
-Progress: [██████████] 100% (v1.1 - 1/1 plans in phase 13)
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -89,6 +89,34 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03
-Stopped at: Completed 13-01-PLAN.md (Manual de Uso) — Phase 13 complete, v1.1 milestone complete
-Resume file: None — all phases complete
+Last session: 2026-04-02
+Stopped at: Mid `/gsd:new-milestone` workflow — PROJECT.md updated, STATE.md reset, user scope answers collected
+Resume file: None — resume with `/gsd:new-milestone` to continue from Step 7 (research decision)
+
+### Resume Context (v1.2 Milestone Setup — PAUSED)
+
+**Completed steps:**
+1. ✓ Load Context — PROJECT.md, STATE.md, ROADMAP.md, REQUIREMENTS.md read
+2. ✓ Gather Milestone Goals — User described predictive charts idea
+3. ✓ Determine Version — v1.2 Gráficos Predictivos
+4. ✓ Update PROJECT.md — Current Milestone section updated, Active requirements added
+5. ✓ Update STATE.md — Reset for new milestone
+
+**User's scope decisions (from AskUserQuestion):**
+- Gráficos: Inversiones futuras, Patrimonio futuro, Escenarios (opt/base/pes), Histórico + futuro
+- Horizonte: Configurable (3, 6, 12, 24 meses)
+- Librería: Recharts
+- JSON safety: CRÍTICO — usuario usando la app con datos reales, no romper estructura localStorage
+
+**Pending steps:**
+6. ○ Commit PROJECT.md + STATE.md changes
+7. ○ Research decision (skip or run researchers)
+8. ○ Define requirements with REQ-IDs
+9. ○ Create roadmap (phases start at 14)
+10. ○ Commit all artifacts
+
+**Key context for resume:**
+- Last phase was 13 — new phases start at 14
+- Recharts needs to be added as dependency
+- Gráficos are read-only over existing data — no localStorage schema changes needed
+- User wants compound interest for investments, linear for salary, combined for patrimonio
