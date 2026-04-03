@@ -35,6 +35,7 @@ interface InvestmentDialogProps {
       name?: string;
       tna?: number;
       plazoDias?: number;
+      isLiquid?: boolean;
     }
   ) => void;
   onClose: () => void;
@@ -57,6 +58,7 @@ export function InvestmentDialog({
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyType>(
     editingInvestment?.currencyType ?? CurrencyType.ARS
   );
+  const [isLiquid, setIsLiquid] = useState(editingInvestment?.isLiquid ?? false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Sync state when editingInvestment changes or dialog opens
@@ -64,9 +66,11 @@ export function InvestmentDialog({
     if (editingInvestment) {
       setSelectedType(editingInvestment.type);
       setSelectedCurrency(editingInvestment.currencyType);
+      setIsLiquid(editingInvestment.isLiquid ?? false);
     } else {
       setSelectedType("");
       setSelectedCurrency(CurrencyType.ARS);
+      setIsLiquid(false);
     }
     setErrors({});
   }, [editingInvestment, open]);
@@ -91,8 +95,9 @@ export function InvestmentDialog({
     const formData = new FormData(e.currentTarget);
 
     if (editingInvestment) {
-      const updates: { name?: string; tna?: number; plazoDias?: number } = {
+      const updates: { name?: string; tna?: number; plazoDias?: number; isLiquid?: boolean } = {
         name: formData.get("name") as string,
+        isLiquid,
       };
       if (editingInvestment.type === "Plazo Fijo") {
         const tnaVal = formData.get("tna");
@@ -124,6 +129,7 @@ export function InvestmentDialog({
         currencyType: selectedCurrency,
         initialAmount: amount,
         date: formData.get("date") as string,
+        ...(isLiquid && { isLiquid: true }),
       };
       if (isPlazoFijo) {
         data.tna = Number(formData.get("tna"));
@@ -204,6 +210,20 @@ export function InvestmentDialog({
               <SelectItem value={CurrencyType.USD}>USD</SelectItem>
             </SelectContent>
           </Select>
+          <div className="space-y-1">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isLiquid}
+                onChange={(e) => setIsLiquid(e.target.checked)}
+                className="h-4 w-4 rounded border-border accent-primary"
+              />
+              <span className="text-sm">Disponibilidad inmediata</span>
+            </label>
+            <p className="text-xs text-muted-foreground">
+              Suma al liquido en vez de inversiones en el patrimonio
+            </p>
+          </div>
           {isPlazoFijo && (
             <>
               <div className="space-y-1">

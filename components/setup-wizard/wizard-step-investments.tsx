@@ -51,6 +51,7 @@ export function WizardStepInvestments({
   const [formCurrency, setFormCurrency] = useState<CurrencyType>(CurrencyType.ARS);
   const [formTna, setFormTna] = useState<number>(0);
   const [formPlazoDias, setFormPlazoDias] = useState<number>(0);
+  const [formIsLiquid, setFormIsLiquid] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const enforcement = CURRENCY_ENFORCEMENT[formType];
@@ -69,6 +70,7 @@ export function WizardStepInvestments({
     setFormAmount(0);
     setFormTna(0);
     setFormPlazoDias(0);
+    setFormIsLiquid(false);
     setFormErrors({});
   };
 
@@ -98,6 +100,7 @@ export function WizardStepInvestments({
       type: formType,
       currencyType: enforcement ?? formCurrency,
       amount: formAmount,
+      ...(formIsLiquid && { isLiquid: true }),
       ...(formType === "Plazo Fijo" && { tna: formTna, plazoDias: formPlazoDias }),
     };
 
@@ -134,6 +137,9 @@ export function WizardStepInvestments({
                   <Badge variant="secondary" className="shrink-0">
                     {inv.type}
                   </Badge>
+                  {inv.isLiquid && (
+                    <Badge variant="outline" className="shrink-0 text-xs">liquida</Badge>
+                  )}
                   <span className="text-sm font-medium truncate">{inv.name}</span>
                   <span className="text-sm text-muted-foreground shrink-0">
                     {formatAmount(inv.amount, inv.currencyType)}
@@ -236,6 +242,22 @@ export function WizardStepInvestments({
                 <SelectItem value={CurrencyType.USD}>USD</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Disponibilidad inmediata */}
+          <div className="flex flex-col gap-1">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formIsLiquid}
+                onChange={(e) => setFormIsLiquid(e.target.checked)}
+                className="h-4 w-4 rounded border-border accent-primary"
+              />
+              <span className="text-sm">Disponibilidad inmediata</span>
+            </label>
+            <p className="text-xs text-muted-foreground">
+              Suma al liquido en vez de inversiones en el patrimonio
+            </p>
           </div>
 
           {/* Plazo Fijo specific fields */}

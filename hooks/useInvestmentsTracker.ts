@@ -161,12 +161,13 @@ export function useInvestmentsTracker(
     });
   };
 
-  const handleUpdateInvestment = (investmentId: string, updates: { name?: string; tna?: number; plazoDias?: number }) => {
+  const handleUpdateInvestment = (investmentId: string, updates: { name?: string; tna?: number; plazoDias?: number; isLiquid?: boolean }) => {
     updateInvestment(investmentId, (inv) => ({
       ...inv,
       ...(updates.name !== undefined && { name: updates.name }),
       ...(updates.tna !== undefined && { tna: updates.tna }),
       ...(updates.plazoDias !== undefined && { plazoDias: updates.plazoDias }),
+      isLiquid: updates.isLiquid ?? inv.isLiquid ?? false,
       lastUpdated: format(new Date(), "yyyy-MM-dd"),
     }));
     setOpenInvestment(false);
