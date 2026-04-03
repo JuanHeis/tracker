@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Graficos Predictivos
 status: executing
-last_updated: "2026-04-03T13:55:02.019Z"
+last_updated: "2026-04-03T14:24:37.082Z"
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -23,11 +23,11 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 14 of 16 (Recharts Upgrade & Chart Infrastructure)
-Plan: 1 of 2 complete
-Status: Executing — Plan 14-01 complete, 14-02 pending
-Last activity: 2026-04-03 — Recharts upgraded to 3.8.1 with type fixes
+Plan: 2 of 2 complete
+Status: Phase 14 complete — all plans executed
+Last activity: 2026-04-03 — Projection skeleton with ComposedChart pattern
 
-Progress: [█████░░░░░] 50% (1/2 plans in phase 14)
+Progress: [██████████] 100% (2/2 plans in phase 14)
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Recent decisions affecting current work:
 - [v1.2 Research]: No external math libraries — compound interest + linear regression in ~100 lines plain TS
 - [14-01]: Used Partial<TooltipContentProps> for Recharts 3.x compatibility in chart.tsx
 - [14-01]: Inlined LegendPayload[] type — Recharts 3.x removed payload from LegendProps
+- [Phase 14]: [14-02]: ComposedChart pattern proven: 'use client' + useHydration + ChartContainer + ComposedChart with dual Lines
 
 ### Pending Todos
 
@@ -76,9 +77,10 @@ None.
 | 4 | Fix resumen inversiones wizard y sueldo | 2026-04-03 | 1382d82 | quick/4-... |
 | 5 | Mejorar empty state Prestamos y Recurrentes | 2026-04-03 | f9cb037 | quick/5-... |
 | 6 | Homogeneizar tabs Prestamos y Recurrentes | 2026-04-03 | e614f4f | quick/6-... |
+| 7 | Cuenta remunerada type + isLiquid flag | 2026-04-03 | c8d3782 | quick/7-... |
 
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed 14-01-PLAN.md — Recharts 3.x upgrade. Checkpoint: human-verify pending.
-Resume file: None — next step: visual verification of charts, then `/gsd:execute-phase 14` for plan 14-02
+Stopped at: Completed quick-7 — Cuenta remunerada + isLiquid
+Resume file: None — next step: Phase 15 (Projection Engine)
