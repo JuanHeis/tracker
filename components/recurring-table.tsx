@@ -53,6 +53,31 @@ export function RecurringTable({
   onUpdateStatus,
   onAddClick,
 }: RecurringTableProps) {
+  if (recurrings.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Repeat className="h-5 w-5" />
+            Gastos Recurrentes
+          </h3>
+        </div>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <p className="text-lg font-medium text-muted-foreground mb-1">
+            No hay gastos recurrentes definidos
+          </p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Agrega gastos que se repiten cada mes para trackearlos automaticamente
+          </p>
+          <Button onClick={onAddClick}>
+            <Plus className="h-4 w-4 mr-2" />
+            Agregar recurrente
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -77,21 +102,6 @@ export function RecurringTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {recurrings.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
-                <div className="flex flex-col items-center gap-2">
-                  <p className="text-muted-foreground">
-                    No hay gastos recurrentes definidos
-                  </p>
-                  <Button variant="outline" size="sm" onClick={onAddClick}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    Crear uno
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
           {recurrings.map((rec) => (
             <TableRow
               key={rec.id}

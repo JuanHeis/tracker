@@ -617,12 +617,14 @@ export function ExpenseTracker() {
               />
             </TabsContent>
             <TabsContent value="loans" className="mt-0">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold">Prestamos</h2>
-                <Button onClick={() => setOpenLoanDialog(true)}>
-                  <Plus className="mr-2 h-4 w-4" /> Nuevo prestamo
-                </Button>
-              </div>
+              {filteredLoans.length > 0 && (
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">Prestamos</h2>
+                  <Button onClick={() => setOpenLoanDialog(true)}>
+                    <Plus className="mr-2 h-4 w-4" /> Nuevo prestamo
+                  </Button>
+                </div>
+              )}
               <LoansTable
                 loans={filteredLoans}
                 onAddPayment={handleAddLoanPayment}
