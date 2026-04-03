@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 Phase: 16 of 16 (Chart Components)
 Plan: 2 of 2 complete
 Status: Phase 16 complete — all chart components built
-Last activity: 2026-04-03 — Completed quick task 16: Add Por pagar category for unpaid recurring expenses in monthly summary
+Last activity: 2026-04-03 — Completed quick task 18: Highlight current month in month selector dropdown
 
 Progress: [██████████] 100% (2/2 plans in phase 16)
 
