@@ -35,6 +35,7 @@ export function useInvestmentsTracker(
     date: string;
     tna?: number;
     plazoDias?: number;
+    isLiquid?: boolean;
   }) => {
     const now = investmentData.date;
     const newInvestment: Investment = {
@@ -52,6 +53,7 @@ export function useInvestmentsTracker(
       currentValue: investmentData.initialAmount,
       lastUpdated: now,
       createdAt: now,
+      ...(investmentData.isLiquid && { isLiquid: true }),
       ...(investmentData.tna !== undefined && { tna: investmentData.tna }),
       ...(investmentData.plazoDias !== undefined && { plazoDias: investmentData.plazoDias }),
       ...(investmentData.type === "Plazo Fijo" && { startDate: now }),

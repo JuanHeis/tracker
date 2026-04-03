@@ -70,6 +70,7 @@ export interface Investment {
   currentValue: number;
   lastUpdated: string;   // ISO date string (yyyy-MM-dd)
   createdAt: string;     // yyyy-MM-dd
+  isLiquid?: boolean;    // If true, currentValue counts as liquid cash in patrimonio
   // PF-specific (optional)
   tna?: number;          // Annual nominal rate as percentage
   plazoDias?: number;    // Term in days
@@ -207,6 +208,7 @@ function migrateData(data: MonthlyData): MonthlyData {
       lastUpdated: investment.lastUpdated || investment.date || new Date().toISOString().split('T')[0],
       createdAt: investment.createdAt || investment.date || new Date().toISOString().split('T')[0],
       // PF-specific fields pass through if present
+      ...(investment.isLiquid && { isLiquid: true }),
       ...(investment.tna !== undefined && { tna: investment.tna }),
       ...(investment.plazoDias !== undefined && { plazoDias: investment.plazoDias }),
       ...(investment.startDate !== undefined && { startDate: investment.startDate }),
@@ -214,8 +216,10 @@ function migrateData(data: MonthlyData): MonthlyData {
     usdPurchases: (data as any).usdPurchases || [],
     salaryOverrides: (data as any).salaryOverrides || {},
     aguinaldoOverrides: (data as any).aguinaldoOverrides || {},
-    _migrationVersion: 7,
+    _migrationVersion: 8,
   };
+
+  // Migration v8: isLiquid field on investments (defaulting handled in map above)
 
   // Migration v7: Initialize loans array
   if (currentVersion < 7) {
@@ -422,12 +426,20 @@ export function useMoneyTracker() {
     });
 
     // Investment current values for patrimonio
-    const arsInvestments = (monthlyData.investments || [])
-      .filter((i) => i.status === "Activa" && i.currencyType === CurrencyType.ARS)
-      .reduce((sum, i) => sum + i.currentValue, 0);
-    const usdInvestments = (monthlyData.investments || [])
-      .filter((i) => i.status === "Activa" && i.currencyType === CurrencyType.USD)
-      .reduce((sum, i) => sum + i.currentValue, 0);
+    // Liquid investments (isLiquid=true) add to arsBalance/usdBalance instead of arsInvestments/usdInvestments
+    let arsInvestments = 0;
+    let usdInvestments = 0;
+    (monthlyData.investments || [])
+      .filter((i) => i.status === "Activa")
+      .forEach((i) => {
+        if (i.isLiquid) {
+          if (i.currencyType === CurrencyType.ARS) arsBalance += i.currentValue;
+          else usdBalance += i.currentValue;
+        } else {
+          if (i.currencyType === CurrencyType.ARS) arsInvestments += i.currentValue;
+          else usdInvestments += i.currentValue;
+        }
+      });
 
     // Transfers and adjustments
     (monthlyData.transfers || []).forEach((transfer) => {

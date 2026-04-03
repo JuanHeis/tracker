@@ -1,4 +1,4 @@
-export const INVESTMENT_TYPES = ["Plazo Fijo", "FCI", "Crypto", "Acciones"] as const;
+export const INVESTMENT_TYPES = ["Plazo Fijo", "FCI", "Crypto", "Acciones", "Cuenta remunerada"] as const;
 export type InvestmentType = (typeof INVESTMENT_TYPES)[number];
 
 export enum CurrencyType {
@@ -11,6 +11,7 @@ export const CURRENCY_ENFORCEMENT: Record<InvestmentType, CurrencyType | null> =
   "Plazo Fijo": CurrencyType.ARS,
   "FCI": null,       // User choice
   "Acciones": null,   // User choice
+  "Cuenta remunerada": CurrencyType.ARS,
 };
 
 export function currencySymbol(currencyType: CurrencyType): string {

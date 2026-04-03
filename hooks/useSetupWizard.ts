@@ -11,6 +11,7 @@ export interface WizardInvestment {
   type: InvestmentType;
   currencyType: CurrencyType;
   amount: number;
+  isLiquid?: boolean;
   tna?: number;         // Plazo Fijo only
   plazoDias?: number;   // Plazo Fijo only
 }
@@ -160,6 +161,7 @@ export function commitWizardData(data: WizardData): void {
     currentValue: wi.amount,
     lastUpdated: today,
     createdAt: today,
+    ...(wi.isLiquid && { isLiquid: true }),
     ...(wi.tna !== undefined && { tna: wi.tna }),
     ...(wi.plazoDias !== undefined && { plazoDias: wi.plazoDias }),
     ...(wi.type === "Plazo Fijo" && { startDate: today }),
@@ -176,7 +178,7 @@ export function commitWizardData(data: WizardData): void {
     loans: [],
     salaryOverrides: {},
     aguinaldoOverrides: {},
-    _migrationVersion: 7,
+    _migrationVersion: 8,
   };
 
   // Build salaryHistory — effective from NEXT month since the wizard captures
