@@ -1,4 +1,4 @@
 {
   "extends": ["next/core-web-vitals", "next/typescript"],
-  "ignores": ["./components/ui/*"]
+  "ignorePatterns": ["components/ui/*"]
 }
