@@ -31,6 +31,7 @@ interface ResumenCardProps {
   aguinaldoInfo: { bestSalary: number; isOverride: boolean } | null;
   totalGastos: number;
   aportesInversiones: number;
+  porPagar: number;
   disponible: number;
   isPendiente: boolean;
   payDay: number;
@@ -48,6 +49,7 @@ export function ResumenCard({
   aguinaldoInfo,
   totalGastos,
   aportesInversiones,
+  porPagar,
   disponible,
   isPendiente,
   payDay,
@@ -247,6 +249,22 @@ export function ResumenCard({
               </div>
             )}
 
+            {porPagar > 0 && (
+              <div className="flex justify-between">
+                <span>Por pagar:</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="font-medium text-amber-500 dark:text-amber-400 cursor-help">
+                      <FormattedAmount value={-porPagar} currency="ARS" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Total de gastos recurrentes aun no pagados este mes</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            )}
+
             <hr className="border-border" />
 
             {/* Disponible */}
@@ -269,6 +287,9 @@ export function ResumenCard({
                 <p className="text-red-400">- Gastos: <FormattedAmount value={totalGastos} currency="$" /></p>
                 {aportesInversiones > 0 && (
                   <p className="text-blue-400">- Aportes inv.: <FormattedAmount value={aportesInversiones} currency="$" /></p>
+                )}
+                {porPagar > 0 && (
+                  <p className="text-amber-400">- Por pagar: <FormattedAmount value={porPagar} currency="$" /></p>
                 )}
                 <hr className="my-1 border-border" />
                 <p className="font-bold">= <FormattedAmount value={disponible} currency="$" /></p>
