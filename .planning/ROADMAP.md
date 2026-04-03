@@ -306,7 +306,11 @@ Plans:
   4. User can switch the projection horizon between 3, 6, 12, and 24 months using a selector control, and charts update immediately
   5. Every chart displays a visible disclaimer noting that projections use current exchange rate and assumed growth rates (e.g., "Proyeccion a cotizacion actual: $X ARS/USD")
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — PatrimonyChart + ChartControls + ChartDisclaimer + ChartsContainer wiring (CHART-01, CHART-03, CHART-04, CHART-05)
+- [ ] 16-02-PLAN.md — InvestmentChart with stacked areas by type + ChartsContainer integration (CHART-02, CHART-05)
 
 ## Progress
 
@@ -332,4 +336,4 @@ Plans:
 | 13. Manual de Uso | v1.1 | 1/1 | Complete | 2026-04-03 |
 | 14. Recharts Upgrade & Chart Infrastructure | 2/2 | Complete    | 2026-04-03 | - |
 | 15. Projection Engine | 2/2 | Complete    | 2026-04-03 | - |
-| 16. Chart Components | v1.2 | 0/? | Not started | - |
+| 16. Chart Components | v1.2 | 0/2 | Not started | - |
