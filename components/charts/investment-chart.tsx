@@ -151,15 +151,13 @@ export function InvestmentChart({
         <div className="flex items-center justify-between">
           <CardTitle>Proyeccion de Inversiones</CardTitle>
           <div className="flex items-center gap-2">
-            {investments.some((inv) => inv.tna != null) && (
-              <Button
-                size="sm"
-                variant={useRealRates ? "default" : "outline"}
-                onClick={onToggleRealRates}
-              >
-                {useRealRates ? "Tasas reales" : "Tasas por defecto"}
-              </Button>
-            )}
+            <Button
+              size="sm"
+              variant={useRealRates ? "default" : "outline"}
+              onClick={onToggleRealRates}
+            >
+              {useRealRates ? "Tasas reales" : "Tasas por defecto"}
+            </Button>
             <Button
               size="sm"
               variant={includeContributions ? "default" : "outline"}
