@@ -85,6 +85,10 @@ export function useExpensesTracker(
     0
   );
 
+  const porPagar = filteredExpenses
+    .filter((e) => e.recurringId && !e.isPaid)
+    .reduce((sum, e) => sum + e.amount, 0);
+
   const handleDeleteExpense = (expenseId: string) => {
     updateMonthlyData({
       ...monthlyData,
@@ -158,6 +162,7 @@ export function useExpensesTracker(
     defaultDate,
     filteredExpenses,
     totalExpenses,
+    porPagar,
     handleAddExpense,
     handleDeleteExpense,
     handleOpenModal,

@@ -712,6 +712,7 @@ export function useMoneyTracker() {
     handleOpenModal: expensesTracker.handleOpenModal,
     filteredExpenses: expensesTracker.filteredExpenses,
     totalExpenses: expensesTracker.totalExpenses,
+    porPagar: expensesTracker.porPagar,
     handleAddExpense: expensesTracker.handleAddExpense,
     handleDeleteExpense: expensesTracker.handleDeleteExpense,
     handleEditExpense: expensesTracker.handleEditExpense,

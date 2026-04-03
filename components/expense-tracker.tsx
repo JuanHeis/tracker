@@ -120,6 +120,7 @@ export function ExpenseTracker() {
     setSelectedMonth,
     filteredExpenses,
     totalExpenses,
+    porPagar,
     availableMoney,
     savings,
     open,
@@ -656,6 +657,7 @@ export function ExpenseTracker() {
               }
               totalGastos={totalExpenses}
               aportesInversiones={dualBalancesForCards.arsInvestmentContributions}
+              porPagar={porPagar}
               disponible={availableMoney}
               isPendiente={isPendiente}
               payDay={incomeConfig.payDay}
