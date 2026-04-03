@@ -91,6 +91,7 @@ None.
 | 9 | Move config settings from card to taskbar dialog | 2026-04-03 | 1736434 | quick/9-... |
 | 10 | Investment chart toggle contributions + type visibility | 2026-04-03 | 9e7236a | quick/10-... |
 | 11 | Add projection basis info banner to investment chart | 2026-04-03 | 3e3c76a | quick/11-... |
+| 12 | Make default annual rates configurable + toggle real vs default | 2026-04-03 | 335f29a | quick/12-... |
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
 | Phase 15 P02 | 3min | 1 task | 1 file |
 | Phase 16 P01 | 3min | 2 tasks | 5 files |
@@ -99,5 +100,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed quick-11 — Projection basis info banner on investment chart
+Stopped at: Completed quick-12 — Configurable projection rates + real rates toggle
 Resume file: None
