@@ -358,11 +358,15 @@ export function useMoneyTracker() {
 
   const calculateDualBalances = () => {
     const monthKey = getCurrentMonthKey();
+    // Period-scoped balances (ARS: pay-period filtered, USD: pay-period filtered)
     let arsBalance = 0;
+    let usdBalancePeriod = 0;
+    // Accumulated balances (ARS: full month no date filter, USD: cumulative all time)
+    let arsBalanceAccumulated = 0;
     let usdBalance = 0;
     let arsInvestmentContributions = 0;
 
-    // Date range for ARS scoping (respects view mode)
+    // Date range for period scoping (respects view mode)
     const { start: arsStart, end: arsEnd } = getFilterDateRange(monthKey, viewMode, payDay);
     const isInArsRange = (dateStr: string) => {
       const d = parse(dateStr, "yyyy-MM-dd", new Date());
@@ -375,114 +379,121 @@ export function useMoneyTracker() {
       monthlyData.salaryOverrides || {}
     );
     arsBalance += salaryResolution.amount;
+    arsBalanceAccumulated += salaryResolution.amount;
 
-    // Extra incomes: ARS scoped by view mode, USD cumulative (all time)
-    monthlyData.extraIncomes
-      .filter((i) => isInArsRange(i.date))
-      .forEach((income) => {
-        if (income.currencyType !== CurrencyType.USD) {
-          arsBalance += income.amount;
-        }
-      });
-    monthlyData.extraIncomes
-      .filter((i) => i.currencyType === CurrencyType.USD)
-      .forEach((income) => {
+    // Extra incomes: ARS period-scoped + accumulated, USD period-scoped + accumulated
+    monthlyData.extraIncomes.forEach((income) => {
+      if (income.currencyType !== CurrencyType.USD) {
+        arsBalanceAccumulated += income.amount;
+        if (isInArsRange(income.date)) arsBalance += income.amount;
+      } else {
         usdBalance += income.amount;
-      });
-
-    // Expenses: ARS scoped by view mode, USD cumulative (all time)
-    monthlyData.expenses
-      .filter((e) => isInArsRange(e.date))
-      .forEach((expense) => {
-        if (expense.currencyType !== CurrencyType.USD) {
-          arsBalance -= expense.amount;
-        }
-      });
-    monthlyData.expenses
-      .filter((e) => e.currencyType === CurrencyType.USD)
-      .forEach((expense) => {
-        usdBalance -= expense.amount;
-      });
-
-    // USD purchases: cumulative across ALL time (USD is a running balance)
-    // ARS deduction scoped by view mode (tracked purchases reduce this period's ARS)
-    (monthlyData.usdPurchases || []).forEach((purchase) => {
-      usdBalance += purchase.usdAmount;
-      if (purchase.origin === "tracked" && isInArsRange(purchase.date)) {
-        arsBalance -= purchase.arsAmount;
+        if (isInArsRange(income.date)) usdBalancePeriod += income.amount;
       }
     });
 
-    // Investment movements: ARS scoped by view mode, USD cumulative
+    // Expenses: ARS period-scoped + accumulated, USD period-scoped + accumulated
+    monthlyData.expenses.forEach((expense) => {
+      if (expense.currencyType !== CurrencyType.USD) {
+        arsBalanceAccumulated -= expense.amount;
+        if (isInArsRange(expense.date)) arsBalance -= expense.amount;
+      } else {
+        usdBalance -= expense.amount;
+        if (isInArsRange(expense.date)) usdBalancePeriod -= expense.amount;
+      }
+    });
+
+    // USD purchases: USD cumulative + period, ARS deduction period-scoped + accumulated
+    (monthlyData.usdPurchases || []).forEach((purchase) => {
+      usdBalance += purchase.usdAmount;
+      if (isInArsRange(purchase.date)) usdBalancePeriod += purchase.usdAmount;
+      if (purchase.origin === "tracked") {
+        arsBalanceAccumulated -= purchase.arsAmount;
+        if (isInArsRange(purchase.date)) arsBalance -= purchase.arsAmount;
+      }
+    });
+
+    // Investment movements: both period and accumulated for each currency
     (monthlyData.investments || []).forEach((inv) => {
       if (inv.currencyType === CurrencyType.USD) {
-        // USD investment movements: cumulative (all time), skip initial (wizard patrimony)
         inv.movements.filter((mov) => !mov.isInitial).forEach((mov) => {
           const impact = mov.type === "aporte" ? -mov.amount : mov.amount;
           usdBalance += impact;
+          if (isInArsRange(mov.date)) usdBalancePeriod += impact;
         });
       } else {
-        // ARS investment movements: scoped by view mode, skip initial (wizard patrimony)
-        inv.movements
-          .filter((mov) => isInArsRange(mov.date) && !mov.isInitial)
-          .forEach((mov) => {
-            const impact = mov.type === "aporte" ? -mov.amount : mov.amount;
+        inv.movements.filter((mov) => !mov.isInitial).forEach((mov) => {
+          const impact = mov.type === "aporte" ? -mov.amount : mov.amount;
+          arsBalanceAccumulated += impact;
+          if (mov.type === "aporte") arsInvestmentContributions += mov.amount;
+          if (isInArsRange(mov.date)) {
             arsBalance += impact;
-            if (mov.type === "aporte") arsInvestmentContributions += mov.amount;
-          });
+          }
+        });
       }
     });
 
     // Investment current values for patrimonio
-    // Liquid investments (isLiquid=true) add to arsBalance/usdBalance instead of arsInvestments/usdInvestments
+    // Liquid investments (isLiquid=true) add to balances instead of arsInvestments/usdInvestments
     let arsInvestments = 0;
     let usdInvestments = 0;
     (monthlyData.investments || [])
       .filter((i) => i.status === "Activa")
       .forEach((i) => {
         if (i.isLiquid) {
-          if (i.currencyType === CurrencyType.ARS) arsBalance += i.currentValue;
-          else usdBalance += i.currentValue;
+          if (i.currencyType === CurrencyType.ARS) {
+            arsBalance += i.currentValue;
+            arsBalanceAccumulated += i.currentValue;
+          } else {
+            usdBalance += i.currentValue;
+            usdBalancePeriod += i.currentValue;
+          }
         } else {
           if (i.currencyType === CurrencyType.ARS) arsInvestments += i.currentValue;
           else usdInvestments += i.currentValue;
         }
       });
 
-    // Transfers and adjustments
+    // Transfers and adjustments: both period and accumulated for each currency
     (monthlyData.transfers || []).forEach((transfer) => {
       switch (transfer.type) {
         case "currency_ars_to_usd":
-          // Patrimonio-neutral: ARS down, USD up
+          arsBalanceAccumulated -= transfer.arsAmount!;
           if (isInArsRange(transfer.date)) arsBalance -= transfer.arsAmount!;
           usdBalance += transfer.usdAmount!;
+          if (isInArsRange(transfer.date)) usdBalancePeriod += transfer.usdAmount!;
           break;
         case "currency_usd_to_ars":
-          // Patrimonio-neutral: USD down, ARS up
           usdBalance -= transfer.usdAmount!;
+          if (isInArsRange(transfer.date)) usdBalancePeriod -= transfer.usdAmount!;
+          arsBalanceAccumulated += transfer.arsAmount!;
           if (isInArsRange(transfer.date)) arsBalance += transfer.arsAmount!;
           break;
         case "cash_out":
-          // Reduces patrimonio — money leaves tracked world
-          if (transfer.currency === "ARS" && isInArsRange(transfer.date)) {
-            arsBalance -= transfer.amount!;
+          if (transfer.currency === "ARS") {
+            arsBalanceAccumulated -= transfer.amount!;
+            if (isInArsRange(transfer.date)) arsBalance -= transfer.amount!;
           } else if (transfer.currency === "USD") {
             usdBalance -= transfer.amount!;
+            if (isInArsRange(transfer.date)) usdBalancePeriod -= transfer.amount!;
           }
           break;
         case "cash_in":
-          // Increases patrimonio — money enters tracked world
-          if (transfer.currency === "ARS" && isInArsRange(transfer.date)) {
-            arsBalance += transfer.amount!;
+          if (transfer.currency === "ARS") {
+            arsBalanceAccumulated += transfer.amount!;
+            if (isInArsRange(transfer.date)) arsBalance += transfer.amount!;
           } else if (transfer.currency === "USD") {
             usdBalance += transfer.amount!;
+            if (isInArsRange(transfer.date)) usdBalancePeriod += transfer.amount!;
           }
           break;
         case "adjustment_ars":
+          arsBalanceAccumulated += transfer.amount!;
           if (isInArsRange(transfer.date)) arsBalance += transfer.amount!;
           break;
         case "adjustment_usd":
           usdBalance += transfer.amount!;
+          if (isInArsRange(transfer.date)) usdBalancePeriod += transfer.amount!;
           break;
       }
     });
@@ -491,24 +502,30 @@ export function useMoneyTracker() {
     // Debts: paying reduces liquid (borrowing itself doesn't change liquid)
     (monthlyData.loans || []).forEach((loan) => {
       if (loan.type === "preste") {
-        // Lending: original amount left liquid when lent
         if (loan.currencyType === CurrencyType.USD) {
-          usdBalance -= loan.amount;  // Cumulative
-          // Payments (collections) return money to liquid
-          loan.payments.forEach(p => { usdBalance += p.amount; });
+          usdBalance -= loan.amount;
+          if (isInArsRange(loan.date)) usdBalancePeriod -= loan.amount;
+          loan.payments.forEach(p => {
+            usdBalance += p.amount;
+            if (isInArsRange(p.date)) usdBalancePeriod += p.amount;
+          });
         } else {
-          // ARS: scope by date range
+          arsBalanceAccumulated -= loan.amount;
           if (isInArsRange(loan.date)) arsBalance -= loan.amount;
           loan.payments.forEach(p => {
+            arsBalanceAccumulated += p.amount;
             if (isInArsRange(p.date)) arsBalance += p.amount;
           });
         }
       } else {
-        // Debo: borrowing doesn't change liquid, but paying does
         if (loan.currencyType === CurrencyType.USD) {
-          loan.payments.forEach(p => { usdBalance -= p.amount; });
+          loan.payments.forEach(p => {
+            usdBalance -= p.amount;
+            if (isInArsRange(p.date)) usdBalancePeriod -= p.amount;
+          });  // USD debo: accumulated always, period only if in range
         } else {
           loan.payments.forEach(p => {
+            arsBalanceAccumulated -= p.amount;
             if (isInArsRange(p.date)) arsBalance -= p.amount;
           });
         }
@@ -530,7 +547,19 @@ export function useMoneyTracker() {
       .filter(l => l.type === "debo" && l.status !== "Pagado" && l.currencyType === CurrencyType.USD)
       .reduce((sum, l) => sum + (l.amount - l.payments.reduce((s, p) => s + p.amount, 0)), 0);
 
-    return { arsBalance, usdBalance, arsInvestments, usdInvestments, arsInvestmentContributions, arsLoansGiven, usdLoansGiven, arsDebts, usdDebts };
+    return {
+      // New symmetric fields
+      arsBalancePeriod: arsBalance,
+      arsBalanceAccumulated,
+      usdBalancePeriod,
+      usdBalanceAccumulated: usdBalance,
+      // Backward-compatible aliases (period ARS / accumulated USD = current behavior)
+      arsBalance,
+      usdBalance,
+      // Rest unchanged
+      arsInvestments, usdInvestments, arsInvestmentContributions,
+      arsLoansGiven, usdLoansGiven, arsDebts, usdDebts
+    };
   };
 
   const expensesTracker = useExpensesTracker(
