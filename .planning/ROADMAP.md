@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Milestone Goal:** Permitir al usuario configurar su situacion financiera inicial con un wizard paso a paso y documentar como usar la app.
 
 - [x] **Phase 11: Core Setup Wizard** - First-time detection, multi-step wizard (ARS, USD, income, summary), atomic save, skip options, and import alternative (completed 2026-04-02)
-- [ ] **Phase 12: Investments Step & Re-run** - Add investments quick-add step to wizard and re-run capability from config (reset + wizard)
+- [x] **Phase 12: Investments Step & Re-run** - Add investments quick-add step to wizard and re-run capability from config (reset + wizard) (completed 2026-04-03)
 - [ ] **Phase 13: Manual de Uso** - Comprehensive user guide documenting every feature of the app
 
 ## Phase Details
@@ -267,5 +267,5 @@ Plans:
 | 9. Transfers & Adjustments | v1.0 | 3/3 | Complete | 2026-04-02 |
 | 10. Persistence & UX Polish | v1.0 | 3/3 | Complete | 2026-04-02 |
 | 11. Core Setup Wizard | 2/2 | Complete    | 2026-04-02 | - |
-| 12. Investments Step & Re-run | 1/2 | In Progress|  | - |
+| 12. Investments Step & Re-run | 2/2 | Complete   | 2026-04-03 | - |
 | 13. Manual de Uso | v1.1 | 0/TBD | Not started | - |

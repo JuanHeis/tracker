@@ -8,7 +8,7 @@ progress:
   total_phases: 13
   completed_phases: 11
   total_plans: 36
-  completed_plans: 34
+  completed_plans: 35
 ---
 
 # Project State
@@ -23,11 +23,11 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 12 of 13 (Investments Step + Re-run)
-Plan: 1 of 2 completed in current phase
-Status: Executing Phase 12
-Last activity: 2026-04-02 - Completed 12-01 (Investments Wizard Step)
+Plan: 2 of 2 completed in current phase
+Status: Phase 12 Complete
+Last activity: 2026-04-02 - Completed 12-02 (Re-ejecutar Wizard Button)
 
-Progress: [█████████░] 50% (v1.1 - 1/2 plans in phase 12)
+Progress: [██████████] 100% (v1.1 - 2/2 plans in phase 12)
 
 ## Performance Metrics
 
@@ -64,6 +64,8 @@ Recent decisions affecting current work:
 - [12-01]: Inline add/remove form pattern for investments step (no dialog/modal)
 - [12-01]: Currency enforcement at form level disables select when type enforces currency
 - [12-01]: Plazo Fijo startDate set to today on wizard commit
+- [12-02]: STORAGE_KEYS exported as named const for cross-component reuse
+- [12-02]: Reset uses window.confirm + localStorage clear + reload (consistent with import pattern)
 
 ### Pending Todos
 
@@ -84,5 +86,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02
-Stopped at: Completed 12-01-PLAN.md (Investments Wizard Step)
-Resume file: None — continuing phase 12
+Stopped at: Completed 12-02-PLAN.md (Re-ejecutar Wizard Button) — Phase 12 complete
+Resume file: None — ready for phase 13

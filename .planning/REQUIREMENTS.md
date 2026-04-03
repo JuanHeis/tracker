@@ -107,7 +107,7 @@
 - [x] **WIZ-07**: Wizard guarda todos los datos de forma atomica (todo o nada) al confirmar
 - [x] **WIZ-08**: User puede saltar pasos opcionales (USD, ingreso, inversiones) y completarlos despues
 - [x] **WIZ-09**: Wizard ofrece importar JSON existente como alternativa en la pantalla de bienvenida
-- [ ] **WIZ-10**: User puede re-ejecutar wizard desde Configuracion (reset de fabrica + wizard)
+- [x] **WIZ-10**: User puede re-ejecutar wizard desde Configuracion (reset de fabrica + wizard)
 
 ### Manual de Uso
 
@@ -213,7 +213,7 @@
 | WIZ-07 | Phase 11 | Complete |
 | WIZ-08 | Phase 11 | Complete |
 | WIZ-09 | Phase 11 | Complete |
-| WIZ-10 | Phase 12 | Pending |
+| WIZ-10 | Phase 12 | Complete |
 | MAN-01 | Phase 13 | Pending |
 
 **Coverage:**
