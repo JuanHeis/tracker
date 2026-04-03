@@ -3,7 +3,8 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** - Phases 1-10 (shipped 2026-04-02)
-- 🚧 **v1.1 Setup Wizard & Manual** - Phases 11-13 (in progress)
+- ✅ **v1.1 Setup Wizard & Manual** - Phases 11-13 (shipped 2026-04-03)
+- 🚧 **v1.2 Graficos Predictivos** - Phases 14-16 (in progress)
 
 ## Phases
 
@@ -29,13 +30,24 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 </details>
 
-### 🚧 v1.1 Setup Wizard & Manual (In Progress)
-
-**Milestone Goal:** Permitir al usuario configurar su situacion financiera inicial con un wizard paso a paso y documentar como usar la app.
+<details>
+<summary>v1.1 Setup Wizard & Manual (Phases 11-13) - SHIPPED 2026-04-03</summary>
 
 - [x] **Phase 11: Core Setup Wizard** - First-time detection, multi-step wizard (ARS, USD, income, summary), atomic save, skip options, and import alternative (completed 2026-04-02)
 - [x] **Phase 12: Investments Step & Re-run** - Add investments quick-add step to wizard and re-run capability from config (reset + wizard) (completed 2026-04-03)
 - [x] **Phase 13: Manual de Uso** - Comprehensive user guide documenting every feature of the app (completed 2026-04-03)
+
+</details>
+
+### 🚧 v1.2 Graficos Predictivos (In Progress)
+
+**Milestone Goal:** Visualizar la evolucion financiera pasada y proyectar el futuro con graficos interactivos usando datos reales del usuario.
+
+**Cross-cutting constraint:** INFRA-03 — All phases treat localStorage as read-only. Zero mutations to MonthlyData, Investment, or any existing interface. Charts derive data; they never write it.
+
+- [ ] **Phase 14: Recharts Upgrade & Chart Infrastructure** - Upgrade Recharts to 3.x, verify existing charts, establish projection chart patterns
+- [ ] **Phase 15: Projection Engine** - Pure math functions for compound interest, linear projection, historical reconstruction, scenarios, and orchestrator hook
+- [ ] **Phase 16: Chart Components** - Patrimony and investment projection charts with scenarios, horizon selector, and disclaimers
 
 ## Phase Details
 
@@ -205,6 +217,9 @@ Plans:
 
 </details>
 
+<details>
+<summary>v1.1 Setup Wizard & Manual Phase Details (Phases 11-13)</summary>
+
 ### Phase 11: Core Setup Wizard
 **Goal**: A first-time user can configure their initial financial situation through a guided wizard without needing to understand the app's individual features
 **Depends on**: Phase 10 (v1.0 complete)
@@ -218,8 +233,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — useSetupWizard hook with WizardData type, atomic commit, validation, and draft persistence (WIZ-02, WIZ-03, WIZ-04, WIZ-07, WIZ-08)
-- [ ] 11-02-PLAN.md — Wizard step components, container, and ExpenseTracker wizard gate (WIZ-01, WIZ-06, WIZ-08, WIZ-09)
+- [x] 11-01-PLAN.md — useSetupWizard hook with WizardData type, atomic commit, validation, and draft persistence (WIZ-02, WIZ-03, WIZ-04, WIZ-07, WIZ-08)
+- [x] 11-02-PLAN.md — Wizard step components, container, and ExpenseTracker wizard gate (WIZ-01, WIZ-06, WIZ-08, WIZ-09)
 
 ### Phase 12: Investments Step & Re-run
 **Goal**: User can declare existing investments during setup and re-run the wizard later to start fresh
@@ -229,11 +244,11 @@ Plans:
   1. User can add existing investments one by one in the wizard (type, name, amount, currency) with correct currency enforcement per investment type, and loop to add more
   2. Investments added in the wizard appear correctly in the investments table after wizard completion with accurate patrimonio calculation
   3. User can trigger "Re-ejecutar wizard" from the config section, which resets all data and launches the wizard as if first-time
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 12-01-PLAN.md — Investments wizard step: WizardData extension, inline add/remove loop, currency enforcement, commit with Investment objects, updated step numbering (WIZ-05)
-- [ ] 12-02-PLAN.md — Re-run wizard button: export STORAGE_KEYS, ConfigCard reset button with confirmation, factory reset + reload (WIZ-10)
+- [x] 12-01-PLAN.md — Investments wizard step: WizardData extension, inline add/remove loop, currency enforcement, commit with Investment objects, updated step numbering (WIZ-05)
+- [x] 12-02-PLAN.md — Re-run wizard button: export STORAGE_KEYS, ConfigCard reset button with confirmation, factory reset + reload (WIZ-10)
 
 ### Phase 13: Manual de Uso
 **Goal**: A reference document exists that explains how to use every feature of the app
@@ -243,16 +258,54 @@ Plans:
   1. A MANUAL.md file exists with step-by-step instructions for every major feature (wizard, income, expenses, investments, loans, budgets, transfers, export/import)
   2. The manual covers the setup wizard flow including skip options, import alternative, and re-run from config
   3. The manual uses the same terminology as the app (ingreso fijo, patrimonio, liquido, etc.)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 13-01: TBD
+- [x] 13-01-PLAN.md — Comprehensive user manual in Spanish (MAN-01)
+
+</details>
+
+### Phase 14: Recharts Upgrade & Chart Infrastructure
+**Goal**: Recharts 3.x is installed and working, existing charts are verified, and the pattern for projection charts is established
+**Depends on**: Phase 13 (v1.1 complete)
+**Requirements**: INFRA-01, INFRA-02, INFRA-03
+**Success Criteria** (what must be TRUE):
+  1. User opens the app and all existing charts (salary-by-month, any others) render correctly after the Recharts 3.x upgrade with no visual regressions
+  2. A projection chart skeleton component exists using the "use client" + useHydration + ChartContainer pattern, confirming the pattern works with Recharts 3.x
+  3. JSON export/import still works correctly post-upgrade (regression check that no localStorage interfaces were touched)
+**Plans**: TBD
+
+### Phase 15: Projection Engine
+**Goal**: All projection math and data orchestration is complete — investment compound interest, income linear projection, historical patrimony reconstruction, and scenario configuration are available via a single hook
+**Depends on**: Phase 14
+**Requirements**: PROJ-01, PROJ-02, PROJ-03, PROJ-04, PROJ-05
+**Success Criteria** (what must be TRUE):
+  1. User's active investments each have a projected future value using compound interest (Plazo Fijo uses its TNA rate; other types use configurable default rates per type)
+  2. User who toggles "aportes futuros" on an investment sees projected monthly contributions included in the compound growth calculation (default amount: last aporte)
+  3. User's future income is projected as a flat line based on current ingreso fijo, and projected patrimony deducts active recurring expenses from monthly net savings
+  4. User sees historical patrimony reconstructed month-by-month from existing monthlyData as a solid data series, with a clear boundary at the current month
+  5. Three scenario variants (optimista/base/pesimista) are computed with different growth rate assumptions, ready for chart consumption
+**Plans**: TBD
+
+### Phase 16: Chart Components
+**Goal**: User sees interactive projection charts integrated into the app — patrimony evolution and investment growth with scenarios, horizon control, and honest disclaimers
+**Depends on**: Phase 15
+**Requirements**: CHART-01, CHART-02, CHART-03, CHART-04, CHART-05
+**Success Criteria** (what must be TRUE):
+  1. User sees a patrimony chart with solid line (historical real data) + dashed line (projection) + vertical "Hoy" reference line separating past from future
+  2. User sees an investment portfolio chart showing projected growth with breakdown by investment type (stacked or grouped)
+  3. User sees three scenario lines (optimista/base/pesimista) with different visual styles (opacity or dash patterns), and can toggle each scenario on/off
+  4. User can switch the projection horizon between 3, 6, 12, and 24 months using a selector control, and charts update immediately
+  5. Every chart displays a visible disclaimer noting that projections use current exchange rate and assumed growth rates (e.g., "Proyeccion a cotizacion actual: $X ARS/USD")
+
+**Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
-- v1.0: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 (complete)
-- v1.1: 11 → 12 → 13
+- v1.0: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 (complete)
+- v1.1: 11 -> 12 -> 13 (complete)
+- v1.2: 14 -> 15 -> 16
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -266,6 +319,9 @@ Plans:
 | 8. Budgets | v1.0 | 2/2 | Complete | 2026-04-02 |
 | 9. Transfers & Adjustments | v1.0 | 3/3 | Complete | 2026-04-02 |
 | 10. Persistence & UX Polish | v1.0 | 3/3 | Complete | 2026-04-02 |
-| 11. Core Setup Wizard | 2/2 | Complete    | 2026-04-02 | - |
-| 12. Investments Step & Re-run | 2/2 | Complete    | 2026-04-03 | - |
-| 13. Manual de Uso | 1/1 | Complete    | 2026-04-03 | - |
+| 11. Core Setup Wizard | v1.1 | 2/2 | Complete | 2026-04-02 |
+| 12. Investments Step & Re-run | v1.1 | 2/2 | Complete | 2026-04-03 |
+| 13. Manual de Uso | v1.1 | 1/1 | Complete | 2026-04-03 |
+| 14. Recharts Upgrade & Chart Infrastructure | v1.2 | 0/? | Not started | - |
+| 15. Projection Engine | v1.2 | 0/? | Not started | - |
+| 16. Chart Components | v1.2 | 0/? | Not started | - |

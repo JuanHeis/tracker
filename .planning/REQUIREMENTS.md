@@ -243,14 +243,27 @@
 | WIZ-09 | Phase 11 | Complete |
 | WIZ-10 | Phase 12 | Complete |
 | MAN-01 | Phase 13 | Complete |
+| INFRA-01 | Phase 14 | Pending |
+| INFRA-02 | Phase 14 | Pending |
+| INFRA-03 | Phase 14 | Pending |
+| PROJ-01 | Phase 15 | Pending |
+| PROJ-02 | Phase 15 | Pending |
+| PROJ-03 | Phase 15 | Pending |
+| PROJ-04 | Phase 15 | Pending |
+| PROJ-05 | Phase 15 | Pending |
+| CHART-01 | Phase 16 | Pending |
+| CHART-02 | Phase 16 | Pending |
+| CHART-03 | Phase 16 | Pending |
+| CHART-04 | Phase 16 | Pending |
+| CHART-05 | Phase 16 | Pending |
 
 **Coverage:**
 - v1 requirements: 46 total — all complete
 - v1.1 requirements: 11 total — all complete
-- v1.2 requirements: 13 total — pending (to be mapped by roadmap)
-- Mapped to phases: 57 (v1+v1.1) complete + 13 (v1.2) pending
-- Unmapped: 13 (v1.2 — awaiting roadmap)
+- v1.2 requirements: 13 total — all mapped to phases 14-16
+- Mapped to phases: 57 (v1+v1.1) complete + 13 (v1.2) pending = 70 total
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-01*
-*Last updated: 2026-04-03 — v1.2 requirements added*
+*Last updated: 2026-04-03 — v1.2 requirements mapped to phases 14-16*
