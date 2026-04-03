@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 Phase: 13 of 13 (Manual de Uso)
 Plan: 1 of 1 completed in current phase
 Status: Phase 13 Complete — v1.1 Milestone Complete
-Last activity: 2026-04-03 - Completed quick task 4: Fix resumen inversiones wizard + sueldo mes siguiente
+Last activity: 2026-04-03 - Completed quick task 5: Mejorar empty state UI Prestamos y Recurrentes
 
 Progress: [██████████] 100% (v1.1 - 1/1 plans in phase 13)
 
@@ -84,6 +84,7 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 3 | Cuando una tab no este seleccionada quitale el nombre. si esta active que tenga icon y texto | 2026-04-02 | 6f99a61 | [3-cuando-una-tab-no-este-seleccionada-quit](./quick/3-cuando-una-tab-no-este-seleccionada-quit/) |
 | 4 | Fix resumen: inversiones wizard no restan del disponible, sueldo aplica desde mes siguiente | 2026-04-03 | 1382d82 | [4-fix-resumen-mensual-inversiones-cargadas](./quick/4-fix-resumen-mensual-inversiones-cargadas/) |
+| 5 | Mejorar empty state UI de tabs Prestamos y Recurrentes | 2026-04-03 | f9cb037 | [5-mejorar-empty-state-ui-de-tabs-prestamos](./quick/5-mejorar-empty-state-ui-de-tabs-prestamos/) |
 
 ## Session Continuity
 
