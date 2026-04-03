@@ -78,9 +78,10 @@ None.
 | 5 | Mejorar empty state Prestamos y Recurrentes | 2026-04-03 | f9cb037 | quick/5-... |
 | 6 | Homogeneizar tabs Prestamos y Recurrentes | 2026-04-03 | e614f4f | quick/6-... |
 | 7 | Cuenta remunerada type + isLiquid flag | 2026-04-03 | c8d3782 | quick/7-... |
+| 8 | Add delete confirmation dialogs to all 9 delete buttons | 2026-04-03 | e858a19 | quick/8-... |
 
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed 14-02-PLAN.md — Phase 14 fully complete
+Stopped at: Completed quick-8 — Delete confirmation dialogs
 Resume file: None — next step: Phase 15 (Projection Engine)
