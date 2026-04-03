@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 Phase: 16 of 16 (Chart Components)
 Plan: 2 of 2 complete
 Status: Phase 16 complete — all chart components built
-Last activity: 2026-04-03 — Completed 16-02: InvestmentChart + ChartsContainer update
+Last activity: 2026-04-03 — Completed quick task 15: Add isInitial checkbox to investment creation dialog
 
 Progress: [██████████] 100% (2/2 plans in phase 16)
 
