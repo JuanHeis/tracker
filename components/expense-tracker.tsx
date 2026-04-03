@@ -420,8 +420,14 @@ export function ExpenseTracker() {
               <SelectContent>
                 {Array.from({ length: 12 }, (_, i) => {
                   const date = new Date(Number(selectedYear), i, 1);
+                  const monthValue = format(date, "yyyy-MM");
+                  const isCurrent = monthValue === currentRealMonth;
                   return (
-                    <SelectItem key={i} value={format(date, "yyyy-MM")}>
+                    <SelectItem
+                      key={i}
+                      value={monthValue}
+                      className={cn(isCurrent && "bg-primary/10 font-medium")}
+                    >
                       {format(date, "MMMM yyyy")}
                     </SelectItem>
                   );
