@@ -92,6 +92,7 @@ None.
 | 10 | Investment chart toggle contributions + type visibility | 2026-04-03 | 9e7236a | quick/10-... |
 | 11 | Add projection basis info banner to investment chart | 2026-04-03 | 3e3c76a | quick/11-... |
 | 12 | Make default annual rates configurable + toggle real vs default | 2026-04-03 | 335f29a | quick/12-... |
+| 13 | Per-investment monthly contribution override inputs | 2026-04-03 | b471b6f | quick/13-... |
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
 | Phase 15 P02 | 3min | 1 task | 1 file |
 | Phase 16 P01 | 3min | 2 tasks | 5 files |
@@ -100,5 +101,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed quick-12 — Configurable projection rates + real rates toggle
+Stopped at: Completed quick-13 — Per-investment monthly contribution override inputs
 Resume file: None
