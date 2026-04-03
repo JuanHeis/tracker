@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, addMonths } from "date-fns";
 import type { InvestmentType, CurrencyType } from "@/constants/investments";
 import type { Investment, InvestmentMovement } from "@/hooks/useMoneyTracker";
 
@@ -155,6 +155,7 @@ export function commitWizardData(data: WizardData): void {
       date: today,
       type: "aporte" as const,
       amount: wi.amount,
+      isInitial: true,
     }] as InvestmentMovement[],
     currentValue: wi.amount,
     lastUpdated: today,
@@ -178,11 +179,13 @@ export function commitWizardData(data: WizardData): void {
     _migrationVersion: 7,
   };
 
-  // Build salaryHistory
+  // Build salaryHistory — effective from NEXT month since the wizard captures
+  // current state (liquid cash already includes this month's salary received)
+  const nextMonth = format(addMonths(new Date(), 1), "yyyy-MM");
   const salaryEntries = data.salaryAmount > 0
     ? [{
         id: crypto.randomUUID(),
-        effectiveDate: currentMonth,
+        effectiveDate: nextMonth,
         amount: data.salaryAmount,
         usdRate: data.globalUsdRate || 0,
       }]

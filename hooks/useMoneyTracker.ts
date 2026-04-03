@@ -57,6 +57,7 @@ export interface InvestmentMovement {
   date: string;          // yyyy-MM-dd
   type: "aporte" | "retiro";
   amount: number;
+  isInitial?: boolean;   // true for wizard-loaded patrimony (not counted as monthly outflow)
 }
 
 export interface Investment {
@@ -403,15 +404,15 @@ export function useMoneyTracker() {
     // Investment movements: ARS scoped by view mode, USD cumulative
     (monthlyData.investments || []).forEach((inv) => {
       if (inv.currencyType === CurrencyType.USD) {
-        // USD investment movements: cumulative (all time)
-        inv.movements.forEach((mov) => {
+        // USD investment movements: cumulative (all time), skip initial (wizard patrimony)
+        inv.movements.filter((mov) => !mov.isInitial).forEach((mov) => {
           const impact = mov.type === "aporte" ? -mov.amount : mov.amount;
           usdBalance += impact;
         });
       } else {
-        // ARS investment movements: scoped by view mode
+        // ARS investment movements: scoped by view mode, skip initial (wizard patrimony)
         inv.movements
-          .filter((mov) => isInArsRange(mov.date))
+          .filter((mov) => isInArsRange(mov.date) && !mov.isInitial)
           .forEach((mov) => {
             const impact = mov.type === "aporte" ? -mov.amount : mov.amount;
             arsBalance += impact;
