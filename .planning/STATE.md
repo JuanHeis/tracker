@@ -8,7 +8,7 @@ progress:
   total_phases: 15
   completed_phases: 14
   total_plans: 41
-  completed_plans: 40
+  completed_plans: 41
 ---
 
 # Project State
@@ -23,11 +23,11 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 15 of 16 (Projection Engine)
-Plan: 1 of 2 complete
-Status: Plan 15-01 complete — projection math foundation
-Last activity: 2026-04-03 — Completed 15-01: Projection types and pure math functions
+Plan: 2 of 2 complete
+Status: Phase 15 complete — projection engine ready
+Last activity: 2026-04-03 — Completed 15-02: useProjectionEngine orchestrator hook
 
-Progress: [█████░░░░░] 50% (1/2 plans in phase 15)
+Progress: [██████████] 100% (2/2 plans in phase 15)
 
 ## Performance Metrics
 
@@ -62,6 +62,8 @@ Recent decisions affecting current work:
 - [15-01]: Historical patrimony uses simplified cumulative running totals (not full calculateDualBalances)
 - [15-01]: Scenario engine outputs savings-only projections; investment growth layered by hook
 - [Phase 15]: All projection functions are pure TypeScript with zero React dependencies
+- [15-02]: useProjectionEngine accepts data as parameters (not calling hooks) for decoupling and testability
+- [15-02]: Investment growth computed per-scenario with different rateMultipliers (1.5/1.0/0.5)
 
 ### Pending Todos
 
@@ -85,9 +87,10 @@ None.
 | 8 | Add delete confirmation dialogs to all 9 delete buttons | 2026-04-03 | e858a19 | quick/8-... |
 | 9 | Move config settings from card to taskbar dialog | 2026-04-03 | 1736434 | quick/9-... |
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
+| Phase 15 P02 | 3min | 1 task | 1 file |
 
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed 15-01-PLAN.md — Projection math foundation
-Resume file: None — next step: 15-02 (useProjectionEngine hook)
+Stopped at: Completed 15-02-PLAN.md — useProjectionEngine orchestrator hook
+Resume file: None — Phase 15 complete, next: Phase 16 (chart UI)
