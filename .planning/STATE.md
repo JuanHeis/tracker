@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 Phase: 16 of 16 (Chart Components)
 Plan: 2 of 2 complete
 Status: Phase 16 complete — all chart components built
-Last activity: 2026-04-03 — Completed quick task 15: Add isInitial checkbox to investment creation dialog
+Last activity: 2026-04-03 — Completed quick task 14 (full): Format all money inputs with currency formatting
 
 Progress: [██████████] 100% (2/2 plans in phase 16)
 
@@ -81,8 +81,8 @@ None.
 
 ### Quick Tasks Completed
 
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
+| # | Description | Date | Commit | Status | Directory |
+|---|-------------|------|--------|--------|-----------|
 | 3 | Tab names hidden when inactive | 2026-04-02 | 6f99a61 | quick/3-... |
 | 4 | Fix resumen inversiones wizard y sueldo | 2026-04-03 | 1382d82 | quick/4-... |
 | 5 | Mejorar empty state Prestamos y Recurrentes | 2026-04-03 | f9cb037 | quick/5-... |
@@ -94,7 +94,7 @@ None.
 | 11 | Add projection basis info banner to investment chart | 2026-04-03 | 3e3c76a | quick/11-... |
 | 12 | Make default annual rates configurable + toggle real vs default | 2026-04-03 | 335f29a | quick/12-... |
 | 13 | Per-investment monthly contribution override inputs | 2026-04-03 | b471b6f | quick/13-... |
-| 14 | Format all money inputs with CurrencyInput | 2026-04-03 | 94bd76d | quick/14-... |
+| 14 | Format all money inputs with CurrencyInput | 2026-04-03 | 94bd76d | Verified | [14-format-all-money-inputs-with-currency-fo](./quick/14-format-all-money-inputs-with-currency-fo/) |
 | 15 | Add isInitial checkbox to investment creation dialog | 2026-04-03 | 8bb86b3 | quick/15-... |
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
 | Phase 15 P02 | 3min | 1 task | 1 file |
