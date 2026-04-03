@@ -594,11 +594,21 @@ export function ExpenseTracker() {
               </Card>
             </TabsContent>
             <TabsContent value="recurrentes" className="mt-0">
-              <RecurringTable
-                recurrings={recurringExpenses}
-                onUpdateStatus={updateRecurringStatus}
-                onAddClick={() => setRecurringDialogOpen(true)}
-              />
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle>Gastos Recurrentes</CardTitle>
+                  <Button size="sm" onClick={() => setRecurringDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Recurrente
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <RecurringTable
+                    recurrings={recurringExpenses}
+                    onUpdateStatus={updateRecurringStatus}
+                  />
+                </CardContent>
+              </Card>
               <RecurringDialog
                 open={recurringDialogOpen}
                 onOpenChange={setRecurringDialogOpen}
@@ -617,22 +627,25 @@ export function ExpenseTracker() {
               />
             </TabsContent>
             <TabsContent value="loans" className="mt-0">
-              {filteredLoans.length > 0 && (
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-semibold">Prestamos</h2>
-                  <Button onClick={() => setOpenLoanDialog(true)}>
-                    <Plus className="mr-2 h-4 w-4" /> Nuevo prestamo
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle>Prestamos</CardTitle>
+                  <Button size="sm" onClick={() => setOpenLoanDialog(true)}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Prestamo
                   </Button>
-                </div>
-              )}
-              <LoansTable
-                loans={filteredLoans}
-                onAddPayment={handleAddLoanPayment}
-                onEditLoan={handleEditLoan}
-                onDeleteLoan={handleDeleteLoan}
-                onForgiveLoan={handleForgiveLoan}
-                onOpenDialog={() => setOpenLoanDialog(true)}
-              />
+                </CardHeader>
+                <CardContent>
+                  <LoansTable
+                    loans={filteredLoans}
+                    onAddPayment={handleAddLoanPayment}
+                    onEditLoan={handleEditLoan}
+                    onDeleteLoan={handleDeleteLoan}
+                    onForgiveLoan={handleForgiveLoan}
+                    onOpenDialog={() => setOpenLoanDialog(true)}
+                  />
+                </CardContent>
+              </Card>
               <LoanDialog
                 open={openLoanDialog}
                 onOpenChange={setOpenLoanDialog}

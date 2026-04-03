@@ -67,24 +67,6 @@ export function LoansTable({
     }
   };
 
-  // Empty state
-  if (loans.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-lg font-medium text-muted-foreground mb-1">
-          No tenes prestamos registrados
-        </p>
-        <p className="text-sm text-muted-foreground mb-4">
-          Registra prestamos dados o deudas para trackear tu patrimonio real
-        </p>
-        <Button onClick={onOpenDialog}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo prestamo
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <>
       <Table>
@@ -102,7 +84,13 @@ export function LoansTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {loans.map((loan) => (
+          {loans.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={9} className="text-center">
+                No hay prestamos registrados
+              </TableCell>
+            </TableRow>
+          ) : loans.map((loan) => (
             <LoanRow
               key={loan.id}
               loan={loan}

@@ -12,12 +12,11 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pause, Play, XCircle, Plus, Repeat } from "lucide-react";
+import { Pause, Play, XCircle } from "lucide-react";
 
 interface RecurringTableProps {
   recurrings: RecurringExpense[];
   onUpdateStatus: (id: string, status: RecurringStatus) => void;
-  onAddClick: () => void;
 }
 
 function formatAmount(amount: number, currencyType: CurrencyType): string {
@@ -51,46 +50,9 @@ function statusBadge(status: RecurringStatus) {
 export function RecurringTable({
   recurrings,
   onUpdateStatus,
-  onAddClick,
 }: RecurringTableProps) {
-  if (recurrings.length === 0) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Repeat className="h-5 w-5" />
-            Gastos Recurrentes
-          </h3>
-        </div>
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <p className="text-lg font-medium text-muted-foreground mb-1">
-            No hay gastos recurrentes definidos
-          </p>
-          <p className="text-sm text-muted-foreground mb-4">
-            Agrega gastos que se repiten cada mes para trackearlos automaticamente
-          </p>
-          <Button onClick={onAddClick}>
-            <Plus className="h-4 w-4 mr-2" />
-            Agregar recurrente
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Repeat className="h-5 w-5" />
-          Gastos Recurrentes
-        </h3>
-        <Button size="sm" onClick={onAddClick}>
-          <Plus className="h-4 w-4 mr-1" />
-          Agregar
-        </Button>
-      </div>
-      <Table>
+    <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Nombre</TableHead>
@@ -102,7 +64,13 @@ export function RecurringTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {recurrings.map((rec) => (
+          {recurrings.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center">
+                No hay gastos recurrentes definidos
+              </TableCell>
+            </TableRow>
+          ) : recurrings.map((rec) => (
             <TableRow
               key={rec.id}
               className={rec.status === "Cancelada" ? "opacity-50" : ""}
@@ -162,6 +130,5 @@ export function RecurringTable({
           ))}
         </TableBody>
       </Table>
-    </div>
   );
 }
