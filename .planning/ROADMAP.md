@@ -331,5 +331,5 @@ Plans:
 | 12. Investments Step & Re-run | v1.1 | 2/2 | Complete | 2026-04-03 |
 | 13. Manual de Uso | v1.1 | 1/1 | Complete | 2026-04-03 |
 | 14. Recharts Upgrade & Chart Infrastructure | 2/2 | Complete    | 2026-04-03 | - |
-| 15. Projection Engine | 2/2 | Complete   | 2026-04-03 | - |
+| 15. Projection Engine | 2/2 | Complete    | 2026-04-03 | - |
 | 16. Chart Components | v1.2 | 0/? | Not started | - |
