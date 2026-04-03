@@ -71,7 +71,6 @@ import { LoansTable } from "./loans-table";
 import { LoanDialog } from "./loan-dialog";
 import { UsdPurchaseDialog } from "./usd-purchase-dialog";
 import { ExchangeSummary } from "./exchange-summary";
-import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
 import { useHydration } from "@/hooks/useHydration";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -477,7 +476,6 @@ export function ExpenseTracker() {
                 />
               </DialogContent>
             </Dialog>
-            <ThemeToggle />
           </div>
         </div>
 

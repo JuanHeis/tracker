@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Pencil, Check, X, Plus, Trash2, Scale, Download, Upload, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { FormattedAmount } from "./formatted-amount";
+import { useTheme } from "next-themes";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { STORAGE_KEYS } from "@/hooks/useDataPersistence";
 import { format, parse } from "date-fns";
 import { es } from "date-fns/locale";
@@ -59,6 +61,11 @@ export function SettingsPanel({
   customAnnualRates,
   onUpdateCustomAnnualRates,
 }: SettingsPanelProps) {
+  // Theme
+  const { theme, setTheme } = useTheme();
+  const [themeMounted, setThemeMounted] = useState(false);
+  useEffect(() => { setThemeMounted(true); }, []);
+
   // Employment config editing
   const [editingEmploymentType, setEditingEmploymentType] = useState(false);
   const [editingPayDay, setEditingPayDay] = useState(false);
@@ -185,6 +192,30 @@ export function SettingsPanel({
   return (
     <>
       <div className="max-h-[70vh] overflow-y-auto space-y-4 pr-1">
+        {/* Section 0: Apariencia */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">Apariencia</h4>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Tema:</span>
+            {themeMounted ? (
+              <Select value={theme} onValueChange={setTheme}>
+                <SelectTrigger className="w-[140px] h-8 text-sm">
+                  <SelectValue placeholder="Seleccionar tema" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">Claro</SelectItem>
+                  <SelectItem value="dark">Oscuro</SelectItem>
+                  <SelectItem value="system">Sistema</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : (
+              <span className="text-muted-foreground text-sm">Cargando...</span>
+            )}
+          </div>
+        </div>
+
+        <hr className="border-border" />
+
         {/* Section 1: Empleo */}
         <div className="space-y-2">
           <h4 className="text-sm font-medium">Empleo</h4>
