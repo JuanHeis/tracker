@@ -1,11 +1,4 @@
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from "recharts";
+import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { MonthlyData } from "@/hooks/useMoneyTracker";
 import { format, parse } from "date-fns";
@@ -105,7 +98,7 @@ export function SalaryByMonth({
                     <span className="font-normal text-muted-foreground">
                       {activeTab === "ars" ? "$ARS" : "$USD"}
                     </span>
-                    {value.toLocaleString()}
+                    {(value ?? 0).toLocaleString()}
                   </div>
                 </div>
               )}

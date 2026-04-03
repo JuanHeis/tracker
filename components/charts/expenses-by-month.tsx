@@ -86,7 +86,7 @@ export function ExpensesByMonth({
                   {chartConfig[name as keyof typeof chartConfig]?.label || name}
                   <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
                     <span className="font-normal text-muted-foreground">$</span>
-                    {value.toLocaleString()}
+                    {(value ?? 0).toLocaleString()}
                   </div>
                 </div>
               )}
