@@ -96,6 +96,7 @@ None.
 | 13 | Per-investment monthly contribution override inputs | 2026-04-03 | b471b6f | quick/13-... |
 | 14 | Format all money inputs with CurrencyInput | 2026-04-03 | 94bd76d | Verified | [14-format-all-money-inputs-with-currency-fo](./quick/14-format-all-money-inputs-with-currency-fo/) |
 | 15 | Add isInitial checkbox to investment creation dialog | 2026-04-03 | 8bb86b3 | quick/15-... |
+| 16 | Add Por pagar category for unpaid recurring expenses | 2026-04-03 | 9aa3ba1 | Verified | [16-add-por-pagar-category-for-unpaid-recurr](./quick/16-add-por-pagar-category-for-unpaid-recurr/) |
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
 | Phase 15 P02 | 3min | 1 task | 1 file |
 | Phase 16 P01 | 3min | 2 tasks | 5 files |
@@ -104,5 +105,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed quick-14 -- Format all money inputs with CurrencyInput
+Stopped at: Completed quick-16 -- Add Por pagar category for unpaid recurring expenses
 Resume file: None
