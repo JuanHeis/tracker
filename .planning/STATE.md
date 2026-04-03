@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Graficos Predictivos
 status: unknown
-last_updated: "2026-04-03T16:35:46.396Z"
+last_updated: "2026-04-03T20:24:06.465Z"
 progress:
   total_phases: 16
   completed_phases: 16
@@ -67,6 +67,7 @@ Recent decisions affecting current work:
 - [16-01]: ChartControls lives outside PatrimonyChart for reuse across future chart types
 - [16-01]: Conditional Line rendering via visibleScenarios prop rather than data filtering
 - [16-02]: Slugified chart config keys for CSS variable compatibility with space-containing investment type names
+- [Phase quick-14]: CurrencyInput with es-AR locale formatting for all money inputs across 21 files
 
 ### Pending Todos
 
@@ -93,6 +94,7 @@ None.
 | 11 | Add projection basis info banner to investment chart | 2026-04-03 | 3e3c76a | quick/11-... |
 | 12 | Make default annual rates configurable + toggle real vs default | 2026-04-03 | 335f29a | quick/12-... |
 | 13 | Per-investment monthly contribution override inputs | 2026-04-03 | b471b6f | quick/13-... |
+| 14 | Format all money inputs with CurrencyInput | 2026-04-03 | 94bd76d | quick/14-... |
 | 15 | Add isInitial checkbox to investment creation dialog | 2026-04-03 | 8bb86b3 | quick/15-... |
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
 | Phase 15 P02 | 3min | 1 task | 1 file |
@@ -102,5 +104,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed quick-15 — Add isInitial checkbox to investment creation dialog
+Stopped at: Completed quick-14 -- Format all money inputs with CurrencyInput
 Resume file: None
