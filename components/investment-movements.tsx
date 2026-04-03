@@ -7,6 +7,16 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -35,6 +45,14 @@ export function InvestmentMovements({
   const [movementType, setMovementType] = useState<"aporte" | "retiro">(
     "aporte"
   );
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      onDeleteMovement(investment.id, deleteTarget);
+      setDeleteTarget(null);
+    }
+  };
 
   const sortedMovements = [...investment.movements].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -64,6 +82,7 @@ export function InvestmentMovements({
   };
 
   return (
+    <>
     <div className="space-y-3">
       {investment.status !== "Finalizada" && (
         <form
@@ -157,9 +176,7 @@ export function InvestmentMovements({
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6 text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
-                  onClick={() =>
-                    onDeleteMovement(investment.id, movement.id)
-                  }
+                  onClick={() => setDeleteTarget(movement.id)}
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>
@@ -186,5 +203,26 @@ export function InvestmentMovements({
         </button>
       )}
     </div>
+
+    <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Eliminar movimiento?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Se eliminara este movimiento de la inversion. Esta accion no se puede deshacer.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirmDelete}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

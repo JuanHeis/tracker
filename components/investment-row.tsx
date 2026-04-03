@@ -7,6 +7,16 @@ import { TableRow, TableCell } from "./ui/table";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 import { InvestmentValueCell, calculateGainLoss } from "./investment-value-cell";
 import { InvestmentMovements } from "./investment-movements";
 import { useHydration } from "@/hooks/useHydration";
@@ -55,6 +65,14 @@ export function InvestmentRow({
   const isHydrated = useHydration();
   const isPF = investment.type === "Plazo Fijo";
   const isFinalized = investment.status === "Finalizada";
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      onDelete(deleteTarget);
+      setDeleteTarget(null);
+    }
+  };
 
   const capitalInvested = investment.movements.reduce(
     (sum, m) => (m.type === "aporte" ? sum + m.amount : sum - m.amount),
@@ -143,7 +161,7 @@ export function InvestmentRow({
               variant="ghost"
               size="icon"
               className="h-7 w-7 cursor-pointer text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
-              onClick={() => onDelete(investment.id)}
+              onClick={() => setDeleteTarget(investment.id)}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
@@ -165,6 +183,26 @@ export function InvestmentRow({
           </TableCell>
         </TableRow>
       )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar inversion?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminara esta inversion y todos sus movimientos. Esta accion no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

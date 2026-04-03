@@ -5,6 +5,16 @@ import { Trash2, Pencil, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -89,7 +99,15 @@ export default function IncomeTable({
 }: IncomeTableProps) {
   const isHydrated = useHydration();
   const [editingRateId, setEditingRateId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const className = "text-center";
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      onDeleteIncome(deleteTarget);
+      setDeleteTarget(null);
+    }
+  };
 
   if (!isHydrated) {
     return (
@@ -115,6 +133,7 @@ export default function IncomeTable({
   }
 
   return (
+    <>
     <Table>
       <TableHeader>
         <TableRow>
@@ -195,7 +214,7 @@ export default function IncomeTable({
                     variant="ghost"
                     size="icon"
                     className="cursor-pointer text-red-500 group/delete hover:bg-red-500 hover:text-white"
-                    onClick={() => onDeleteIncome(income.id)}
+                    onClick={() => setDeleteTarget(income.id)}
                   >
                     <Trash2 className="h-4 w-4 group-hover/delete:scale-125" />
                   </Button>
@@ -206,5 +225,26 @@ export default function IncomeTable({
         )}
       </TableBody>
     </Table>
+
+    <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Eliminar ingreso?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Se eliminara este ingreso permanentemente. Esta accion no se puede deshacer.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirmDelete}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

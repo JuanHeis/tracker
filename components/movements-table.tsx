@@ -1,9 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { format, parse } from "date-fns";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { FormattedAmount } from "@/components/formatted-amount";
 import type { Transfer } from "@/hooks/useMoneyTracker";
 
@@ -62,6 +73,15 @@ export function MovementsTable({
   transfers,
   onDeleteTransfer,
 }: MovementsTableProps) {
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      onDeleteTransfer(deleteTarget);
+      setDeleteTarget(null);
+    }
+  };
+
   if (transfers.length === 0) {
     return (
       <p className="text-center text-muted-foreground py-8">
@@ -71,6 +91,7 @@ export function MovementsTable({
   }
 
   return (
+    <>
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
@@ -96,7 +117,7 @@ export function MovementsTable({
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-muted-foreground hover:text-red-500"
-                  onClick={() => onDeleteTransfer(transfer.id)}
+                  onClick={() => setDeleteTarget(transfer.id)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -106,6 +127,27 @@ export function MovementsTable({
         </tbody>
       </table>
     </div>
+
+    <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Eliminar transferencia?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Se eliminara esta transferencia permanentemente. Esta accion no se puede deshacer.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirmDelete}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
 

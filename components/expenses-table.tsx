@@ -6,6 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -95,6 +105,14 @@ export function ExpensesTable({
 }: ExpensesTableProps) {
   const isHydrated = useHydration();
   const [editingRateId, setEditingRateId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      onDeleteExpense(deleteTarget);
+      setDeleteTarget(null);
+    }
+  };
 
   if (!isHydrated) {
     return (
@@ -121,6 +139,7 @@ export function ExpensesTable({
   }
 
   return (
+    <>
     <Table>
       <TableHeader>
         <TableRow>
@@ -242,7 +261,7 @@ export function ExpensesTable({
                       variant="ghost"
                       size="icon"
                       className="cursor-pointer text-red-500 group/delete hover:bg-red-500 hover:text-white"
-                      onClick={() => onDeleteExpense(expense.id)}
+                      onClick={() => setDeleteTarget(expense.id)}
                     >
                       <Trash2 className="h-4 w-4 group-hover/delete:scale-125" />
                     </Button>
@@ -254,5 +273,26 @@ export function ExpensesTable({
         )}
       </TableBody>
     </Table>
+
+    <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Eliminar gasto?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Se eliminara este gasto permanentemente. Esta accion no se puede deshacer.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirmDelete}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
