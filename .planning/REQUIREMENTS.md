@@ -126,7 +126,7 @@
 ### Charts UI
 
 - [x] **CHART-01**: User ve grafico de patrimonio combinado: linea solida (historico) + linea punteada (proyeccion) + linea "Hoy"
-- [ ] **CHART-02**: User ve grafico de inversiones con proyeccion del portafolio (agregado, con desglose por tipo)
+- [x] **CHART-02**: User ve grafico de inversiones con proyeccion del portafolio (agregado, con desglose por tipo)
 - [x] **CHART-03**: User ve 3 escenarios visuales (optimista/base/pesimista) con diferentes opacidades
 - [x] **CHART-04**: User puede seleccionar horizonte de proyeccion (3, 6, 12, 24 meses) y togglear escenarios on/off
 - [x] **CHART-05**: Todos los graficos combinan ARS+USD a cotizacion actual con disclaimer visible
@@ -252,7 +252,7 @@
 | PROJ-04 | Phase 15 | Complete |
 | PROJ-05 | Phase 15 | Complete |
 | CHART-01 | Phase 16 | Complete |
-| CHART-02 | Phase 16 | Pending |
+| CHART-02 | Phase 16 | Complete |
 | CHART-03 | Phase 16 | Complete |
 | CHART-04 | Phase 16 | Complete |
 | CHART-05 | Phase 16 | Complete |

@@ -47,7 +47,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 14: Recharts Upgrade & Chart Infrastructure** - Upgrade Recharts to 3.x, verify existing charts, establish projection chart patterns (completed 2026-04-03)
 - [x] **Phase 15: Projection Engine** - Pure math functions for compound interest, linear projection, historical reconstruction, scenarios, and orchestrator hook (completed 2026-04-03)
-- [ ] **Phase 16: Chart Components** - Patrimony and investment projection charts with scenarios, horizon selector, and disclaimers
+- [x] **Phase 16: Chart Components** - Patrimony and investment projection charts with scenarios, horizon selector, and disclaimers (completed 2026-04-03)
 
 ## Phase Details
 
@@ -336,4 +336,4 @@ Plans:
 | 13. Manual de Uso | v1.1 | 1/1 | Complete | 2026-04-03 |
 | 14. Recharts Upgrade & Chart Infrastructure | 2/2 | Complete    | 2026-04-03 | - |
 | 15. Projection Engine | 2/2 | Complete    | 2026-04-03 | - |
-| 16. Chart Components | 1/2 | In Progress|  | - |
+| 16. Chart Components | 2/2 | Complete   | 2026-04-03 | - |

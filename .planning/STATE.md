@@ -23,11 +23,11 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 16 of 16 (Chart Components)
-Plan: 1 of 2 complete
-Status: Plan 16-01 complete — patrimony chart with projection lines
-Last activity: 2026-04-03 — Completed 16-01: PatrimonyChart + controls + disclaimer
+Plan: 2 of 2 complete
+Status: Phase 16 complete — all chart components built
+Last activity: 2026-04-03 — Completed 16-02: InvestmentChart + ChartsContainer update
 
-Progress: [█████-----] 50% (1/2 plans in phase 16)
+Progress: [██████████] 100% (2/2 plans in phase 16)
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Recent decisions affecting current work:
 - [15-02]: Investment growth computed per-scenario with different rateMultipliers (1.5/1.0/0.5)
 - [16-01]: ChartControls lives outside PatrimonyChart for reuse across future chart types
 - [16-01]: Conditional Line rendering via visibleScenarios prop rather than data filtering
+- [16-02]: Slugified chart config keys for CSS variable compatibility with space-containing investment type names
 
 ### Pending Todos
 
@@ -91,9 +92,10 @@ None.
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
 | Phase 15 P02 | 3min | 1 task | 1 file |
 | Phase 16 P01 | 3min | 2 tasks | 5 files |
+| Phase 16 P02 | 2min | 2 tasks | 2 files |
 
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed 16-01-PLAN.md — PatrimonyChart + controls + disclaimer
-Resume file: None — next: 16-02 (investment chart components)
+Stopped at: Completed 16-02-PLAN.md — InvestmentChart + ChartsContainer update
+Resume file: None — Phase 16 complete
