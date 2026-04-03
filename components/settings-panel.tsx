@@ -1,0 +1,607 @@
+"use client";
+
+import { useState, useRef } from "react";
+import { Pencil, Check, X, Plus, Trash2, Scale, Download, Upload, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { FormattedAmount } from "./formatted-amount";
+import { STORAGE_KEYS } from "@/hooks/useDataPersistence";
+import { format, parse } from "date-fns";
+import { es } from "date-fns/locale";
+import type { SalaryEntry, IncomeConfig } from "@/hooks/useSalaryHistory";
+
+interface SettingsPanelProps {
+  incomeConfig: IncomeConfig;
+  onUpdateIncomeConfig: (config: IncomeConfig) => void;
+  globalUsdRate: number;
+  onSetGlobalUsdRate: (rate: number) => void;
+  salaryHistory: SalaryEntry[];
+  onAddSalaryEntry: (entry: Omit<SalaryEntry, "id">) => void;
+  onUpdateSalaryEntry: (id: string, updates: Partial<SalaryEntry>) => void;
+  onDeleteSalaryEntry: (id: string) => void;
+  selectedMonth: string;
+  onAdjustBalance?: () => void;
+  onExport?: () => void;
+  onImport?: (file: File) => void;
+  onResetAllData: () => void;
+}
+
+export function SettingsPanel({
+  incomeConfig,
+  onUpdateIncomeConfig,
+  globalUsdRate,
+  onSetGlobalUsdRate,
+  salaryHistory,
+  onAddSalaryEntry,
+  onUpdateSalaryEntry,
+  onDeleteSalaryEntry,
+  selectedMonth,
+  onAdjustBalance,
+  onExport,
+  onImport,
+  onResetAllData,
+}: SettingsPanelProps) {
+  // Employment config editing
+  const [editingEmploymentType, setEditingEmploymentType] = useState(false);
+  const [editingPayDay, setEditingPayDay] = useState(false);
+  const [payDayInput, setPayDayInput] = useState("");
+
+  // USD rate editing
+  const [editingRate, setEditingRate] = useState(false);
+  const [rateInput, setRateInput] = useState("");
+
+  // Salary timeline editing
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [entryAmountInput, setEntryAmountInput] = useState("");
+  const [entryRateInput, setEntryRateInput] = useState("");
+
+  // Delete confirmation
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  // Reset confirmation
+  const [confirmReset, setConfirmReset] = useState(false);
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      onDeleteSalaryEntry(deleteTarget);
+      setDeleteTarget(null);
+    }
+  };
+
+  // Import file input ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Add new salary entry
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newEntryDate, setNewEntryDate] = useState(selectedMonth);
+  const [newEntryAmount, setNewEntryAmount] = useState("");
+  const [newEntryRate, setNewEntryRate] = useState("");
+
+  // Employment type toggle
+  const handleToggleEmploymentType = (type: "dependiente" | "independiente") => {
+    onUpdateIncomeConfig({ ...incomeConfig, employmentType: type });
+    setEditingEmploymentType(false);
+  };
+
+  // Pay day editing
+  const handleStartEditPayDay = () => {
+    setPayDayInput(String(incomeConfig.payDay));
+    setEditingPayDay(true);
+  };
+
+  const handleSubmitPayDay = () => {
+    const val = parseInt(payDayInput, 10);
+    if (!isNaN(val)) {
+      const clamped = Math.max(1, Math.min(31, val));
+      onUpdateIncomeConfig({ ...incomeConfig, payDay: clamped });
+    }
+    setEditingPayDay(false);
+  };
+
+  // USD rate editing
+  const handleStartEditRate = () => {
+    setRateInput(globalUsdRate > 0 ? String(globalUsdRate) : "");
+    setEditingRate(true);
+  };
+
+  const handleSubmitRate = () => {
+    const newRate = parseFloat(rateInput);
+    if (!isNaN(newRate) && newRate > 0) {
+      onSetGlobalUsdRate(newRate);
+      setEditingRate(false);
+    }
+  };
+
+  // Salary entry editing
+  const handleStartEditEntry = (entry: SalaryEntry) => {
+    setEditingEntryId(entry.id);
+    setEntryAmountInput(String(entry.amount));
+    setEntryRateInput(String(entry.usdRate));
+  };
+
+  const handleSubmitEntryEdit = (id: string) => {
+    const amount = parseFloat(entryAmountInput);
+    const usdRate = parseFloat(entryRateInput);
+    if (!isNaN(amount) && amount > 0 && !isNaN(usdRate) && usdRate > 0) {
+      onUpdateSalaryEntry(id, { amount, usdRate });
+    }
+    setEditingEntryId(null);
+  };
+
+  const handleCancelEntryEdit = () => {
+    setEditingEntryId(null);
+  };
+
+  // Add new salary entry
+  const handleSubmitNewEntry = () => {
+    const amount = parseFloat(newEntryAmount);
+    const usdRate = parseFloat(newEntryRate);
+    if (!isNaN(amount) && amount > 0 && !isNaN(usdRate) && usdRate > 0 && newEntryDate) {
+      onAddSalaryEntry({ effectiveDate: newEntryDate, amount, usdRate });
+      setShowAddForm(false);
+      setNewEntryAmount("");
+      setNewEntryRate("");
+      setNewEntryDate(selectedMonth);
+    }
+  };
+
+  // Format effective date for display
+  const formatEffectiveDate = (dateStr: string): string => {
+    try {
+      const parsed = parse(dateStr, "yyyy-MM", new Date());
+      return format(parsed, "MMM yyyy", { locale: es });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Sort entries most-recent-first for display
+  const sortedHistory = [...salaryHistory].sort((a, b) =>
+    b.effectiveDate.localeCompare(a.effectiveDate)
+  );
+
+  return (
+    <>
+      <div className="max-h-[70vh] overflow-y-auto space-y-4 pr-1">
+        {/* Section 1: Empleo */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">Empleo</h4>
+          <div className="space-y-2 text-sm">
+            {/* Employment type */}
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Tipo:</span>
+              {editingEmploymentType ? (
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant={incomeConfig.employmentType === "dependiente" ? "default" : "outline"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => handleToggleEmploymentType("dependiente")}
+                  >
+                    Dependiente
+                  </Button>
+                  <Button
+                    variant={incomeConfig.employmentType === "independiente" ? "default" : "outline"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => handleToggleEmploymentType("independiente")}
+                  >
+                    Independiente
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setEditingEmploymentType(false)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <span className="font-medium capitalize">
+                    {incomeConfig.employmentType}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-blue-500"
+                    onClick={() => setEditingEmploymentType(true)}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Pay day */}
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Dia de cobro:</span>
+              {editingPayDay ? (
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={31}
+                    value={payDayInput}
+                    onChange={(e) => setPayDayInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleSubmitPayDay();
+                      }
+                      if (e.key === "Escape") setEditingPayDay(false);
+                    }}
+                    className="h-7 w-16 text-sm"
+                    autoFocus
+                  />
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleSubmitPayDay}>
+                    <Check className="h-3 w-3" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingPayDay(false)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">{incomeConfig.payDay}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-blue-500"
+                    onClick={handleStartEditPayDay}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <hr className="border-border" />
+
+        {/* Section 2: Cotizacion USD */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">Cotizacion USD</h4>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Valor actual:</span>
+            {editingRate ? (
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={rateInput}
+                  onChange={(e) => setRateInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSubmitRate();
+                    }
+                    if (e.key === "Escape") setEditingRate(false);
+                  }}
+                  className="h-7 w-24 text-sm"
+                  autoFocus
+                />
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleSubmitRate}>
+                  <Check className="h-3 w-3" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingRate(false)}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <span className="font-medium text-sm">
+                  {globalUsdRate > 0
+                    ? `$ ${globalUsdRate.toLocaleString()}`
+                    : "Sin configurar"}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={handleStartEditRate}
+                >
+                  <Pencil className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <hr className="border-border" />
+
+        {/* Section 3: Historial de ingresos */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">Historial de ingresos</h4>
+          <div className="space-y-1">
+            {sortedHistory.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Sin historial de ingresos</p>
+            ) : (
+              sortedHistory.map((entry) => (
+                <div key={entry.id} className="text-sm">
+                  {editingEntryId === entry.id ? (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {formatEffectiveDate(entry.effectiveDate)}:
+                        </span>
+                        <Input
+                          type="number"
+                          value={entryAmountInput}
+                          onChange={(e) => setEntryAmountInput(e.target.value)}
+                          placeholder="Monto"
+                          className="h-7 w-24 text-xs"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleSubmitEntryEdit(entry.id);
+                            }
+                            if (e.key === "Escape") handleCancelEntryEdit();
+                          }}
+                        />
+                        <Input
+                          type="number"
+                          value={entryRateInput}
+                          onChange={(e) => setEntryRateInput(e.target.value)}
+                          placeholder="USD"
+                          step="0.01"
+                          className="h-7 w-20 text-xs"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleSubmitEntryEdit(entry.id);
+                            }
+                            if (e.key === "Escape") handleCancelEntryEdit();
+                          }}
+                        />
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleSubmitEntryEdit(entry.id)}>
+                          <Check className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleCancelEntryEdit}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">
+                        Desde {formatEffectiveDate(entry.effectiveDate)}:
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <FormattedAmount value={entry.amount} currency="$" className="font-medium" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-blue-500"
+                          onClick={() => handleStartEditEntry(entry)}
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-red-500"
+                          onClick={() => setDeleteTarget(entry.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Add new salary entry */}
+          {showAddForm ? (
+            <div className="space-y-2 rounded border border-border p-2">
+              <Input
+                type="month"
+                value={newEntryDate}
+                onChange={(e) => setNewEntryDate(e.target.value)}
+                className="h-7 text-xs"
+              />
+              <div className="flex gap-1">
+                <Input
+                  type="number"
+                  placeholder="Monto"
+                  value={newEntryAmount}
+                  onChange={(e) => setNewEntryAmount(e.target.value)}
+                  className="h-7 text-xs"
+                />
+                <Input
+                  type="number"
+                  placeholder="Cotiz USD"
+                  step="0.01"
+                  value={newEntryRate}
+                  onChange={(e) => setNewEntryRate(e.target.value)}
+                  className="h-7 text-xs"
+                />
+              </div>
+              <div className="flex gap-1">
+                <Button size="sm" className="h-7 text-xs" onClick={handleSubmitNewEntry}>
+                  Guardar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewEntryAmount("");
+                    setNewEntryRate("");
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-7 text-xs"
+              onClick={() => {
+                setNewEntryDate(selectedMonth);
+                setShowAddForm(true);
+              }}
+            >
+              <Plus className="mr-1 h-3 w-3" />
+              Nuevo ingreso fijo
+            </Button>
+          )}
+        </div>
+
+        <hr className="border-border" />
+
+        {/* Section 4: Herramientas */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-muted-foreground">Herramientas</h4>
+          {onAdjustBalance && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start"
+              onClick={onAdjustBalance}
+            >
+              <Scale className="h-4 w-4 mr-2" />
+              Ajustar saldo real
+            </Button>
+          )}
+          {onExport && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start"
+              onClick={onExport}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exportar datos (JSON)
+            </Button>
+          )}
+          {onImport && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const confirmed = window.confirm(
+                    "Esto reemplazara TODOS los datos actuales. Deseas continuar?"
+                  );
+                  if (!confirmed) {
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                    return;
+                  }
+                  onImport(file);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-start"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Importar datos
+              </Button>
+            </>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start text-destructive hover:text-destructive"
+            onClick={() => {
+              const confirmed = window.confirm(
+                "Esto borrara TODOS tus datos y reiniciara el wizard de configuracion. Esta accion no se puede deshacer. Deseas continuar?"
+              );
+              if (!confirmed) return;
+              STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+              window.location.reload();
+            }}
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Re-ejecutar wizard
+          </Button>
+        </div>
+
+        <hr className="border-border" />
+
+        {/* Section 5: Zona peligrosa */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-red-600 dark:text-red-400">Zona peligrosa</h4>
+          {!confirmReset ? (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="w-full"
+              onClick={() => setConfirmReset(true)}
+            >
+              Borrar todos los datos
+            </Button>
+          ) : (
+            <div className="space-y-3 rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950">
+              <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                Estas seguro? Esto eliminara todos tus datos financieros.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setConfirmReset(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={onResetAllData}
+                >
+                  Confirmar
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar entrada de sueldo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminara esta entrada del historial de sueldos. Esta accion no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
