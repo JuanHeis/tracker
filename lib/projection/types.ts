@@ -5,6 +5,8 @@ export type CustomAnnualRates = Partial<Record<InvestmentType, number>>;
 
 // --- Interfaces ---
 
+export type RateSource = "default" | "custom" | "tna" | "observed";
+
 export interface InvestmentProjection {
   investmentId: string;
   investmentName: string;
@@ -13,6 +15,7 @@ export interface InvestmentProjection {
   currentValue: number;
   monthlyContribution: number; // 0 if aportes futuros disabled
   annualRate: number; // Rate used for projection
+  rateSource: RateSource; // Where the rate came from
   projectedValues: number[]; // Array indexed by future month (0=current)
 }
 

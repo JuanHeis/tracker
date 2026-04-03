@@ -55,23 +55,29 @@ function computeInvestmentGrowth(
 
   const projections = investments.map((inv) => {
     let rate: number;
+    let rateSource: import("@/lib/projection/types").RateSource;
     if (useRealRates) {
       if (inv.tna != null) {
-        // PF or any investment with explicit TNA: use it directly
         rate = pfMonthlyRate(inv.tna) * rateMultiplier;
+        rateSource = "tna";
       } else {
-        // Non-PF: derive rate from actual performance (movements vs currentValue)
         const observedRate = computeObservedMonthlyRate(inv);
-        rate = observedRate != null
-          ? observedRate * rateMultiplier
-          : getDefaultMonthlyRate(inv.type, rateMultiplier, customRates);
+        if (observedRate != null) {
+          rate = observedRate * rateMultiplier;
+          rateSource = "observed";
+        } else {
+          rate = getDefaultMonthlyRate(inv.type, rateMultiplier, customRates);
+          rateSource = customRates?.[inv.type] != null ? "custom" : "default";
+        }
       }
     } else if (inv.type === "Plazo Fijo" && inv.tna != null) {
       rate = pfMonthlyRate(inv.tna) * rateMultiplier;
+      rateSource = "tna";
     } else {
       rate = getDefaultMonthlyRate(inv.type, rateMultiplier, customRates);
+      rateSource = customRates?.[inv.type] != null ? "custom" : "default";
     }
-    return projectInvestment(inv, rate, horizonMonths, includeContributions, customRates, contributionOverrides?.[inv.id]);
+    return projectInvestment(inv, rate, horizonMonths, includeContributions, customRates, contributionOverrides?.[inv.id], rateSource);
   });
 
   // Sum projected values per month, converting USD to ARS

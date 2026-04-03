@@ -13,8 +13,15 @@ export function pfMonthlyRate(tnaPercent: number): number {
 
 /**
  * Compute the observed monthly rate of return from an investment's actual performance.
- * Uses: totalInvested (sum of aporte movements), currentValue, and months elapsed.
- * Returns null if insufficient data (no movements, zero invested, or less than 1 month elapsed).
+ * Uses: totalInvested (sum of aporte movements), currentValue, and time elapsed.
+ *
+ * When sufficient history exists (>= 1 month), annualizes using compound interest math.
+ * When data is recent (< 1 month, e.g. wizard-loaded investments where the user entered
+ * their total aportes as initial value and then updated currentValue to real worth),
+ * uses the simple total return as a monthly rate approximation.
+ *
+ * Returns null only when there's truly no data (no movements, zero invested, or
+ * currentValue equals totalInvested meaning no observed return).
  */
 export function computeObservedMonthlyRate(investment: Investment): number | null {
   const aportes = investment.movements.filter((m) => m.type === "aporte");
@@ -23,21 +30,29 @@ export function computeObservedMonthlyRate(investment: Investment): number | nul
   const totalInvested = aportes.reduce((sum, m) => sum + m.amount, 0);
   if (totalInvested <= 0) return null;
 
-  // Calculate months elapsed from first aporte to lastUpdated
-  const firstAporteDate = new Date(aportes[0].date);
-  const lastUpdatedDate = new Date(investment.lastUpdated);
-  const msElapsed = lastUpdatedDate.getTime() - firstAporteDate.getTime();
-  const monthsElapsed = msElapsed / (1000 * 60 * 60 * 24 * 30.44); // Average days per month
-
-  if (monthsElapsed < 1) return null;
-
-  // Solve for monthly rate: currentValue = totalInvested * (1 + r)^months
-  // r = (currentValue / totalInvested)^(1/months) - 1
   const ratio = investment.currentValue / totalInvested;
   if (ratio <= 0) return null;
 
-  const monthlyRate = Math.pow(ratio, 1 / monthsElapsed) - 1;
-  return monthlyRate;
+  // No observed return (currentValue == totalInvested) -- nothing to differentiate
+  if (Math.abs(ratio - 1) < 0.0001) return null;
+
+  // Calculate months elapsed from first aporte to now (use current date, not lastUpdated,
+  // since lastUpdated only reflects when the value was last edited in the app)
+  const firstAporteDate = new Date(aportes[0].date);
+  const now = new Date();
+  const msElapsed = now.getTime() - firstAporteDate.getTime();
+  const monthsElapsed = msElapsed / (1000 * 60 * 60 * 24 * 30.44);
+
+  if (monthsElapsed >= 1) {
+    // Enough history: solve for monthly rate via compound interest
+    // currentValue = totalInvested * (1 + r)^months  =>  r = ratio^(1/months) - 1
+    return Math.pow(ratio, 1 / monthsElapsed) - 1;
+  }
+
+  // Recent data (< 1 month elapsed, typical for wizard-loaded investments):
+  // Use total return (ratio - 1) directly as monthly rate approximation.
+  // E.g. invested 1M, now worth 1.05M => 5% monthly rate for projection.
+  return ratio - 1;
 }
 
 /**
@@ -64,7 +79,8 @@ export function projectInvestment(
   horizonMonths: number,
   includeContributions: boolean,
   customRates?: CustomAnnualRates,
-  contributionOverride?: number
+  contributionOverride?: number,
+  rateSource?: import("./types").RateSource
 ): InvestmentProjection {
   const currentValue = investment.currentValue;
 
@@ -90,11 +106,9 @@ export function projectInvestment(
     projectedValues.push(Math.round(balance));
   }
 
-  // Determine the annual rate used
-  const annualRate =
-    investment.type === "Plazo Fijo" && investment.tna != null
-      ? investment.tna / 100
-      : customRates?.[investment.type] ?? DEFAULT_ANNUAL_RATES[investment.type];
+  // Determine the annual rate used — derive from the actual monthlyRate so the
+  // description always reflects the rate that was really applied to the curve.
+  const annualRate = monthlyRate * 12;
 
   return {
     investmentId: investment.id,
@@ -104,6 +118,7 @@ export function projectInvestment(
     currentValue,
     monthlyContribution,
     annualRate,
+    rateSource: rateSource ?? "default",
     projectedValues,
   };
 }
