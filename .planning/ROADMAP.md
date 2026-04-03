@@ -268,4 +268,4 @@ Plans:
 | 10. Persistence & UX Polish | v1.0 | 3/3 | Complete | 2026-04-02 |
 | 11. Core Setup Wizard | 2/2 | Complete    | 2026-04-02 | - |
 | 12. Investments Step & Re-run | 2/2 | Complete    | 2026-04-03 | - |
-| 13. Manual de Uso | 1/1 | Complete   | 2026-04-03 | - |
+| 13. Manual de Uso | 1/1 | Complete    | 2026-04-03 | - |
