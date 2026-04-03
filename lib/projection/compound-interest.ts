@@ -1,6 +1,7 @@
 import type { Investment } from "@/hooks/useMoneyTracker";
 import type { InvestmentProjection } from "./types";
 import { DEFAULT_ANNUAL_RATES } from "./types";
+import type { CustomAnnualRates } from "./types";
 
 /**
  * Convert TNA (Tasa Nominal Anual) percentage to monthly effective rate.
@@ -13,12 +14,14 @@ export function pfMonthlyRate(tnaPercent: number): number {
 /**
  * Get default monthly rate for an investment type.
  * For Plazo Fijo returns 0 — caller must use pfMonthlyRate with investment.tna.
+ * When customRates is provided and has a value for the type, use it instead of the hardcoded default.
  */
 export function getDefaultMonthlyRate(
   type: Investment["type"],
-  rateMultiplier: number = 1
+  rateMultiplier: number = 1,
+  customRates?: CustomAnnualRates
 ): number {
-  const annualRate = DEFAULT_ANNUAL_RATES[type];
+  const annualRate = customRates?.[type] ?? DEFAULT_ANNUAL_RATES[type];
   if (annualRate === 0) return 0; // PF: caller uses pfMonthlyRate
   return (annualRate * rateMultiplier) / 12;
 }
@@ -30,7 +33,8 @@ export function projectInvestment(
   investment: Investment,
   monthlyRate: number,
   horizonMonths: number,
-  includeContributions: boolean
+  includeContributions: boolean,
+  customRates?: CustomAnnualRates
 ): InvestmentProjection {
   const currentValue = investment.currentValue;
 
@@ -56,7 +60,7 @@ export function projectInvestment(
   const annualRate =
     investment.type === "Plazo Fijo" && investment.tna != null
       ? investment.tna / 100
-      : DEFAULT_ANNUAL_RATES[investment.type];
+      : customRates?.[investment.type] ?? DEFAULT_ANNUAL_RATES[investment.type];
 
   return {
     investmentId: investment.id,

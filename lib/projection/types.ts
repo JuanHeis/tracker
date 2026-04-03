@@ -1,5 +1,8 @@
 import type { InvestmentType, CurrencyType } from "@/constants/investments";
 
+// Custom rates: user may override only some types
+export type CustomAnnualRates = Partial<Record<InvestmentType, number>>;
+
 // --- Interfaces ---
 
 export interface InvestmentProjection {

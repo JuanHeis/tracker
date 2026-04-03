@@ -5,6 +5,8 @@ import { MonthlyData } from "@/hooks/useMoneyTracker";
 import type { SalaryEntry } from "@/hooks/useSalaryHistory";
 import type { RecurringExpense } from "@/hooks/useRecurringExpenses";
 import { useProjectionEngine } from "@/hooks/useProjectionEngine";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import type { CustomAnnualRates } from "@/lib/projection/types";
 import { ExpensesByMonth } from "./charts/expenses-by-month";
 import { SalaryByMonth } from "./charts/salary-by-month";
 import { PatrimonyChart } from "./charts/patrimony-chart";
@@ -27,6 +29,8 @@ export default function ChartsContainer({
   recurringExpenses,
   globalUsdRate,
 }: ChartsContainerProps) {
+  const [customAnnualRates] = useLocalStorage<CustomAnnualRates>("customAnnualRates", {});
+  const [useRealRates, setUseRealRates] = useState(false);
   const [horizonMonths, setHorizonMonths] = useState(12);
   const [includeContributions, setIncludeContributions] = useState(false);
   const [visibleScenarios, setVisibleScenarios] = useState({
@@ -40,7 +44,7 @@ export default function ChartsContainer({
     salaryEntries,
     recurringExpenses,
     globalUsdRate,
-    { horizonMonths, includeContributions }
+    { horizonMonths, includeContributions, customAnnualRates, useRealRates }
   );
 
   const handleToggleScenario = (
@@ -76,6 +80,8 @@ export default function ChartsContainer({
         investments={monthlyData.investments.filter(
           (i) => i.status === "Activa" && !i.isLiquid
         )}
+        useRealRates={useRealRates}
+        onToggleRealRates={() => setUseRealRates((prev) => !prev)}
       />
       <ChartDisclaimer globalUsdRate={globalUsdRate} />
     </div>

@@ -36,6 +36,8 @@ interface InvestmentChartProps {
   includeContributions: boolean;
   onToggleContributions: () => void;
   investments: Investment[];
+  useRealRates: boolean;
+  onToggleRealRates: () => void;
 }
 
 function buildInvestmentChartData(
@@ -82,6 +84,8 @@ export function InvestmentChart({
   includeContributions,
   onToggleContributions,
   investments,
+  useRealRates,
+  onToggleRealRates,
 }: InvestmentChartProps) {
   const isHydrated = useHydration();
   const [visibleTypes, setVisibleTypes] = useState<Record<string, boolean>>({});

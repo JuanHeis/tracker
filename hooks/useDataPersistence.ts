@@ -8,6 +8,7 @@ export const STORAGE_KEYS = [
   "recurringExpenses",
   "budgetData",
   "lastUsedUsdRate",
+  "customAnnualRates",
 ] as const;
 
 const JSON_KEYS = [
@@ -16,6 +17,7 @@ const JSON_KEYS = [
   "incomeConfig",
   "recurringExpenses",
   "budgetData",
+  "customAnnualRates",
 ] as const;
 
 const NUMERIC_KEYS = ["globalUsdRate", "lastUsedUsdRate"] as const;
@@ -56,11 +58,24 @@ function validateEnvelope(data: unknown): ValidationResult {
   const dataObj = obj.data as Record<string, unknown>;
   const missingKeys = STORAGE_KEYS.filter((key) => !(key in dataObj));
 
-  if (missingKeys.length > 0) {
+  // Optional keys that can be missing from older exports — default them gracefully
+  const OPTIONAL_KEYS = ["customAnnualRates"] as const;
+  const criticalMissing = missingKeys.filter(
+    (k) => !(OPTIONAL_KEYS as readonly string[]).includes(k)
+  );
+
+  if (criticalMissing.length > 0) {
     return {
       valid: false,
-      error: `Faltan datos requeridos: ${missingKeys.join(", ")}`,
+      error: `Faltan datos requeridos: ${criticalMissing.join(", ")}`,
     };
+  }
+
+  // Fill in optional keys with defaults
+  for (const key of missingKeys) {
+    if (key === "customAnnualRates") {
+      dataObj[key] = {};
+    }
   }
 
   return { valid: true, envelope: data as ExportEnvelope };
