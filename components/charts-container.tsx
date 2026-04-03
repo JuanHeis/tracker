@@ -28,6 +28,7 @@ export default function ChartsContainer({
   globalUsdRate,
 }: ChartsContainerProps) {
   const [horizonMonths, setHorizonMonths] = useState(12);
+  const [includeContributions, setIncludeContributions] = useState(false);
   const [visibleScenarios, setVisibleScenarios] = useState({
     optimista: true,
     base: true,
@@ -39,7 +40,7 @@ export default function ChartsContainer({
     salaryEntries,
     recurringExpenses,
     globalUsdRate,
-    { horizonMonths }
+    { horizonMonths, includeContributions }
   );
 
   const handleToggleScenario = (
@@ -70,6 +71,11 @@ export default function ChartsContainer({
           .slice(projection.currentMonthIndex)
           .map((p) => p.month)}
         globalUsdRate={globalUsdRate}
+        includeContributions={includeContributions}
+        onToggleContributions={() => setIncludeContributions((prev) => !prev)}
+        investments={monthlyData.investments.filter(
+          (i) => i.status === "Activa" && !i.isLiquid
+        )}
       />
       <ChartDisclaimer globalUsdRate={globalUsdRate} />
     </div>
