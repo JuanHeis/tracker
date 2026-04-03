@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 Phase: 14 of 16 (Recharts Upgrade & Chart Infrastructure)
 Plan: 2 of 2 complete
 Status: Phase 14 complete — all plans executed
-Last activity: 2026-04-03 — Projection skeleton with ComposedChart pattern
+Last activity: 2026-04-03 — Completed quick task 9: Move config settings to taskbar dialog
 
 Progress: [██████████] 100% (2/2 plans in phase 14)
 
@@ -79,9 +79,10 @@ None.
 | 6 | Homogeneizar tabs Prestamos y Recurrentes | 2026-04-03 | e614f4f | quick/6-... |
 | 7 | Cuenta remunerada type + isLiquid flag | 2026-04-03 | c8d3782 | quick/7-... |
 | 8 | Add delete confirmation dialogs to all 9 delete buttons | 2026-04-03 | e858a19 | quick/8-... |
+| 9 | Move config settings from card to taskbar dialog | 2026-04-03 | 1736434 | quick/9-... |
 
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed quick-8 — Delete confirmation dialogs
+Stopped at: Completed quick-9 — Move config settings to taskbar dialog
 Resume file: None — next step: Phase 15 (Projection Engine)
