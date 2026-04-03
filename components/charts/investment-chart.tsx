@@ -15,6 +15,7 @@ import type { InvestmentProjection } from "@/lib/projection/types";
 import type { Investment } from "@/hooks/useMoneyTracker";
 import { CurrencyType } from "@/constants/investments";
 import { AlertTriangle } from "lucide-react";
+import { InvestmentBasisInfo } from "./investment-basis-info";
 
 const CHART_COLORS = [
   "hsl(var(--chart-1))",
@@ -230,6 +231,12 @@ export function InvestmentChart({
               />
             </AreaChart>
           </ChartContainer>
+        )}
+        {filteredProjections.length > 0 && (
+          <InvestmentBasisInfo
+            projections={filteredProjections}
+            investments={investments}
+          />
         )}
       </CardContent>
     </Card>
