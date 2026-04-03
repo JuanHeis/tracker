@@ -1,6 +1,7 @@
 import { MonthlyData } from "@/hooks/useMoneyTracker";
 import { ExpensesByMonth } from "./charts/expenses-by-month";
 import { SalaryByMonth } from "./charts/salary-by-month";
+import { ProjectionSkeleton } from "./charts/projection-skeleton";
 
 interface ChartsContainerProps {
   monthlyData: MonthlyData;
@@ -15,6 +16,7 @@ export default function ChartsContainer({
     <div className="space-y-8">
       <ExpensesByMonth monthlyData={monthlyData} selectedYear={selectedYear} />
       <SalaryByMonth monthlyData={monthlyData} selectedYear={selectedYear} />
+      <ProjectionSkeleton />
     </div>
   );
 }
