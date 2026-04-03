@@ -45,7 +45,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Cross-cutting constraint:** INFRA-03 — All phases treat localStorage as read-only. Zero mutations to MonthlyData, Investment, or any existing interface. Charts derive data; they never write it.
 
-- [ ] **Phase 14: Recharts Upgrade & Chart Infrastructure** - Upgrade Recharts to 3.x, verify existing charts, establish projection chart patterns
+- [x] **Phase 14: Recharts Upgrade & Chart Infrastructure** - Upgrade Recharts to 3.x, verify existing charts, establish projection chart patterns (completed 2026-04-03)
 - [ ] **Phase 15: Projection Engine** - Pure math functions for compound interest, linear projection, historical reconstruction, scenarios, and orchestrator hook
 - [ ] **Phase 16: Chart Components** - Patrimony and investment projection charts with scenarios, horizon selector, and disclaimers
 
@@ -322,6 +322,6 @@ Plans:
 | 11. Core Setup Wizard | v1.1 | 2/2 | Complete | 2026-04-02 |
 | 12. Investments Step & Re-run | v1.1 | 2/2 | Complete | 2026-04-03 |
 | 13. Manual de Uso | v1.1 | 1/1 | Complete | 2026-04-03 |
-| 14. Recharts Upgrade & Chart Infrastructure | 1/2 | In Progress|  | - |
+| 14. Recharts Upgrade & Chart Infrastructure | 2/2 | Complete   | 2026-04-03 | - |
 | 15. Projection Engine | v1.2 | 0/? | Not started | - |
 | 16. Chart Components | v1.2 | 0/? | Not started | - |

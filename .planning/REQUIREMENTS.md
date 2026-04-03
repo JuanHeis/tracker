@@ -134,7 +134,7 @@
 ### Infraestructura Charts
 
 - [x] **INFRA-01**: Recharts actualizado a v3.x con charts existentes verificados post-upgrade
-- [ ] **INFRA-02**: Todos los charts usan patron "use client" + useHydration + ChartContainer existente
+- [x] **INFRA-02**: Todos los charts usan patron "use client" + useHydration + ChartContainer existente
 - [x] **INFRA-03**: Cero cambios a interfaces existentes de localStorage (MonthlyData, Investment, etc.) — charts son read-only
 
 ## v2 Requirements
@@ -244,7 +244,7 @@
 | WIZ-10 | Phase 12 | Complete |
 | MAN-01 | Phase 13 | Complete |
 | INFRA-01 | Phase 14 | Complete |
-| INFRA-02 | Phase 14 | Pending |
+| INFRA-02 | Phase 14 | Complete |
 | INFRA-03 | Phase 14 | Complete |
 | PROJ-01 | Phase 15 | Pending |
 | PROJ-02 | Phase 15 | Pending |

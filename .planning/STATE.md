@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 Phase: 14 of 16 (Recharts Upgrade & Chart Infrastructure)
 Plan: 2 of 2 complete
 Status: Phase 14 complete — all plans executed
-Last activity: 2026-04-03 — Completed quick task 7: Cuenta remunerada + isLiquid
+Last activity: 2026-04-03 — Projection skeleton with ComposedChart pattern
 
 Progress: [██████████] 100% (2/2 plans in phase 14)
 
