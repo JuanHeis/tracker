@@ -16,7 +16,8 @@ function parseNumber(s: string): number {
 }
 
 function stripToNumeric(s: string): string {
-  // Allow digits, one comma or dot as decimal, and leading minus
+  // Allow digits, comma as decimal separator, and leading minus
+  // Dots are thousand separators (added by formatting) — strip them
   let result = "";
   let hasDecimal = false;
   for (let i = 0; i < s.length; i++) {
@@ -25,10 +26,11 @@ function stripToNumeric(s: string): string {
       result += ch;
     } else if (ch >= "0" && ch <= "9") {
       result += ch;
-    } else if ((ch === "," || ch === ".") && !hasDecimal) {
-      result += ","; // normalize to comma for display
+    } else if (ch === "," && !hasDecimal) {
+      result += ",";
       hasDecimal = true;
     }
+    // dots are ignored (thousand separators)
   }
   return result;
 }
@@ -78,9 +80,12 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
       }
     }, [value]);
 
+    const inputRef = React.useRef<HTMLInputElement | null>(null);
+
     const handleChange = useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
         const raw = e.target.value;
+        const el = e.target;
 
         if (raw === "" || raw === "-") {
           setDisplayValue(raw);
@@ -90,9 +95,38 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
         }
 
         const stripped = stripToNumeric(raw);
-        setDisplayValue(stripped);
-
         const parsed = parseNumber(stripped);
+
+        // Format the integer part live while preserving decimal input
+        let formatted: string;
+        const hasDecimal = stripped.includes(",");
+        if (hasDecimal) {
+          const parts = stripped.split(",");
+          const intPart = parseInt(parts[0].replace(/\./g, "") || "0", 10);
+          const decPart = parts[1] || "";
+          const intFormatted = isNaN(intPart) ? "0" : intPart.toLocaleString("es-AR");
+          formatted = `${intFormatted},${decPart}`;
+        } else {
+          const intVal = parseInt(stripped.replace(/\./g, ""), 10);
+          formatted = isNaN(intVal) ? stripped : intVal.toLocaleString("es-AR");
+        }
+
+        // Calculate cursor position: count how many dots before cursor changed
+        const cursorPos = el.selectionStart ?? raw.length;
+        const dotsBefore = (raw.slice(0, cursorPos).match(/\./g) || []).length;
+        const dotsAfter = (formatted.slice(0, cursorPos).match(/\./g) || []).length;
+        const newCursor = cursorPos + (dotsAfter - dotsBefore);
+
+        setDisplayValue(formatted);
+
+        // Restore cursor position after React re-render
+        requestAnimationFrame(() => {
+          if (inputRef.current) {
+            const pos = Math.max(0, Math.min(newCursor, formatted.length));
+            inputRef.current.setSelectionRange(pos, pos);
+          }
+        });
+
         if (!isNaN(parsed)) {
           setNumericValue(parsed);
           onValueChange?.(parsed);
@@ -103,20 +137,9 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
 
     const handleBlur = useCallback(
       (e: React.FocusEvent<HTMLInputElement>) => {
-        // Re-format on blur
-        const parsed = parseNumber(displayValue);
-        if (!isNaN(parsed) && displayValue !== "" && displayValue !== "-") {
-          // Preserve decimal part if user typed it
-          const hasDecimal = displayValue.includes(",");
-          if (hasDecimal) {
-            const parts = displayValue.replace(/\./g, "").split(",");
-            const intPart = parseInt(parts[0] || "0", 10);
-            const decPart = parts[1] || "";
-            const formatted = intPart.toLocaleString("es-AR");
-            setDisplayValue(decPart ? `${formatted},${decPart}` : formatted);
-          } else {
-            setDisplayValue(formatNumber(parsed));
-          }
+        // Clean up trailing comma or dangling decimal on blur
+        if (displayValue.endsWith(",")) {
+          setDisplayValue(displayValue.slice(0, -1));
         }
         onBlur?.(e);
       },
@@ -135,7 +158,11 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
     return (
       <>
         <Input
-          ref={ref}
+          ref={(node) => {
+            inputRef.current = node;
+            if (typeof ref === "function") ref(node);
+            else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = node;
+          }}
           type="text"
           inputMode="decimal"
           value={displayValue}
