@@ -113,6 +113,30 @@
 
 - [x] **MAN-01**: Existe un MANUAL.md con guia paso a paso de como usar cada feature de la app
 
+## v1.2 Requirements
+
+### Motor de Proyeccion
+
+- [ ] **PROJ-01**: User ve proyeccion de cada inversion activa con interes compuesto (PF usa TNA, otras usan rendimiento observado)
+- [ ] **PROJ-02**: User puede activar "aportes futuros" por inversion — proyecta aportes mensuales recurrentes (por default: monto del ultimo aporte)
+- [ ] **PROJ-03**: User ve proyeccion lineal de ingresos futuros basada en su ingreso fijo actual
+- [ ] **PROJ-04**: Proyeccion de patrimonio deduce gastos recurrentes del ahorro mensual neto
+- [ ] **PROJ-05**: User ve patrimonio historico reconstruido mes a mes desde monthlyData en linea solida
+
+### Charts UI
+
+- [ ] **CHART-01**: User ve grafico de patrimonio combinado: linea solida (historico) + linea punteada (proyeccion) + linea "Hoy"
+- [ ] **CHART-02**: User ve grafico de inversiones con proyeccion del portafolio (agregado, con desglose por tipo)
+- [ ] **CHART-03**: User ve 3 escenarios visuales (optimista/base/pesimista) con diferentes opacidades
+- [ ] **CHART-04**: User puede seleccionar horizonte de proyeccion (3, 6, 12, 24 meses) y togglear escenarios on/off
+- [ ] **CHART-05**: Todos los graficos combinan ARS+USD a cotizacion actual con disclaimer visible
+
+### Infraestructura Charts
+
+- [ ] **INFRA-01**: Recharts actualizado a v3.x con charts existentes verificados post-upgrade
+- [ ] **INFRA-02**: Todos los charts usan patron "use client" + useHydration + ChartContainer existente
+- [ ] **INFRA-03**: Cero cambios a interfaces existentes de localStorage (MonthlyData, Investment, etc.) — charts son read-only
+
 ## v2 Requirements
 
 ### Tarjetas de Credito
@@ -137,6 +161,10 @@
 
 | Feature | Reason |
 |---------|--------|
+| Monte Carlo / ML predictions | Overkill para tracker personal, compound interest es suficiente |
+| Proyeccion de tipo de cambio futuro | Imposible de predecir en Argentina, usar cotizacion actual |
+| Inflacion en proyecciones | Sin fuente confiable de IPC, valores nominales con disclaimer |
+| Editor custom de parametros de escenarios | Demasiado complejo, escenarios predefinidos suficientes |
 | Conexion automatica a bancos/brokers | Complejidad y seguridad, actualizacion manual suficiente |
 | Mobile app nativa | Web-first responsive, no justifica app nativa |
 | OAuth / login | App local sin usuarios, no necesita autenticacion |
@@ -218,10 +246,11 @@
 
 **Coverage:**
 - v1 requirements: 46 total — all complete
-- v1.1 requirements: 11 total — all mapped
-- Mapped to phases: 46 (v1) + 11 (v1.1) = 57 total
-- Unmapped: 0
+- v1.1 requirements: 11 total — all complete
+- v1.2 requirements: 13 total — pending (to be mapped by roadmap)
+- Mapped to phases: 57 (v1+v1.1) complete + 13 (v1.2) pending
+- Unmapped: 13 (v1.2 — awaiting roadmap)
 
 ---
 *Requirements defined: 2026-04-01*
-*Last updated: 2026-04-02 — v1.1 roadmap mapped*
+*Last updated: 2026-04-03 — v1.2 requirements added*
