@@ -2,21 +2,39 @@ import { useHydration } from "@/hooks/useHydration";
 import { CardContent } from "./ui/card";
 
 interface TotalAmountsProps {
-  arsBalance: number;
-  usdBalance: number;
+  arsBalancePeriod?: number;
+  arsBalanceAccumulated?: number;
+  usdBalancePeriod?: number;
+  usdBalanceAccumulated?: number;
+  arsBalance?: number;
+  usdBalance?: number;
   arsInvestments: number;
   usdInvestments: number;
   globalUsdRate: number;
+  balanceViewMode?: "periodo" | "acumulado";
 }
 
 export function TotalAmounts({
-  arsBalance,
-  usdBalance,
+  arsBalancePeriod,
+  arsBalanceAccumulated,
+  usdBalancePeriod,
+  usdBalanceAccumulated,
+  arsBalance: arsBalanceLegacy,
+  usdBalance: usdBalanceLegacy,
   arsInvestments,
   usdInvestments,
   globalUsdRate,
+  balanceViewMode = "periodo",
 }: TotalAmountsProps) {
   const isHydrated = useHydration();
+
+  // Support both new dual-mode and legacy single-value props
+  const arsBalance = balanceViewMode === "periodo"
+    ? (arsBalancePeriod ?? arsBalanceLegacy ?? 0)
+    : (arsBalanceAccumulated ?? arsBalanceLegacy ?? 0);
+  const usdBalance = balanceViewMode === "periodo"
+    ? (usdBalancePeriod ?? usdBalanceLegacy ?? 0)
+    : (usdBalanceAccumulated ?? usdBalanceLegacy ?? 0);
 
   const formatArs = (amount: number) => {
     if (!isHydrated) return "---";

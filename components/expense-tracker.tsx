@@ -210,6 +210,7 @@ export function ExpenseTracker() {
 
   const { exportData, importData } = useDataPersistence();
   const [customAnnualRates, setCustomAnnualRates] = useLocalStorage<CustomAnnualRates>("customAnnualRates", {});
+  const [balanceViewMode, setBalanceViewMode] = useState<"periodo" | "acumulado">("periodo");
 
   const handleImport = async (file: File) => {
     const result = await importData(file);
@@ -671,8 +672,10 @@ export function ExpenseTracker() {
               selectedMonth={selectedMonth}
             />
             <PatrimonioCard
-              arsBalance={dualBalancesForCards.arsBalance}
-              usdBalance={dualBalancesForCards.usdBalance}
+              arsBalancePeriod={dualBalancesForCards.arsBalancePeriod}
+              arsBalanceAccumulated={dualBalancesForCards.arsBalanceAccumulated}
+              usdBalancePeriod={dualBalancesForCards.usdBalancePeriod}
+              usdBalanceAccumulated={dualBalancesForCards.usdBalanceAccumulated}
               arsInvestments={dualBalancesForCards.arsInvestments}
               usdInvestments={dualBalancesForCards.usdInvestments}
               arsLoansGiven={dualBalancesForCards.arsLoansGiven}
@@ -680,6 +683,8 @@ export function ExpenseTracker() {
               arsDebts={dualBalancesForCards.arsDebts}
               usdDebts={dualBalancesForCards.usdDebts}
               globalUsdRate={globalUsdRate}
+              balanceViewMode={balanceViewMode}
+              onBalanceViewModeChange={setBalanceViewMode}
             />
             <ExchangeSummary
               usdPurchases={monthlyData.usdPurchases || []}

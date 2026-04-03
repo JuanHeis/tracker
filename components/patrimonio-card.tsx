@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -16,8 +16,10 @@ import {
 } from "@/components/ui/tooltip";
 
 interface PatrimonioCardProps {
-  arsBalance: number;
-  usdBalance: number;
+  arsBalancePeriod: number;
+  arsBalanceAccumulated: number;
+  usdBalancePeriod: number;
+  usdBalanceAccumulated: number;
   arsInvestments: number;
   usdInvestments: number;
   arsLoansGiven: number;
@@ -25,11 +27,15 @@ interface PatrimonioCardProps {
   arsDebts: number;
   usdDebts: number;
   globalUsdRate: number;
+  balanceViewMode: "periodo" | "acumulado";
+  onBalanceViewModeChange: (mode: "periodo" | "acumulado") => void;
 }
 
 export function PatrimonioCard({
-  arsBalance,
-  usdBalance,
+  arsBalancePeriod,
+  arsBalanceAccumulated,
+  usdBalancePeriod,
+  usdBalanceAccumulated,
   arsInvestments,
   usdInvestments,
   arsLoansGiven,
@@ -37,8 +43,13 @@ export function PatrimonioCard({
   arsDebts,
   usdDebts,
   globalUsdRate,
+  balanceViewMode,
+  onBalanceViewModeChange,
 }: PatrimonioCardProps) {
   const isHydrated = useHydration();
+
+  const arsBalance = balanceViewMode === "periodo" ? arsBalancePeriod : arsBalanceAccumulated;
+  const usdBalance = balanceViewMode === "periodo" ? usdBalancePeriod : usdBalanceAccumulated;
 
   const formatArs = (amount: number) => {
     if (!isHydrated) return "---";
@@ -62,13 +73,35 @@ export function PatrimonioCard({
         - usdDebts * globalUsdRate
       : 0;
 
+  const arsTooltip = balanceViewMode === "periodo"
+    ? "Saldo liquido en pesos del periodo actual"
+    : "Saldo liquido acumulado en pesos (mes completo)";
+  const usdTooltip = balanceViewMode === "periodo"
+    ? "Saldo en dolares del periodo actual"
+    : "Saldo acumulado en dolares (todos los meses)";
+
   return (
     <Card className="h-fit">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle>Patrimonio Total</CardTitle>
-        <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-          Historico
-        </Badge>
+        <div className="flex gap-1">
+          <Button
+            variant={balanceViewMode === "periodo" ? "default" : "outline"}
+            size="sm"
+            className="h-6 text-xs px-2"
+            onClick={() => onBalanceViewModeChange("periodo")}
+          >
+            Periodo
+          </Button>
+          <Button
+            variant={balanceViewMode === "acumulado" ? "default" : "outline"}
+            size="sm"
+            className="h-6 text-xs px-2"
+            onClick={() => onBalanceViewModeChange("acumulado")}
+          >
+            Acumulado
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <TooltipProvider>
@@ -80,7 +113,7 @@ export function PatrimonioCard({
                   <span className="font-medium cursor-help">{formatArs(arsBalance)}</span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Saldo liquido en pesos del periodo actual</p>
+                  <p>{arsTooltip}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -91,7 +124,7 @@ export function PatrimonioCard({
                   <span className="font-medium cursor-help">{formatUsd(usdBalance)}</span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Saldo acumulado en dolares (todos los meses)</p>
+                  <p>{usdTooltip}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -169,7 +202,7 @@ export function PatrimonioCard({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-sm">
-                  <p className="font-bold mb-1">Patrimonio Total</p>
+                  <p className="font-bold mb-1">Patrimonio Total ({balanceViewMode === "periodo" ? "Periodo" : "Acumulado"})</p>
                   <p>Liquido ARS: {formatArs(arsBalance)}</p>
                   <p>Liquido USD: US$ {usdBalance.toLocaleString()} x ${globalUsdRate.toLocaleString()} = {formatArs(usdBalance * globalUsdRate)}</p>
                   <p className="text-blue-400">Inv. ARS: {formatArs(arsInvestments)}</p>
