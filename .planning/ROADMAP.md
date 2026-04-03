@@ -273,7 +273,11 @@ Plans:
   1. User opens the app and all existing charts (salary-by-month, any others) render correctly after the Recharts 3.x upgrade with no visual regressions
   2. A projection chart skeleton component exists using the "use client" + useHydration + ChartContainer pattern, confirming the pattern works with Recharts 3.x
   3. JSON export/import still works correctly post-upgrade (regression check that no localStorage interfaces were touched)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [x] 14-01-PLAN.md — Recharts upgrade to 3.x with type compatibility fixes
+- [x] 14-02-PLAN.md — Projection chart skeleton with ComposedChart pattern
 
 ### Phase 15: Projection Engine
 **Goal**: All projection math and data orchestration is complete — investment compound interest, income linear projection, historical patrimony reconstruction, and scenario configuration are available via a single hook
@@ -285,7 +289,11 @@ Plans:
   3. User's future income is projected as a flat line based on current ingreso fijo, and projected patrimony deducts active recurring expenses from monthly net savings
   4. User sees historical patrimony reconstructed month-by-month from existing monthlyData as a solid data series, with a clear boundary at the current month
   5. Three scenario variants (optimista/base/pesimista) are computed with different growth rate assumptions, ready for chart consumption
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 15-01-PLAN.md — Projection types + pure math functions (compound interest, income, patrimony history, scenarios)
+- [ ] 15-02-PLAN.md — useProjectionEngine hook orchestrating all projections into chart-ready output
 
 ### Phase 16: Chart Components
 **Goal**: User sees interactive projection charts integrated into the app — patrimony evolution and investment growth with scenarios, horizon control, and honest disclaimers
