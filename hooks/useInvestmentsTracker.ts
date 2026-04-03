@@ -36,6 +36,7 @@ export function useInvestmentsTracker(
     tna?: number;
     plazoDias?: number;
     isLiquid?: boolean;
+    isInitial?: boolean;
   }) => {
     const now = investmentData.date;
     const newInvestment: Investment = {
@@ -49,6 +50,7 @@ export function useInvestmentsTracker(
         date: now,
         type: "aporte",
         amount: investmentData.initialAmount,
+        ...(investmentData.isInitial && { isInitial: true }),
       }],
       currentValue: investmentData.initialAmount,
       lastUpdated: now,

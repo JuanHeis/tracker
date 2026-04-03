@@ -28,6 +28,7 @@ interface InvestmentDialogProps {
     date: string;
     tna?: number;
     plazoDias?: number;
+    isInitial?: boolean;
   }) => void;
   onUpdate: (
     investmentId: string,
@@ -59,6 +60,7 @@ export function InvestmentDialog({
     editingInvestment?.currencyType ?? CurrencyType.ARS
   );
   const [isLiquid, setIsLiquid] = useState(editingInvestment?.isLiquid ?? false);
+  const [isInitial, setIsInitial] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Sync state when editingInvestment changes or dialog opens
@@ -71,6 +73,7 @@ export function InvestmentDialog({
       setSelectedType("");
       setSelectedCurrency(CurrencyType.ARS);
       setIsLiquid(false);
+      setIsInitial(false);
     }
     setErrors({});
   }, [editingInvestment, open]);
@@ -130,6 +133,7 @@ export function InvestmentDialog({
         initialAmount: amount,
         date: formData.get("date") as string,
         ...(isLiquid && { isLiquid: true }),
+        ...(isInitial && { isInitial: true }),
       };
       if (isPlazoFijo) {
         data.tna = Number(formData.get("tna"));
@@ -224,6 +228,22 @@ export function InvestmentDialog({
               Suma al liquido en vez de inversiones en el patrimonio
             </p>
           </div>
+          {!editingInvestment && (
+            <div className="space-y-1">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isInitial}
+                  onChange={(e) => setIsInitial(e.target.checked)}
+                  className="h-4 w-4 rounded border-border accent-primary"
+                />
+                <span className="text-sm">Inversion inicial (wizard)</span>
+              </label>
+              <p className="text-xs text-muted-foreground">
+                Marca el aporte inicial como patrimonio existente (no cuenta como gasto mensual)
+              </p>
+            </div>
+          )}
           {isPlazoFijo && (
             <>
               <div className="space-y-1">
