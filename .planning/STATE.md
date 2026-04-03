@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 Phase: 16 of 16 (Chart Components)
 Plan: 2 of 2 complete
 Status: Phase 16 complete — all chart components built
-Last activity: 2026-04-03 — Completed quick task 19: Move theme selector into settings panel
+Last activity: 2026-04-03 — Completed quick task 20: Symmetric ARS/USD balance views with Periodo/Acumulado toggle
 
 Progress: [██████████] 100% (2/2 plans in phase 16)
 
@@ -99,7 +99,7 @@ None.
 | 16 | Add Por pagar category for unpaid recurring expenses | 2026-04-03 | 9aa3ba1 | Verified | [16-add-por-pagar-category-for-unpaid-recurr](./quick/16-add-por-pagar-category-for-unpaid-recurr/) |
 | 18 | Highlight current month in month selector dropdown | 2026-04-03 | ebb96e4 | Done | [18-en-el-selector-de-mes-al-mes-actual-pone](./quick/18-en-el-selector-de-mes-al-mes-actual-pone/) |
 | 19 | Move theme selector into settings panel | 2026-04-03 | 7fdf6e6 | Done | [19-move-el-selector-de-tema-dentro-de-setti](./quick/19-move-el-selector-de-tema-dentro-de-setti/) |
-| 20 | Symmetric ARS/USD balance views with Periodo/Acumulado toggle | 2026-04-03 | 04c9251 | Done | [20-analyze-usd-expense-registration-approac](./quick/20-analyze-usd-expense-registration-approac/) |
+| 20 | Symmetric ARS/USD balance views with Periodo/Acumulado toggle | 2026-04-03 | 04c9251 | Verified | [20-analyze-usd-expense-registration-approac](./quick/20-analyze-usd-expense-registration-approac/) |
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
 | Phase 15 P02 | 3min | 1 task | 1 file |
 | Phase 16 P01 | 3min | 2 tasks | 5 files |
