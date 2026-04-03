@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Setup Wizard & Manual
 status: unknown
-last_updated: "2026-04-03T00:11:42.580Z"
+last_updated: "2026-04-03T00:29:53.487Z"
 progress:
   total_phases: 13
-  completed_phases: 12
-  total_plans: 36
-  completed_plans: 36
+  completed_phases: 13
+  total_plans: 37
+  completed_plans: 37
 ---
 
 # Project State
@@ -22,12 +22,12 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 ## Current Position
 
-Phase: 12 of 13 (Investments Step + Re-run)
-Plan: 2 of 2 completed in current phase
-Status: Phase 12 Complete
-Last activity: 2026-04-02 - Completed 12-02 (Re-ejecutar Wizard Button)
+Phase: 13 of 13 (Manual de Uso)
+Plan: 1 of 1 completed in current phase
+Status: Phase 13 Complete — v1.1 Milestone Complete
+Last activity: 2026-04-03 - Completed 13-01 (Manual de Uso)
 
-Progress: [██████████] 100% (v1.1 - 2/2 plans in phase 12)
+Progress: [██████████] 100% (v1.1 - 1/1 plans in phase 13)
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Recent decisions affecting current work:
 - [12-01]: Plazo Fijo startDate set to today on wizard commit
 - [12-02]: STORAGE_KEYS exported as named const for cross-component reuse
 - [12-02]: Reset uses window.confirm + localStorage clear + reload (consistent with import pattern)
+- [Phase 13]: MANUAL.md at project root with 453 lines covering 14 sections in Spanish
 
 ### Pending Todos
 
@@ -85,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-02
-Stopped at: Completed 12-02-PLAN.md (Re-ejecutar Wizard Button) — Phase 12 complete
-Resume file: None — ready for phase 13
+Last session: 2026-04-03
+Stopped at: Completed 13-01-PLAN.md (Manual de Uso) — Phase 13 complete, v1.1 milestone complete
+Resume file: None — all phases complete

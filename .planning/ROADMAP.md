@@ -35,7 +35,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 11: Core Setup Wizard** - First-time detection, multi-step wizard (ARS, USD, income, summary), atomic save, skip options, and import alternative (completed 2026-04-02)
 - [x] **Phase 12: Investments Step & Re-run** - Add investments quick-add step to wizard and re-run capability from config (reset + wizard) (completed 2026-04-03)
-- [ ] **Phase 13: Manual de Uso** - Comprehensive user guide documenting every feature of the app
+- [x] **Phase 13: Manual de Uso** - Comprehensive user guide documenting every feature of the app (completed 2026-04-03)
 
 ## Phase Details
 
@@ -268,4 +268,4 @@ Plans:
 | 10. Persistence & UX Polish | v1.0 | 3/3 | Complete | 2026-04-02 |
 | 11. Core Setup Wizard | 2/2 | Complete    | 2026-04-02 | - |
 | 12. Investments Step & Re-run | 2/2 | Complete    | 2026-04-03 | - |
-| 13. Manual de Uso | v1.1 | 0/TBD | Not started | - |
+| 13. Manual de Uso | 1/1 | Complete   | 2026-04-03 | - |

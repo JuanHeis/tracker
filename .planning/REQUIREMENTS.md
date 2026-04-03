@@ -111,7 +111,7 @@
 
 ### Manual de Uso
 
-- [ ] **MAN-01**: Existe un MANUAL.md con guia paso a paso de como usar cada feature de la app
+- [x] **MAN-01**: Existe un MANUAL.md con guia paso a paso de como usar cada feature de la app
 
 ## v2 Requirements
 
@@ -214,7 +214,7 @@
 | WIZ-08 | Phase 11 | Complete |
 | WIZ-09 | Phase 11 | Complete |
 | WIZ-10 | Phase 12 | Complete |
-| MAN-01 | Phase 13 | Pending |
+| MAN-01 | Phase 13 | Complete |
 
 **Coverage:**
 - v1 requirements: 46 total — all complete
