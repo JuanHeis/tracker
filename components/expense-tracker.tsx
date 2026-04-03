@@ -49,7 +49,7 @@ import {
 } from "@/components/ui/card";
 import { ResumenCard } from "@/components/resumen-card";
 import { PatrimonioCard } from "@/components/patrimonio-card";
-import { ConfigCard } from "@/components/config-card";
+import { SettingsPanel } from "@/components/settings-panel";
 import { ExpensesTable } from "@/components/expenses-table";
 import { CATEGORIES } from "@/constants/colors";
 import IncomeTable from "./income-table";
@@ -259,7 +259,6 @@ export function ExpenseTracker() {
 
   // Settings dialog state
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [confirmReset, setConfirmReset] = useState(false);
 
   // Last used USD rate from localStorage
   const [lastUsedUsdRate, setLastUsedUsdRate] = useState<string>("");
@@ -434,55 +433,35 @@ export function ExpenseTracker() {
           <div className="ml-auto flex items-center gap-2">
             <Dialog
               open={settingsOpen}
-              onOpenChange={(open) => {
-                setSettingsOpen(open);
-                if (!open) setConfirmReset(false);
-              }}
+              onOpenChange={setSettingsOpen}
             >
               <DialogTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Settings className="h-5 w-5" />
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-lg">
                 <DialogHeader>
                   <DialogTitle>Configuracion</DialogTitle>
                   <DialogDescription>
                     Opciones generales de la aplicacion
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                  {!confirmReset ? (
-                    <Button
-                      variant="destructive"
-                      onClick={() => setConfirmReset(true)}
-                    >
-                      Borrar todos los datos
-                    </Button>
-                  ) : (
-                    <div className="space-y-3 rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950">
-                      <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                        Estas seguro? Esto eliminara todos tus datos financieros.
-                      </p>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setConfirmReset(false)}
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={handleResetAllData}
-                        >
-                          Confirmar
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <SettingsPanel
+                  incomeConfig={incomeConfig}
+                  onUpdateIncomeConfig={setIncomeConfig}
+                  globalUsdRate={globalUsdRate}
+                  onSetGlobalUsdRate={setGlobalUsdRate}
+                  salaryHistory={salaryHistory.entries}
+                  onAddSalaryEntry={addSalaryEntry}
+                  onUpdateSalaryEntry={updateSalaryEntry}
+                  onDeleteSalaryEntry={deleteSalaryEntry}
+                  selectedMonth={selectedMonth}
+                  onAdjustBalance={() => { setSettingsOpen(false); setOpenAdjustmentDialog(true); }}
+                  onExport={() => { exportData(); }}
+                  onImport={(file) => { handleImport(file); }}
+                  onResetAllData={handleResetAllData}
+                />
               </DialogContent>
             </Dialog>
             <ThemeToggle />
@@ -687,21 +666,6 @@ export function ExpenseTracker() {
               usdDebts={dualBalancesForCards.usdDebts}
               globalUsdRate={globalUsdRate}
             />
-            <ConfigCard
-              incomeConfig={incomeConfig}
-              onUpdateIncomeConfig={setIncomeConfig}
-              globalUsdRate={globalUsdRate}
-              onSetGlobalUsdRate={setGlobalUsdRate}
-              salaryHistory={salaryHistory.entries}
-              onAddSalaryEntry={addSalaryEntry}
-              onUpdateSalaryEntry={updateSalaryEntry}
-              onDeleteSalaryEntry={deleteSalaryEntry}
-              selectedMonth={selectedMonth}
-              onAdjustBalance={() => setOpenAdjustmentDialog(true)}
-              onExport={exportData}
-              onImport={handleImport}
-            />
-
             <ExchangeSummary
               usdPurchases={monthlyData.usdPurchases || []}
               globalUsdRate={globalUsdRate}
