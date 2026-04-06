@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 Phase: 17 of 17 (Gamification Engine)
 Plan: 2 of 2 complete
 Status: Phase 17 complete — all plans executed
-Last activity: 2026-04-06 — Completed 17-02: Simulator Dialog UI
+Last activity: 2026-04-06 — Completed quick task 21: Investment-aware simulator projections
 
 Progress: [██████████] 100% (2/2 plans in phase 17)
 
