@@ -77,6 +77,8 @@ import { cn } from "@/lib/utils";
 import { useHydration } from "@/hooks/useHydration";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import type { CustomAnnualRates } from "@/lib/projection/types";
+import { reconstructHistoricalPatrimony } from "@/lib/projection/patrimony-history";
+import { calculateMonthlyNetFlow, averageMonthlyNetFlow } from "@/lib/projection/net-flow";
 import { SetupWizard } from "@/components/setup-wizard/setup-wizard";
 
 function validateField(
@@ -247,6 +249,13 @@ export function ExpenseTracker() {
       b.usdDebts * globalUsdRate
     );
   }, [dualBalancesForCards, globalUsdRate]);
+
+  // Historical average net flow for simulator (last 6 months)
+  const historicalNetFlow = useMemo(() => {
+    const points = reconstructHistoricalPatrimony(monthlyData, salaryHistory.entries, globalUsdRate);
+    const flows = calculateMonthlyNetFlow(points);
+    return averageMonthlyNetFlow(flows, 6);
+  }, [monthlyData, salaryHistory.entries, globalUsdRate]);
 
   // Otros ingresos: sum of ARS extra incomes for current period
   const otrosIngresosArs = filteredIncomes
@@ -979,8 +988,7 @@ export function ExpenseTracker() {
         open={simulatorOpen}
         onOpenChange={setSimulatorOpen}
         currentPatrimony={simCurrentPatrimony}
-        currentSalary={currentMonthSalary.amount}
-        recurringExpenses={recurringExpenses}
+        monthlyNetFlow={historicalNetFlow}
         globalUsdRate={globalUsdRate}
         investments={monthlyData.investments.filter(i => i.status === "Activa" && !i.isLiquid)}
         customAnnualRates={customAnnualRates}

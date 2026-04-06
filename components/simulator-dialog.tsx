@@ -24,12 +24,10 @@ import {
   computeSimulatorSummary,
   buildSimulatorData,
 } from "@/lib/projection/simulator";
-import { estimateMonthlyNetSavings } from "@/lib/projection/income-projection";
 import { projectPatrimonyScenarios } from "@/lib/projection/scenario-engine";
 import { SimulatorChart } from "@/components/charts/simulator-chart";
 import { CurrencyType } from "@/constants/investments";
 import { Trash2, AlertTriangle } from "lucide-react";
-import type { RecurringExpense } from "@/hooks/useRecurringExpenses";
 import type { Investment } from "@/hooks/useMoneyTracker";
 import type { CustomAnnualRates } from "@/lib/projection/types";
 import { computeInvestmentGrowth } from "@/hooks/useProjectionEngine";
@@ -38,8 +36,7 @@ interface SimulatorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   currentPatrimony: number;
-  currentSalary: number;
-  recurringExpenses: RecurringExpense[];
+  monthlyNetFlow: number;
   globalUsdRate: number;
   investments: Investment[];
   customAnnualRates?: CustomAnnualRates;
@@ -55,8 +52,7 @@ export function SimulatorDialog({
   open,
   onOpenChange,
   currentPatrimony,
-  currentSalary,
-  recurringExpenses,
+  monthlyNetFlow,
   globalUsdRate,
   investments,
   customAnnualRates,
@@ -83,14 +79,9 @@ export function SimulatorDialog({
 
   // Projection computation
   const { chartData, summary } = useMemo(() => {
-    const netSavings = estimateMonthlyNetSavings(
-      currentSalary,
-      recurringExpenses,
-      globalUsdRate
-    );
     const scenarios = projectPatrimonyScenarios(
       currentPatrimony,
-      netSavings,
+      monthlyNetFlow,
       horizonMonths
     );
     // Layer investment growth onto base scenario (rateMultiplier=1.0)
@@ -121,8 +112,7 @@ export function SimulatorDialog({
     return { chartData, summary };
   }, [
     currentPatrimony,
-    currentSalary,
-    recurringExpenses,
+    monthlyNetFlow,
     globalUsdRate,
     horizonMonths,
     expenses,
@@ -167,6 +157,9 @@ export function SimulatorDialog({
           <DialogDescription>
             Simula gastos futuros y visualiza el impacto en tu patrimonio
           </DialogDescription>
+          <p className={`text-sm font-medium ${monthlyNetFlow >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}>
+            Flujo neto mensual promedio: {formatArs.format(monthlyNetFlow)}
+          </p>
         </DialogHeader>
 
         {/* Horizon selector */}
