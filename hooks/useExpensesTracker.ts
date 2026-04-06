@@ -26,6 +26,7 @@ export function useExpensesTracker(
     const usdRate = Number(formData.get("usdRate"));
     const amount = Number(formData.get("amount"));
 
+    const isPending = formData.get("isPending") === "on";
     const baseExpense = {
       id: crypto.randomUUID(),
       date: formData.get("date") as string,
@@ -34,6 +35,7 @@ export function useExpensesTracker(
       usdRate,
       category: formData.get("category") as Category,
       currencyType,
+      ...(isPending ? { isPaid: false as const } : {}),
     };
 
     const installments = Number(formData.get("installments"));
@@ -86,7 +88,7 @@ export function useExpensesTracker(
   );
 
   const porPagar = filteredExpenses
-    .filter((e) => e.recurringId && !e.isPaid)
+    .filter((e) => e.isPaid === false)
     .reduce((sum, e) => sum + e.amount, 0);
 
   const handleDeleteExpense = (expenseId: string) => {
@@ -118,6 +120,7 @@ export function useExpensesTracker(
     const usdRate = Number(formData.get("usdRate"));
     const amount = Number(formData.get("amount"));
 
+    const isPending = formData.get("isPending") === "on";
     const updatedExpense = {
       ...editingExpense,
       date: formData.get("date") as string,
@@ -126,6 +129,7 @@ export function useExpensesTracker(
       usdRate,
       category: formData.get("category") as Category,
       currencyType,
+      ...(isPending ? { isPaid: false as const } : { isPaid: undefined }),
     };
 
     updateMonthlyData({
