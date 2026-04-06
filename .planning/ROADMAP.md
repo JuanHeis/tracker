@@ -337,3 +337,21 @@ Plans:
 | 14. Recharts Upgrade & Chart Infrastructure | 2/2 | Complete    | 2026-04-03 | - |
 | 15. Projection Engine | 2/2 | Complete    | 2026-04-03 | - |
 | 16. Chart Components | 2/2 | Complete    | 2026-04-03 | - |
+
+### Phase 17: Simulador de Gastos Futuros
+
+**Goal:** User can simulate hypothetical future expenses (one-time and installment-based) in a self-contained dialog and instantly see the impact on their projected patrimony via a before/after chart — without modifying any real data
+**Depends on:** Phase 16
+**Requirements**: SIM-01, SIM-02, SIM-03, SIM-04, SIM-05, SIM-06
+**Success Criteria** (what must be TRUE):
+  1. User can define one-time and installment expenses with nombre, monto total, cuotas, and currency (ARS/USD)
+  2. User can add multiple simulated expenses and manage them in an editable list with delete buttons
+  3. User sees a mini chart with "Sin gastos simulados" vs "Con gastos simulados" lines that update when expenses are added/removed
+  4. User sees summary numbers: total cost, monthly max impact, and balance at worst month
+  5. User can select projection horizon (3, 6, 12, 24 months)
+  6. Simulator is ephemeral (closing discards data), accessible from taskbar, and writes nothing to localStorage
+**Plans**: 2 plans
+
+Plans:
+- [ ] 17-01-PLAN.md — Simulation engine: pure TS functions for applying expenses to projections + summary computation (SIM-01, SIM-03, SIM-04)
+- [ ] 17-02-PLAN.md — SimulatorDialog UI with form, expense list, mini chart, summary stats, and taskbar wiring (SIM-01, SIM-02, SIM-03, SIM-04, SIM-05, SIM-06)

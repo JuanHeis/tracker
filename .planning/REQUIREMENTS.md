@@ -137,6 +137,15 @@
 - [x] **INFRA-02**: Todos los charts usan patron "use client" + useHydration + ChartContainer existente
 - [x] **INFRA-03**: Cero cambios a interfaces existentes de localStorage (MonthlyData, Investment, etc.) — charts son read-only
 
+### Simulador de Gastos Futuros
+
+- **SIM-01**: User puede definir gastos puntuales (1 cuota) y en cuotas (N cuotas) con nombre, monto total, cantidad de cuotas, y moneda (ARS/USD)
+- **SIM-02**: User puede agregar multiples gastos simulados y gestionarlos en una lista editable con botones de eliminar
+- **SIM-03**: User ve mini chart con dos lineas: "Sin gastos simulados" vs "Con gastos simulados" que se actualiza al agregar/eliminar gastos
+- **SIM-04**: User ve numeros resumen: costo total, maximo impacto mensual, y saldo en el peor mes
+- **SIM-05**: User puede seleccionar horizonte de proyeccion (3, 6, 12, 24 meses) dentro del simulador
+- **SIM-06**: Simulador es efimero (cerrar descarta datos), accesible desde taskbar, y no escribe nada a localStorage
+
 ## v2 Requirements
 
 ### Tarjetas de Credito
@@ -256,14 +265,21 @@
 | CHART-03 | Phase 16 | Complete |
 | CHART-04 | Phase 16 | Complete |
 | CHART-05 | Phase 16 | Complete |
+| SIM-01 | Phase 17 | Pending |
+| SIM-02 | Phase 17 | Pending |
+| SIM-03 | Phase 17 | Pending |
+| SIM-04 | Phase 17 | Pending |
+| SIM-05 | Phase 17 | Pending |
+| SIM-06 | Phase 17 | Pending |
 
 **Coverage:**
 - v1 requirements: 46 total — all complete
 - v1.1 requirements: 11 total — all complete
-- v1.2 requirements: 13 total — all mapped to phases 14-16
-- Mapped to phases: 57 (v1+v1.1) complete + 13 (v1.2) pending = 70 total
+- v1.2 requirements: 13 total — all complete
+- Phase 17 requirements: 6 total — mapped to phase 17
+- Mapped to phases: 70 (v1+v1.1+v1.2) complete + 6 (phase 17) pending = 76 total
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-01*
-*Last updated: 2026-04-03 — v1.2 requirements mapped to phases 14-16*
+*Last updated: 2026-04-05 — Phase 17 requirements added (SIM-01 through SIM-06)*
