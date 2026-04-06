@@ -982,6 +982,8 @@ export function ExpenseTracker() {
         currentSalary={currentMonthSalary.amount}
         recurringExpenses={recurringExpenses}
         globalUsdRate={globalUsdRate}
+        investments={monthlyData.investments.filter(i => i.status === "Activa" && !i.isLiquid)}
+        customAnnualRates={customAnnualRates}
       />
     </div>
   );

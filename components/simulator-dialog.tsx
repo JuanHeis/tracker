@@ -30,6 +30,9 @@ import { SimulatorChart } from "@/components/charts/simulator-chart";
 import { CurrencyType } from "@/constants/investments";
 import { Trash2, AlertTriangle } from "lucide-react";
 import type { RecurringExpense } from "@/hooks/useRecurringExpenses";
+import type { Investment } from "@/hooks/useMoneyTracker";
+import type { CustomAnnualRates } from "@/lib/projection/types";
+import { computeInvestmentGrowth } from "@/hooks/useProjectionEngine";
 
 interface SimulatorDialogProps {
   open: boolean;
@@ -38,6 +41,8 @@ interface SimulatorDialogProps {
   currentSalary: number;
   recurringExpenses: RecurringExpense[];
   globalUsdRate: number;
+  investments: Investment[];
+  customAnnualRates?: CustomAnnualRates;
 }
 
 const formatArs = new Intl.NumberFormat("es-AR", {
@@ -53,6 +58,8 @@ export function SimulatorDialog({
   currentSalary,
   recurringExpenses,
   globalUsdRate,
+  investments,
+  customAnnualRates,
 }: SimulatorDialogProps) {
   const [expenses, setExpenses] = useState<SimulatedExpense[]>([]);
   const [horizonMonths, setHorizonMonths] = useState(12);
@@ -86,7 +93,16 @@ export function SimulatorDialog({
       netSavings,
       horizonMonths
     );
-    const baseProjection = scenarios.base;
+    // Layer investment growth onto base scenario (rateMultiplier=1.0)
+    const { growth: investmentGrowth } = computeInvestmentGrowth(
+      investments,
+      1.0,
+      horizonMonths,
+      false, // includeContributions — conservative estimate
+      globalUsdRate,
+      customAnnualRates,
+    );
+    const baseProjection = scenarios.base.map((v, m) => v + investmentGrowth[m]);
     const simulatedProjection = applySimulatedExpenses(
       baseProjection,
       expenses,
@@ -110,6 +126,8 @@ export function SimulatorDialog({
     globalUsdRate,
     horizonMonths,
     expenses,
+    investments,
+    customAnnualRates,
   ]);
 
   const addExpense = useCallback(() => {

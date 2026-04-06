@@ -36,7 +36,7 @@ import type { Investment } from "@/hooks/useMoneyTracker";
  * Compute total investment growth per month for a given rate multiplier.
  * Returns an array where index m = total growth at month m (value at m - value at 0).
  */
-function computeInvestmentGrowth(
+export function computeInvestmentGrowth(
   investments: Investment[],
   rateMultiplier: number,
   horizonMonths: number,
