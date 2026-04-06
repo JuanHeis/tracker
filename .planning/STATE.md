@@ -23,11 +23,11 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 17 of 17 (Gamification Engine)
-Plan: 1 of 2 complete
-Status: Plan 17-01 complete — simulation engine with TDD
-Last activity: 2026-04-06 — Completed 17-01: Pure TS simulation engine
+Plan: 2 of 2 complete
+Status: Phase 17 complete — all plans executed
+Last activity: 2026-04-06 — Completed 17-02: Simulator Dialog UI
 
-Progress: [█████░░░░░] 50% (1/2 plans in phase 17)
+Progress: [██████████] 100% (2/2 plans in phase 17)
 
 ## Performance Metrics
 
@@ -71,6 +71,8 @@ Recent decisions affecting current work:
 - [17-01]: Installed vitest as project test runner; TDD pattern for pure TS engine functions
 - [17-01]: Cumulative subtraction model for simulated expenses (each installment impacts from its month through end)
 - [17-01]: maxMonthlyImpact computed by summing per-month installment payments, not by diffing projections
+- [17-02]: Derived currentPatrimony from dualBalancesForCards instead of importing useProjectionEngine
+- [17-02]: Ephemeral dialog pattern: all state resets on close via useEffect, no localStorage writes
 
 ### Pending Todos
 
@@ -115,5 +117,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-06
-Stopped at: Completed 17-01-PLAN.md — Pure TS simulation engine with TDD
+Stopped at: Completed 17-02-PLAN.md — Simulator Dialog UI with taskbar integration
 Resume file: None
