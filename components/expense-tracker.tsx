@@ -826,6 +826,15 @@ export function ExpenseTracker() {
                 defaultValue={editingExpense?.installments?.total}
               />
             </div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="isPending"
+                defaultChecked={editingExpense?.isPaid === false}
+                className="h-4 w-4 rounded border-border accent-primary"
+              />
+              <span className="text-sm">Por pagar</span>
+            </label>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

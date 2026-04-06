@@ -167,16 +167,16 @@ export function ExpensesTable({
                 </TableCell>
                 <TableCell className={className}>
                   <div className="flex items-center justify-center gap-1">
-                    {expense.recurringId && onTogglePaid && (
+                    {onTogglePaid && (
                       <button
                         onClick={() => onTogglePaid(expense.id)}
                         className="inline-flex items-center justify-center p-1 rounded hover:bg-muted"
-                        title={expense.isPaid ? "Marcar como pendiente" : "Marcar como pagado"}
+                        title={expense.isPaid === false ? "Marcar como pagado" : "Marcar como pendiente"}
                       >
-                        {expense.isPaid ? (
-                          <Check className="h-4 w-4 text-green-500" />
-                        ) : (
+                        {expense.isPaid === false ? (
                           <Circle className="h-4 w-4 text-amber-500" />
+                        ) : (
+                          <Check className="h-4 w-4 text-green-500" />
                         )}
                       </button>
                     )}
