@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 Phase: 17 of 17 (Gamification Engine)
 Plan: 2 of 2 complete
 Status: Phase 17 complete — all plans executed
-Last activity: 2026-04-06 — Completed quick task 23: Add pending payment status to regular expenses
+Last activity: 2026-04-06 — Completed quick task 24: Fix USD expenses porPagar show in USD
 
 Progress: [██████████] 100% (2/2 plans in phase 17)
 
@@ -112,6 +112,7 @@ None.
 | 21 | Investment-aware simulator projections | 2026-04-05 | ea3cac8 | Done | [21-tene-en-cuenta-patrimonio-y-tene-en-cuen](./quick/21-tene-en-cuenta-patrimonio-y-tene-en-cuen/) |
 | 22 | Calculate monthly net flow and integrate into simulator | 2026-04-06 | 58b97c8 | Verified | [22-calcular-flujo-neto-mensual-e-integrar-e](./quick/22-calcular-flujo-neto-mensual-e-integrar-e/) |
 | 23 | Add pending payment status to regular expenses | 2026-04-06 | e4ef488 | Done | [23-add-pending-payment-status-to-expenses-w](./quick/23-add-pending-payment-status-to-expenses-w/) |
+| 24 | Fix USD expenses porPagar show in USD | 2026-04-06 | 9fe76f3 | Done | [24-fix-usd-expenses-por-pagar-show-in-usd-a](./quick/24-fix-usd-expenses-por-pagar-show-in-usd-a/) |
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
 | Phase 15 P02 | 3min | 1 task | 1 file |
 | Phase 16 P01 | 3min | 2 tasks | 5 files |
@@ -120,5 +121,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-06
-Stopped at: Completed quick-23: Add pending payment status to regular expenses
+Stopped at: Completed quick-24: Fix USD expenses porPagar show in USD
 Resume file: None
