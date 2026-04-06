@@ -87,8 +87,12 @@ export function useExpensesTracker(
     0
   );
 
-  const porPagar = filteredExpenses
-    .filter((e) => e.isPaid === false)
+  const porPagarArs = filteredExpenses
+    .filter((e) => e.isPaid === false && e.currencyType !== CurrencyType.USD)
+    .reduce((sum, e) => sum + e.amount, 0);
+
+  const porPagarUsd = filteredExpenses
+    .filter((e) => e.isPaid === false && e.currencyType === CurrencyType.USD)
     .reduce((sum, e) => sum + e.amount, 0);
 
   const handleDeleteExpense = (expenseId: string) => {
@@ -166,7 +170,8 @@ export function useExpensesTracker(
     defaultDate,
     filteredExpenses,
     totalExpenses,
-    porPagar,
+    porPagarArs,
+    porPagarUsd,
     handleAddExpense,
     handleDeleteExpense,
     handleOpenModal,
