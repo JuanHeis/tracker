@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Plus,
   DollarSign,
@@ -13,6 +13,7 @@ import {
   Repeat,
   Target,
   Handshake,
+  Calculator,
 } from "lucide-react";
 import { format, lastDayOfMonth } from "date-fns";
 import {
@@ -71,6 +72,7 @@ import { LoansTable } from "./loans-table";
 import { LoanDialog } from "./loan-dialog";
 import { UsdPurchaseDialog } from "./usd-purchase-dialog";
 import { ExchangeSummary } from "./exchange-summary";
+import { SimulatorDialog } from "@/components/simulator-dialog";
 import { cn } from "@/lib/utils";
 import { useHydration } from "@/hooks/useHydration";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -231,6 +233,21 @@ export function ExpenseTracker() {
   const currentMonthSalary = getSalaryForMonth(selectedMonth, monthlyData.salaryOverrides || {});
   const dualBalancesForCards = calculateDualBalances();
 
+  // Simulator patrimony: liquid ARS + USD (converted) + investments
+  const simCurrentPatrimony = useMemo(() => {
+    const b = dualBalancesForCards;
+    return (
+      b.arsBalanceAccumulated +
+      b.usdBalanceAccumulated * globalUsdRate +
+      b.arsInvestments +
+      b.usdInvestments * globalUsdRate +
+      b.arsLoansGiven +
+      b.usdLoansGiven * globalUsdRate -
+      b.arsDebts -
+      b.usdDebts * globalUsdRate
+    );
+  }, [dualBalancesForCards, globalUsdRate]);
+
   // Otros ingresos: sum of ARS extra incomes for current period
   const otrosIngresosArs = filteredIncomes
     .filter((i: any) => i.currencyType !== CurrencyType.USD)
@@ -264,6 +281,9 @@ export function ExpenseTracker() {
 
   // Settings dialog state
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Simulator dialog state
+  const [simulatorOpen, setSimulatorOpen] = useState(false);
 
   // Last used USD rate from localStorage
   const [lastUsedUsdRate, setLastUsedUsdRate] = useState<string>("");
@@ -442,6 +462,9 @@ export function ExpenseTracker() {
             </Tabs>
           </div>
           <div className="ml-auto flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => setSimulatorOpen(true)}>
+              <Calculator className="h-5 w-5" />
+            </Button>
             <Dialog
               open={settingsOpen}
               onOpenChange={setSettingsOpen}
@@ -951,6 +974,14 @@ export function ExpenseTracker() {
         onCreateAdjustment={handleCreateAdjustment}
         arsBalance={dualBalancesForCards.arsBalance}
         usdBalance={dualBalancesForCards.usdBalance}
+      />
+      <SimulatorDialog
+        open={simulatorOpen}
+        onOpenChange={setSimulatorOpen}
+        currentPatrimony={simCurrentPatrimony}
+        currentSalary={currentMonthSalary.amount}
+        recurringExpenses={recurringExpenses}
+        globalUsdRate={globalUsdRate}
       />
     </div>
   );
