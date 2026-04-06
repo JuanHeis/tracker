@@ -109,6 +109,7 @@ None.
 | 18 | Highlight current month in month selector dropdown | 2026-04-03 | ebb96e4 | Done | [18-en-el-selector-de-mes-al-mes-actual-pone](./quick/18-en-el-selector-de-mes-al-mes-actual-pone/) |
 | 19 | Move theme selector into settings panel | 2026-04-03 | 7fdf6e6 | Done | [19-move-el-selector-de-tema-dentro-de-setti](./quick/19-move-el-selector-de-tema-dentro-de-setti/) |
 | 20 | Symmetric ARS/USD balance views with Periodo/Acumulado toggle | 2026-04-03 | 04c9251 | Verified | [20-analyze-usd-expense-registration-approac](./quick/20-analyze-usd-expense-registration-approac/) |
+| 21 | Investment-aware simulator projections | 2026-04-05 | ea3cac8 | Done | [21-tene-en-cuenta-patrimonio-y-tene-en-cuen](./quick/21-tene-en-cuenta-patrimonio-y-tene-en-cuen/) |
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
 | Phase 15 P02 | 3min | 1 task | 1 file |
 | Phase 16 P01 | 3min | 2 tasks | 5 files |
@@ -116,6 +117,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-06
-Stopped at: Completed 17-02-PLAN.md — Simulator Dialog UI with taskbar integration
+Last session: 2026-04-05
+Stopped at: Completed quick-21: Investment-aware simulator projections
 Resume file: None
