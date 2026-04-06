@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 Phase: 17 of 17 (Gamification Engine)
 Plan: 2 of 2 complete
 Status: Phase 17 complete — all plans executed
-Last activity: 2026-04-06 — Completed quick task 21: Investment-aware simulator projections
+Last activity: 2026-04-06 — Completed quick task 22: Calculate monthly net flow and integrate into simulator
 
 Progress: [██████████] 100% (2/2 plans in phase 17)
 
@@ -110,6 +110,7 @@ None.
 | 19 | Move theme selector into settings panel | 2026-04-03 | 7fdf6e6 | Done | [19-move-el-selector-de-tema-dentro-de-setti](./quick/19-move-el-selector-de-tema-dentro-de-setti/) |
 | 20 | Symmetric ARS/USD balance views with Periodo/Acumulado toggle | 2026-04-03 | 04c9251 | Verified | [20-analyze-usd-expense-registration-approac](./quick/20-analyze-usd-expense-registration-approac/) |
 | 21 | Investment-aware simulator projections | 2026-04-05 | ea3cac8 | Done | [21-tene-en-cuenta-patrimonio-y-tene-en-cuen](./quick/21-tene-en-cuenta-patrimonio-y-tene-en-cuen/) |
+| 22 | Calculate monthly net flow and integrate into simulator | 2026-04-06 | 58b97c8 | Done | [22-calcular-flujo-neto-mensual-e-integrar-e](./quick/22-calcular-flujo-neto-mensual-e-integrar-e/) |
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
 | Phase 15 P02 | 3min | 1 task | 1 file |
 | Phase 16 P01 | 3min | 2 tasks | 5 files |
@@ -117,6 +118,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-05
-Stopped at: Completed quick-21: Investment-aware simulator projections
+Last session: 2026-04-06
+Stopped at: Completed quick-22: Calculate monthly net flow and integrate into simulator
 Resume file: None
