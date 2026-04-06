@@ -265,10 +265,10 @@
 | CHART-03 | Phase 16 | Complete |
 | CHART-04 | Phase 16 | Complete |
 | CHART-05 | Phase 16 | Complete |
-| SIM-01 | Phase 17 | Pending |
+| SIM-01 | Phase 17 | Complete |
 | SIM-02 | Phase 17 | Pending |
-| SIM-03 | Phase 17 | Pending |
-| SIM-04 | Phase 17 | Pending |
+| SIM-03 | Phase 17 | Complete |
+| SIM-04 | Phase 17 | Complete |
 | SIM-05 | Phase 17 | Pending |
 | SIM-06 | Phase 17 | Pending |
 

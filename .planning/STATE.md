@@ -22,12 +22,12 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 
 ## Current Position
 
-Phase: 16 of 16 (Chart Components)
-Plan: 2 of 2 complete
-Status: Phase 16 complete — all chart components built
-Last activity: 2026-04-03 — Completed quick task 20: Symmetric ARS/USD balance views with Periodo/Acumulado toggle
+Phase: 17 of 17 (Gamification Engine)
+Plan: 1 of 2 complete
+Status: Plan 17-01 complete — simulation engine with TDD
+Last activity: 2026-04-06 — Completed 17-01: Pure TS simulation engine
 
-Progress: [██████████] 100% (2/2 plans in phase 16)
+Progress: [█████░░░░░] 50% (1/2 plans in phase 17)
 
 ## Performance Metrics
 
@@ -68,10 +68,17 @@ Recent decisions affecting current work:
 - [16-01]: Conditional Line rendering via visibleScenarios prop rather than data filtering
 - [16-02]: Slugified chart config keys for CSS variable compatibility with space-containing investment type names
 - [Phase quick-14]: CurrencyInput with es-AR locale formatting for all money inputs across 21 files
+- [17-01]: Installed vitest as project test runner; TDD pattern for pure TS engine functions
+- [17-01]: Cumulative subtraction model for simulated expenses (each installment impacts from its month through end)
+- [17-01]: maxMonthlyImpact computed by summing per-month installment payments, not by diffing projections
 
 ### Pending Todos
 
 None.
+
+### Roadmap Evolution
+
+- Phase 17 added: quiero poder simular gastos futuros de manera sencilla. Gastos puntuales y de cuotas.
 
 ### Blockers/Concerns
 
@@ -107,6 +114,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-03
-Stopped at: Completed quick-20 -- Symmetric ARS/USD balance views with Periodo/Acumulado toggle
+Last session: 2026-04-06
+Stopped at: Completed 17-01-PLAN.md — Pure TS simulation engine with TDD
 Resume file: None
