@@ -12,11 +12,12 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pause, Play, XCircle } from "lucide-react";
+import { Pause, Pencil, Play, XCircle } from "lucide-react";
 
 interface RecurringTableProps {
   recurrings: RecurringExpense[];
   onUpdateStatus: (id: string, status: RecurringStatus) => void;
+  onEdit: (recurring: RecurringExpense) => void;
 }
 
 function formatAmount(amount: number, currencyType: CurrencyType): string {
@@ -50,6 +51,7 @@ function statusBadge(status: RecurringStatus) {
 export function RecurringTable({
   recurrings,
   onUpdateStatus,
+  onEdit,
 }: RecurringTableProps) {
   return (
     <Table>
@@ -87,6 +89,15 @@ export function RecurringTable({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
+                      title="Editar"
+                      onClick={() => onEdit(rec)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
                       title="Pausar"
                       onClick={() => onUpdateStatus(rec.id, "Pausada")}
                     >
@@ -105,6 +116,15 @@ export function RecurringTable({
                 )}
                 {rec.status === "Pausada" && (
                   <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Editar"
+                      onClick={() => onEdit(rec)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"

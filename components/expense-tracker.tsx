@@ -67,6 +67,7 @@ import { AdjustmentDialog } from "@/components/adjustment-dialog";
 import { MovementsTable } from "@/components/movements-table";
 import { RecurringDialog } from "@/components/recurring-dialog";
 import { RecurringTable } from "@/components/recurring-table";
+import type { RecurringExpense } from "@/hooks/useRecurringExpenses";
 import { BudgetTab } from "@/components/budget-tab";
 import { LoansTable } from "./loans-table";
 import { LoanDialog } from "./loan-dialog";
@@ -194,6 +195,7 @@ export function ExpenseTracker() {
     // Recurring expenses
     recurringExpenses,
     addRecurring,
+    updateRecurring,
     updateRecurringStatus,
     toggleExpensePaid,
     // Budget operations
@@ -281,6 +283,7 @@ export function ExpenseTracker() {
 
   // Recurring dialog state
   const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
+  const [editingRecurring, setEditingRecurring] = useState<RecurringExpense | null>(null);
 
   // Loan dialog state
   const [openLoanDialog, setOpenLoanDialog] = useState(false);
@@ -633,13 +636,16 @@ export function ExpenseTracker() {
                   <RecurringTable
                     recurrings={recurringExpenses}
                     onUpdateStatus={updateRecurringStatus}
+                    onEdit={setEditingRecurring}
                   />
                 </CardContent>
               </Card>
               <RecurringDialog
-                open={recurringDialogOpen}
-                onOpenChange={setRecurringDialogOpen}
+                open={recurringDialogOpen || !!editingRecurring}
+                onOpenChange={(open) => { setRecurringDialogOpen(open); if (!open) setEditingRecurring(null); }}
                 onAdd={addRecurring}
+                editingRecurring={editingRecurring}
+                onEdit={(id, data) => { updateRecurring(id, data); setEditingRecurring(null); }}
               />
             </TabsContent>
             <TabsContent value="budgets" className="mt-0">
