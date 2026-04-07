@@ -113,7 +113,7 @@ None.
 | 22 | Calculate monthly net flow and integrate into simulator | 2026-04-06 | 58b97c8 | Verified | [22-calcular-flujo-neto-mensual-e-integrar-e](./quick/22-calcular-flujo-neto-mensual-e-integrar-e/) |
 | 23 | Add pending payment status to regular expenses | 2026-04-06 | e4ef488 | Done | [23-add-pending-payment-status-to-expenses-w](./quick/23-add-pending-payment-status-to-expenses-w/) |
 | 24 | Fix USD expenses porPagar show in USD | 2026-04-06 | 9fe76f3 | Done | [24-fix-usd-expenses-por-pagar-show-in-usd-a](./quick/24-fix-usd-expenses-por-pagar-show-in-usd-a/) |
-| 25 | Edit recurring expense values | 2026-04-07 | d6c8b1f | Done | [25-editar-valor-de-gastos-recurrentes](./quick/25-editar-valor-de-gastos-recurrentes/) |
+| 25 | Edit recurring expense values | 2026-04-07 | d6c8b1f | Verified | [25-editar-valor-de-gastos-recurrentes](./quick/25-editar-valor-de-gastos-recurrentes/) |
 | Phase 15 P01 | 3min | 3 tasks | 5 files |
 | Phase 15 P02 | 3min | 1 task | 1 file |
 | Phase 16 P01 | 3min | 2 tasks | 5 files |
