@@ -818,6 +818,7 @@ export function useMoneyTracker() {
     recurringExpenses: recurringTracker.recurringExpenses,
     addRecurring: recurringTracker.addRecurring,
     updateRecurringStatus: recurringTracker.updateStatus,
+    updateRecurring: recurringTracker.updateRecurring,
     toggleExpensePaid,
 
     // Budget functions

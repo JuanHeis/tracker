@@ -139,9 +139,22 @@ export function useRecurringExpenses() {
     return newExpenses;
   };
 
+  const updateRecurring = (
+    id: string,
+    data: { name: string; amount: number; category: Category; currencyType: CurrencyType }
+  ) => {
+    setRecurringExpenses(
+      recurringExpenses.map((rec) => {
+        if (rec.id !== id) return rec;
+        return { ...rec, name: data.name, amount: data.amount, category: data.category, currencyType: data.currencyType };
+      })
+    );
+  };
+
   return {
     recurringExpenses,
     addRecurring,
+    updateRecurring,
     updateStatus,
     generateMissingInstances,
   };

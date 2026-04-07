@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,11 +22,19 @@ import { cn } from "@/lib/utils";
 import { CATEGORIES } from "@/constants/colors";
 import { CurrencyType } from "@/constants/investments";
 import type { Category } from "@/hooks/useMoneyTracker";
+import type { RecurringExpense } from "@/hooks/useRecurringExpenses";
 
 interface RecurringDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAdd: (data: {
+    name: string;
+    amount: number;
+    category: Category;
+    currencyType: CurrencyType;
+  }) => void;
+  editingRecurring?: RecurringExpense | null;
+  onEdit?: (id: string, data: {
     name: string;
     amount: number;
     category: Category;
@@ -38,12 +46,33 @@ export function RecurringDialog({
   open,
   onOpenChange,
   onAdd,
+  editingRecurring,
+  onEdit,
 }: RecurringDialogProps) {
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyType>(
     CurrencyType.ARS
   );
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const isEditing = !!editingRecurring;
+
+  // Sync state when editingRecurring changes
+  useEffect(() => {
+    if (editingRecurring) {
+      setSelectedCurrency(editingRecurring.currencyType);
+      setSelectedCategory(editingRecurring.category);
+    }
+  }, [editingRecurring]);
+
+  // Reset when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setSelectedCurrency(CurrencyType.ARS);
+      setSelectedCategory("");
+      setErrors({});
+    }
+  }, [open]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,17 +95,19 @@ export function RecurringDialog({
       return;
     }
 
-    onAdd({
+    const data = {
       name: name.trim(),
       amount,
       category: selectedCategory as Category,
       currencyType: selectedCurrency,
-    });
+    };
 
-    // Reset and close
-    setSelectedCurrency(CurrencyType.ARS);
-    setSelectedCategory("");
-    setErrors({});
+    if (isEditing && onEdit) {
+      onEdit(editingRecurring.id, data);
+    } else {
+      onAdd(data);
+    }
+
     onOpenChange(false);
   };
 
@@ -84,7 +115,7 @@ export function RecurringDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nuevo gasto recurrente</DialogTitle>
+          <DialogTitle>{isEditing ? "Editar gasto recurrente" : "Nuevo gasto recurrente"}</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={handleSubmit}
@@ -96,6 +127,7 @@ export function RecurringDialog({
               type="text"
               name="name"
               placeholder="Nombre (ej: Netflix, Alquiler)"
+              defaultValue={isEditing ? editingRecurring.name : undefined}
               className={cn(errors.name && "border-red-500")}
               onChange={() => setErrors((prev) => { const next = { ...prev }; delete next.name; return next; })}
               required
@@ -108,6 +140,7 @@ export function RecurringDialog({
             <CurrencyInput
               name="amount"
               placeholder="Monto mensual"
+              defaultValue={isEditing ? editingRecurring.amount : undefined}
               className={cn(errors.amount && "border-red-500")}
               onValueChange={() => setErrors((prev) => { const next = { ...prev }; delete next.amount; return next; })}
               required
@@ -163,7 +196,7 @@ export function RecurringDialog({
           </div>
           <DialogFooter>
             <Button type="submit" disabled={!selectedCategory}>
-              Agregar
+              {isEditing ? "Guardar" : "Agregar"}
             </Button>
           </DialogFooter>
         </form>
