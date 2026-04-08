@@ -18,16 +18,16 @@ Reflejar la realidad financiera exacta del usuario en todo momento — nunca per
 - ✓ Bug fixes (7), Inversiones (10), Moneda dual (8), Ingresos (8), Card mensual (5) — v1.0
 - ✓ Recurrentes (4), Préstamos (4), Presupuestos (3), Transferencias (2), Ajustes/Persistencia (3), UX (2) — v1.0
 - ✓ Setup Wizard (10), Manual (1) — v1.1
+- ✓ Recharts Upgrade (3), Projection Engine (5), Chart Components (5), Simulador (6) — v1.2
 
 ### Active
 
-**Gráficos Predictivos (v1.2):**
-- [ ] Gráfico de inversiones con proyección interés compuesto
-- [ ] Gráfico de patrimonio con proyección lineal + compuesta
-- [ ] Escenarios múltiples (optimista/base/pesimista)
-- [ ] Histórico real + proyección futura combinados
-- [ ] Horizonte configurable (3, 6, 12, 24 meses)
-- [ ] Integración Recharts
+**Flujo Mensual Panel Unificado (v1.3):**
+- [ ] Waterfall chart del flujo mensual (ingresos → fijos → variables → inversiones → libre)
+- [ ] Selector tasa de ahorro con 3 modos (auto/porcentaje/fijo)
+- [ ] Mini-proyección inline patrimonio a 12 meses
+- [ ] Refactor: reemplazar estimateMonthlyNetSavings() con computeSavingsEstimate()
+- [ ] Persistencia SavingsRateConfig en localStorage (key propia)
 
 **Bugs críticos (cálculos rotos) — RESUELTOS v1.0:**
 - [ ] Fix inversiones que siempre se guardan como ARS (ignorando moneda original)
@@ -135,16 +135,15 @@ Reflejar la realidad financiera exacta del usuario en todo momento — nunca per
 - Cálculo automático de impuestos (monotributo, ganancias) — demasiado complejo y varía por situación
 - Sincronización multi-dispositivo — sin backend, solo export/import
 
-## Current Milestone: v1.2 — Gráficos Predictivos
+## Current Milestone: v1.3 — Flujo Mensual Panel Unificado
 
-**Goal:** Visualizar la evolución financiera pasada y proyectar el futuro con gráficos interactivos usando datos reales del usuario.
+**Goal:** Panel de flujo mensual que muestre waterfall del mes, selector de tasa de ahorro con 3 modos, mini-proyección inline, y reemplace estimateMonthlyNetSavings() por tasa de ahorro real/configurada.
 
 **Target features:**
-- Gráfico de inversiones: histórico real (línea sólida) + proyección interés compuesto (línea punteada)
-- Gráfico de patrimonio: evolución real + proyección futura (sueldo neto - gastos recurrentes + crecimiento inversiones)
-- Escenarios múltiples: optimista / base / pesimista con diferentes líneas
-- Horizonte configurable: 3, 6, 12, 24 meses
-- Librería Recharts para visualización
+- Waterfall chart: Ingresos → Gastos fijos (recurrentes) → Gastos variables (manuales) → Inversiones → Libre
+- Selector tasa de ahorro: 3 modos (auto/porcentaje/fijo) que alimenta proyecciones patrimoniales
+- Mini-proyección inline: Patrimonio estimado a 12 meses con escenarios, debajo del waterfall
+- Refactor proyecciones: Reemplazar estimateMonthlyNetSavings() con computeSavingsEstimate()
 
 ## Context
 
@@ -182,4 +181,4 @@ Reflejar la realidad financiera exacta del usuario en todo momento — nunca per
 | localStorage + export/import | Sin backend, pero con backup manual en JSON | — Pending |
 
 ---
-*Last updated: 2026-04-02 — milestone v1.2 started*
+*Last updated: 2026-04-07 — milestone v1.3 started*
