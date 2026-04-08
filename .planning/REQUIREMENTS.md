@@ -166,6 +166,39 @@
 - **CTA-02**: Cada transaccion asociada a una cuenta
 - **CTA-03**: Ver saldo por cuenta individual + total consolidado
 
+## v1.3 Requirements
+
+### Waterfall
+
+- [ ] **FLOW-01**: User ve un waterfall chart del mes mostrando: ingresos totales → gastos fijos (recurrentes) → gastos variables (manuales) → inversiones → libre
+- [ ] **FLOW-02**: Gastos fijos se clasifican automáticamente por `recurringId` presente en el expense
+- [ ] **FLOW-03**: Cada segmento del waterfall muestra desglose por subcategoría
+- [ ] **FLOW-04**: El waterfall se actualiza cuando el usuario carga un nuevo gasto
+- [ ] **FLOW-05**: Montos en USD se convierten a ARS usando `expense.usdRate` de cada transacción
+
+### Tasa de Ahorro
+
+- [ ] **SAVE-01**: User puede elegir modo de tasa de ahorro: auto (promedio histórico), porcentaje del sueldo, o monto fijo
+- [ ] **SAVE-02**: En modo auto, se muestra el valor calculado con `averageMonthlyNetFlow`
+- [ ] **SAVE-03**: En modo porcentaje, slider/input 0-100 que muestra el monto resultante
+- [ ] **SAVE-04**: La configuración persiste entre sesiones en localStorage (key propia `"savingsRateConfig"`)
+
+### Mini-Proyección
+
+- [ ] **MPROJ-01**: Debajo del waterfall, user ve patrimonio estimado a 12 meses con 3 escenarios (pesimista/base/optimista)
+- [ ] **MPROJ-02**: La mini-proyección se actualiza en tiempo real al cambiar la tasa de ahorro
+
+### Simulación Inline
+
+- [ ] **ISIM-01**: User puede ingresar un gasto hipotético mensual dentro del panel y ver cómo cambia el waterfall y la mini-proyección en tiempo real
+- [ ] **ISIM-02**: La simulación es efímera (no persiste, no modifica datos reales)
+
+### Refactor Proyecciones
+
+- [ ] **REF-01**: `computeSavingsEstimate()` reemplaza `estimateMonthlyNetSavings()` en el projection engine
+- [ ] **REF-02**: Charts tab usa la tasa de ahorro configurada en vez del cálculo viejo
+- [ ] **REF-03**: SimulatorDialog también usa la tasa de ahorro configurada
+
 ## Out of Scope
 
 | Feature | Reason |
@@ -275,11 +308,11 @@
 **Coverage:**
 - v1 requirements: 46 total — all complete
 - v1.1 requirements: 11 total — all complete
-- v1.2 requirements: 13 total — all complete
-- Phase 17 requirements: 6 total — mapped to phase 17
-- Mapped to phases: 70 (v1+v1.1+v1.2) complete + 6 (phase 17) pending = 76 total
+- v1.2 requirements: 19 total — all complete
+- v1.3 requirements: 15 total — pending
+- Mapped to phases: 76 complete + 15 pending = 91 total
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-01*
-*Last updated: 2026-04-05 — Phase 17 requirements added (SIM-01 through SIM-06)*
+*Last updated: 2026-04-07 — v1.3 requirements added (FLOW, SAVE, MPROJ, ISIM, REF)*
