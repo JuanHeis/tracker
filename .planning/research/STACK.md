@@ -1,271 +1,295 @@
-# Technology Stack: Predictive Financial Charts
+# Technology Stack: Monthly Flow Panel (v1.3)
 
-**Project:** Expense Tracker v1.2 --- Graficos Predictivos
-**Researched:** 2026-04-03
-**Mode:** Ecosystem (focused on new capabilities only)
+**Project:** Expense Tracker — Flujo Mensual Panel Unificado
+**Researched:** 2026-04-07
+**Confidence:** HIGH — all findings verified against existing codebase, official Recharts examples, and Radix UI docs
 
-## Recommendation: Upgrade Recharts to 3.x, No Math Libraries Needed
+---
 
-The project already has Recharts 2.13.3 installed. Recharts 3.x (current: 3.8.1) is a worthwhile upgrade -- it rewrote state management, dropped external dependencies (react-smooth, recharts-scale), and the migration from 2.x is minimal. For compound interest and linear regression, plain TypeScript math is sufficient -- no library needed.
+## Context: What Already Exists (Do Not Re-Research)
 
-**Verdict:** Upgrade Recharts 2.13.3 to 3.x. Keep date-fns (already installed). Write projection math as utility functions. Zero new dependencies beyond the Recharts upgrade.
+| Technology | Version | Status |
+|------------|---------|--------|
+| Next.js | 14.2.16 | Installed, working |
+| React | 18.x | Installed, working |
+| TypeScript | 5.x | Installed, working |
+| Recharts | **3.8.1** | Installed, working — note: `.planning/codebase/STACK.md` says 2.13.3 but `package.json` confirms 3.8.1 |
+| shadcn/ui (ChartContainer, Chart, Input, Button, Dialog, Select, Tabs, Card) | current | Installed, working |
+| Radix UI (@radix-ui/react-dialog, select, tabs, tooltip, alert-dialog, icons, slot) | current | Installed |
+| Tailwind CSS | 3.4.1 | Installed, working |
+| date-fns | 4.1.0 | Installed, working |
+| `useLocalStorage<T>(key, initialValue, migrateFn?)` | custom hook | Working — all config persistence uses this |
 
-## Recommended Stack
+---
 
-### Upgrade
+## New Stack Requirements for v1.3
 
-| Technology | From | To | Purpose | Why |
-|---|---|---|---|---|
-| `recharts` | 2.13.3 | ^3.8.1 | Chart rendering | 3.x removed react-smooth and recharts-scale dependencies (smaller bundle), rewrote state management with 3500+ tests, better performance. Migration is minimal -- the team states "most applications should not require any changes." |
+Three new UI capabilities are needed. All other logic is pure TypeScript in `lib/projection/`.
 
-### Already Installed (Use As-Is)
+### Summary
 
-| Technology | Version | Purpose | Why Relevant |
-|---|---|---|---|
-| `date-fns` | ^4.1.0 | Date axis formatting, month labels | Already used in existing charts for `format(date, "MMM", { locale: es })`. Reuse for projection date axis labels. |
-| `date-fns/locale/es` | (included) | Spanish month names on axes | Already imported in salary-by-month chart. |
-| shadcn/ui `ChartContainer` | (custom) | Responsive wrapper around Recharts | Already in `components/ui/chart.tsx`. Wraps `ResponsiveContainer` with config context, theming, and tooltip helpers. |
-| `tailwindcss` | ^3.4.1 | Chart card layouts, legend styling | Already used for all UI. Chart containers and legends should use Tailwind, not inline styles. |
+| Capability | New Package Needed? | Action |
+|------------|---------------------|--------|
+| Waterfall chart (ingresos → fijos → variables → inversiones → libre) | **No** | Implement with existing Recharts 3.8.1 `BarChart` + stacked `Bar` + `Cell` |
+| Savings rate selector (Slider for %) | **Yes** — `@radix-ui/react-slider` | Install + add shadcn Slider component |
+| Mini-projection inline (12-month line) | **No** | Reuse existing `ComposedChart` + `Line` pattern from `patrimony-chart.tsx` |
+| `SavingsRateConfig` localStorage persistence | **No** | New `useSavingsRateConfig` hook using existing `useLocalStorage` |
+| `computeSavingsEstimate()` refactor | **No** | Pure TS change in `lib/projection/income-projection.ts` |
 
-### New Custom Code to Write (No Libraries)
+**Net new installs: 1 package** (`@radix-ui/react-slider`)
 
-| Module | Purpose | Complexity |
-|---|---|---|
-| `lib/projections/compound-interest.ts` | `FV = PV * (1 + r/n)^(n*t)` for investment projections | Low -- single function, ~15 lines |
-| `lib/projections/linear-trend.ts` | Simple linear regression for patrimony trend line | Low -- ~25 lines, slope + intercept from data points |
-| `lib/projections/scenarios.ts` | Generate optimistic/base/pessimistic rate multipliers | Low -- configuration object, no math library needed |
-| `lib/projections/generate-series.ts` | Transform real data + projection into Recharts data array | Medium -- data shaping logic, ~50 lines |
+---
 
-## Recharts 3.x Migration Details
+## Recommended Stack Additions
 
-### Breaking Changes That Affect This Project
+### New Dependency
 
-Based on the existing chart code in `salary-by-month.tsx` and `expenses-by-month.tsx`:
+| Library | Version | Purpose | Why |
+|---------|---------|---------|-----|
+| `@radix-ui/react-slider` | ^1.3.6 | Savings rate percentage input (0–100 drag slider) | Consistent with existing Radix UI suite; accessible keyboard navigation built-in; shadcn wraps it cleanly into the app's Tailwind theme |
 
-| Change | Impact | Action Needed |
-|---|---|---|
-| `accessibilityLayer` defaults to `true` | No impact -- this is a good default | None |
-| `CategoricalChartState` removed | Not used in project code | None |
-| `react-smooth` removed (animations built-in) | Positive -- smaller bundle | None |
-| `recharts-scale` removed (built-in) | Positive -- smaller bundle | None |
+### New shadcn/ui Component
 
-The project's existing charts use only standard components (`BarChart`, `Bar`, `XAxis`, `YAxis`, `ChartTooltip`) with no internal state access. Migration should be seamless.
+| Component | Install Command | Purpose |
+|-----------|-----------------|---------|
+| `Slider` | `npx shadcn@latest add slider` | Renders `@radix-ui/react-slider` with app's CSS variable theming; generates `components/ui/slider.tsx` |
 
-### shadcn/ui ChartContainer Compatibility
+No other installs. The waterfall chart, mini-projection, mode toggles for savings selector, and all business logic are implemented using existing packages.
 
-The `components/ui/chart.tsx` wrapper imports `* as RechartsPrimitive from "recharts"` and uses `ResponsiveContainer`. This pattern works with Recharts 3.x unchanged since `ResponsiveContainer` API is stable.
+---
 
-## Recharts Components for Predictive Charts
+## Waterfall Chart: Pattern to Implement
 
-All of these are built into Recharts -- no additional packages:
+Recharts has **no native waterfall component** (GitHub issue #7010 opened Feb 2026, not implemented). The official Recharts waterfall example and the widely-used community pattern both use the **stacked BarChart with transparent baseline** approach.
 
-| Component | Use Case | Key Props |
-|---|---|---|
-| `ComposedChart` | Mix Area (historical) + Line (projection) in one chart | `data`, `margin` |
-| `Area` | Shaded region for historical data | `type="monotone"`, `fill`, `fillOpacity={0.3}`, `stroke` |
-| `Line` | Projection lines (dashed for future) | `type="monotone"`, `strokeDasharray="5 5"` for dashed, `strokeDasharray="3 3"` for dotted |
-| `XAxis` | Date axis with month labels | `dataKey="date"`, `tickFormatter` with date-fns |
-| `YAxis` | Currency axis | `tickFormatter` for ARS/USD formatting |
-| `Tooltip` | Hover data display | Use shadcn `ChartTooltip` + `ChartTooltipContent` (already in project) |
-| `Legend` | Scenario labels (optimista/base/pesimista) | `wrapperStyle` for positioning |
-| `ReferenceLine` | "Today" divider between real and projected data | `x={todayDate}`, `strokeDasharray="3 3"`, `label="Hoy"` |
-| `CartesianGrid` | Subtle grid background | `strokeDasharray="3 3"`, `opacity={0.3}` |
-| `ResponsiveContainer` | Auto-resize (via ChartContainer wrapper) | Already handled by shadcn wrapper |
+### How it works
 
-### Dashed/Dotted Line Patterns
+Two `Bar` components share the same `stackId`. The first bar is `fill="transparent"` and acts as a floating spacer — its height equals the running cumulative total up to that point. The second bar renders the visible delta with `Cell` coloring per bar.
+
+### Data transformation
 
 ```typescript
-// Solid line = historical real data
-<Line dataKey="real" stroke="#10b981" strokeDasharray="0" />
+// lib/monthly-flow/waterfall.ts
+export interface WaterfallSegment {
+  name: string;      // "Ingresos", "Fijos", "Variables", "Inversiones", "Libre"
+  value: number;     // The visible bar height (positive = income, negative = expense)
+  baseline: number;  // Transparent spacer height = running total BEFORE this bar
+  isTotal: boolean;  // true for "Libre" anchor bar (starts at 0)
+}
 
-// Dashed line = base projection
-<Line dataKey="base" stroke="#10b981" strokeDasharray="5 5" />
-
-// Dotted line = optimistic/pessimistic scenarios
-<Line dataKey="optimista" stroke="#22c55e" strokeDasharray="2 2" />
-<Line dataKey="pesimista" stroke="#ef4444" strokeDasharray="2 2" />
-```
-
-### Area Fill for Historical Data
-
-```typescript
-// Shaded area under historical line
-<Area
-  type="monotone"
-  dataKey="real"
-  fill="#10b981"
-  fillOpacity={0.15}
-  stroke="#10b981"
-  strokeWidth={2}
-/>
-```
-
-### Date Axis Formatting with date-fns
-
-```typescript
-// Reuse existing project pattern from salary-by-month.tsx
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-
-<XAxis
-  dataKey="date"
-  tickFormatter={(dateStr) => format(new Date(dateStr), "MMM yy", { locale: es })}
-/>
-```
-
-## Projection Math: No Library Needed
-
-### Compound Interest (Investment Projection)
-
-```typescript
-// lib/projections/compound-interest.ts
-export function projectCompoundGrowth(
-  principal: number,
-  annualRate: number,      // e.g. 0.08 for 8%
-  months: number,
-  compoundingPerYear = 12
-): number[] {
-  const points: number[] = [];
-  for (let m = 0; m <= months; m++) {
-    const years = m / 12;
-    const value = principal * Math.pow(1 + annualRate / compoundingPerYear, compoundingPerYear * years);
-    points.push(Math.round(value * 100) / 100);
-  }
-  return points;
+export function computeWaterfallData(
+  ingresos: number,
+  gastosFijos: number,
+  gastosVariables: number,
+  inversiones: number
+): WaterfallSegment[] {
+  // baseline for each bar = sum of all previous values
+  // value for expense bars is negative
+  const libre = ingresos - gastosFijos - gastosVariables - inversiones;
+  return [
+    { name: "Ingresos",   value: ingresos,           baseline: 0,                                                 isTotal: false },
+    { name: "Fijos",      value: -gastosFijos,        baseline: ingresos,                                          isTotal: false },
+    { name: "Variables",  value: -gastosVariables,    baseline: ingresos - gastosFijos,                            isTotal: false },
+    { name: "Inversiones",value: -inversiones,        baseline: ingresos - gastosFijos - gastosVariables,          isTotal: false },
+    { name: "Libre",      value: libre,               baseline: 0,                                                 isTotal: true  },
+  ];
 }
 ```
 
-### Linear Regression (Patrimony Trend)
+### Component pattern
 
-```typescript
-// lib/projections/linear-trend.ts
-export function linearRegression(points: [number, number][]): { slope: number; intercept: number } {
-  const n = points.length;
-  const sumX = points.reduce((s, p) => s + p[0], 0);
-  const sumY = points.reduce((s, p) => s + p[1], 0);
-  const sumXY = points.reduce((s, p) => s + p[0] * p[1], 0);
-  const sumX2 = points.reduce((s, p) => s + p[0] * p[0], 0);
+```tsx
+// components/charts/monthly-flow-waterfall.tsx
+import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid } from "recharts";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 
-  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-  const intercept = (sumY - slope * sumX) / n;
+const COLORS = {
+  ingresos:   "#22c55e",  // green
+  gasto:      "#ef4444",  // red
+  inversion:  "#3b82f6",  // blue
+  libre:      "#10b981",  // emerald
+  negativo:   "#f97316",  // orange (libre negative = overspent)
+};
 
-  return { slope, intercept };
+function getBarColor(entry: WaterfallSegment): string {
+  if (entry.name === "Ingresos") return COLORS.ingresos;
+  if (entry.name === "Inversiones") return COLORS.inversion;
+  if (entry.isTotal) return entry.value >= 0 ? COLORS.libre : COLORS.negativo;
+  return COLORS.gasto;
 }
 
-export function predict(model: { slope: number; intercept: number }, x: number): number {
-  return model.slope * x + model.intercept;
+// Chart JSX:
+<BarChart data={waterfallData}>
+  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+  <XAxis dataKey="name" />
+  <YAxis tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+  <Bar dataKey="baseline" stackId="wf" fill="transparent" />
+  <Bar dataKey="value" stackId="wf">
+    {waterfallData.map((entry, i) => (
+      <Cell key={i} fill={getBarColor(entry)} />
+    ))}
+  </Bar>
+  <ChartTooltip ... />
+</BarChart>
+```
+
+This pattern works in Recharts 3.8.1. The `BarChart` + stacked `Bar` + `Cell` API is unchanged from 2.x. The transparent baseline `Bar` must come before the visible `Bar` in JSX order for correct stacking.
+
+---
+
+## Savings Rate Selector: Component Architecture
+
+Three modes: `auto` (derive from real data) / `percentage` (user sets % with slider) / `fixed` (user sets ARS amount).
+
+### UI components
+
+| Part | Component | Already in project? |
+|------|-----------|---------------------|
+| Mode toggle (auto / % / fijo) | Three `Button` components styled as segmented control, or existing `Tabs` | Yes — Button in `components/ui/button.tsx` |
+| Percentage slider (0–100%) | shadcn `Slider` wrapping `@radix-ui/react-slider` | **No — needs install** |
+| Percentage display input | `Input` component | Yes — `components/ui/input.tsx` |
+| Fixed ARS amount input | `Input` component | Yes |
+
+### Persistence type
+
+```typescript
+// lib/projection/savings-rate.ts  (new file)
+export type SavingsRateMode = "auto" | "percentage" | "fixed";
+
+export interface SavingsRateConfig {
+  mode: SavingsRateMode;
+  percentage: number;    // 0–100, used when mode === "percentage"
+  fixedAmount: number;   // ARS amount, used when mode === "fixed"
+}
+
+export const DEFAULT_SAVINGS_RATE_CONFIG: SavingsRateConfig = {
+  mode: "auto",
+  percentage: 20,
+  fixedAmount: 0,
+};
+```
+
+### Hook pattern
+
+```typescript
+// hooks/useSavingsRateConfig.ts  (new file)
+import { useLocalStorage } from "./useLocalStorage";
+import type { SavingsRateConfig } from "@/lib/projection/savings-rate";
+import { DEFAULT_SAVINGS_RATE_CONFIG } from "@/lib/projection/savings-rate";
+
+export function useSavingsRateConfig() {
+  const [config, setConfig] = useLocalStorage<SavingsRateConfig>(
+    "savingsRateConfig",         // separate key — never touches "monthlyData"
+    DEFAULT_SAVINGS_RATE_CONFIG
+  );
+  return { config, setConfig };
 }
 ```
 
-These are 20-30 line utility functions. Adding `simple-statistics` (37KB) for two functions is overkill.
+Using a **separate `"savingsRateConfig"` localStorage key** is critical — it does not touch the existing `"monthlyData"` key. The user already has real data in the app and the JSON safety constraint must be respected.
 
-### Scenario Multipliers
+---
+
+## Mini-Projection Inline: Component Architecture
+
+Single `base` scenario line only, 12-month horizon, no user controls, no legend. Displayed below the waterfall chart.
+
+Uses the exact same `ComposedChart` + `Line` pattern already in `components/charts/patrimony-chart.tsx`. The difference is: simplified data (no optimista/pesimista), fixed 12-month horizon, smaller aspect ratio, no `CardHeader`.
+
+**No new Recharts components or patterns needed.** Reuse `ChartContainer` + `ComposedChart` + `Line` + `XAxis` + `YAxis` + `ReferenceLine`.
 
 ```typescript
-// lib/projections/scenarios.ts
-export interface ScenarioConfig {
-  label: string;
-  rateMultiplier: number;  // applied to base rate
-  color: string;
-  dashPattern: string;     // strokeDasharray value
-}
-
-export const DEFAULT_SCENARIOS: ScenarioConfig[] = [
-  { label: "Optimista", rateMultiplier: 1.5, color: "#22c55e", dashPattern: "2 2" },
-  { label: "Base",      rateMultiplier: 1.0, color: "#10b981", dashPattern: "5 5" },
-  { label: "Pesimista", rateMultiplier: 0.5, color: "#ef4444", dashPattern: "2 2" },
-];
+// components/charts/mini-projection-chart.tsx
+// Props: data: ProjectionDataPoint[], currentMonthIndex: number
+// Renders: base scenario line only, 12-month horizon
 ```
 
-## Alternatives Considered
+---
 
-| Category | Recommended | Alternative | Why Not |
-|---|---|---|---|
-| Chart library | Recharts 3.x (upgrade) | Keep Recharts 2.x | 3.x has fewer deps, better perf, easy migration. No reason to stay on 2.x. |
-| Chart library | Recharts 3.x | Nivo / Victory / Chart.js | Project already uses Recharts with shadcn wrapper. Switching libraries for this milestone is unnecessary churn. |
-| Math: compound interest | Plain TypeScript | financejs / simple-statistics | `Math.pow(1 + r/n, n*t)` is one line. A library dependency for one formula is absurd. |
-| Math: linear regression | Plain TypeScript (~25 lines) | simple-statistics (37KB) | Two functions (slope, intercept) don't justify 37KB. If we needed 10+ statistical functions, then yes. |
-| Math: linear regression | Plain TypeScript | ml-regression | Even heavier. Designed for ML workloads, not a trend line. |
-| Date formatting | date-fns (already installed) | dayjs / moment | date-fns is already in the project and used in existing charts. No reason to switch. |
-| Responsive charts | shadcn ChartContainer (already built) | Raw ResponsiveContainer | The shadcn wrapper adds theming, config context, and tooltip helpers. Already in the project. |
+## `computeSavingsEstimate()` Refactor
 
-## What NOT to Add
+Pure TypeScript change — no stack implications.
 
-| Package | Why Avoid |
-|---|---|
-| `simple-statistics` | 37KB for two functions (compound interest + linear regression) that are trivial to write inline. |
-| `financejs` | Unmaintained since 2017. The compound interest formula is one line of math. |
-| `chart.js` / `react-chartjs-2` | Would add a second charting library alongside Recharts. |
-| `d3` (directly) | Recharts is built on D3 internally. Using D3 directly adds complexity with no benefit for standard chart types. |
-| `victory` / `nivo` | Same issue -- switching charting libraries mid-project for no gain. |
-| `framer-motion` | Chart animations are handled by Recharts internally (now built-in since 3.x removed react-smooth). |
-| `@tanstack/react-query` | No API calls. All data is from localStorage. |
+Replace `estimateMonthlyNetSavings()` in `lib/projection/income-projection.ts` with `computeSavingsEstimate()` that reads from `SavingsRateConfig`:
+
+```typescript
+export function computeSavingsEstimate(
+  currentSalary: number,
+  activeRecurringExpenses: RecurringExpense[],
+  globalUsdRate: number,
+  config: SavingsRateConfig
+): number {
+  if (config.mode === "fixed") return Math.max(0, config.fixedAmount);
+  if (config.mode === "percentage") return Math.max(0, currentSalary * (config.percentage / 100));
+  // mode === "auto": original logic
+  const totalRecurring = activeRecurringExpenses
+    .filter((r) => r.status === "Activa")
+    .reduce((sum, r) => {
+      return sum + (r.currencyType === "USD" ? r.amount * globalUsdRate : r.amount);
+    }, 0);
+  return Math.max(0, currentSalary - totalRecurring);
+}
+```
+
+`useProjectionEngine.ts` passes `SavingsRateConfig` down instead of calling `estimateMonthlyNetSavings` directly.
+
+---
 
 ## Installation
 
 ```bash
-# Upgrade Recharts to 3.x
-npm install recharts@^3.8.1
+# New dependency
+npm install @radix-ui/react-slider
 
-# That's it. No other packages needed.
+# Add shadcn Slider component (generates components/ui/slider.tsx)
+npx shadcn@latest add slider
 ```
 
-### Post-Upgrade Verification
+That's all. No other new packages.
 
-After upgrading, verify existing charts still work:
+---
 
-1. Check `salary-by-month.tsx` -- BarChart renders correctly
-2. Check `expenses-by-month.tsx` -- BarChart renders correctly
-3. Check `components/ui/chart.tsx` -- shadcn wrapper imports work
+## Alternatives Considered
 
-The existing charts use only stable public API (`BarChart`, `Bar`, `XAxis`, `YAxis`, `ChartTooltip`) so no changes should be needed.
+| Recommended | Alternative | Why Not |
+|-------------|-------------|---------|
+| Recharts stacked Bar + Cell (waterfall) | External waterfall library (e.g. `@nivo/bar`) | Would add a second charting library; visual inconsistency with existing charts; Recharts 3.8.1 handles this natively |
+| Recharts stacked Bar + Cell (waterfall) | D3 custom SVG | Far more complex for no benefit; Recharts abstracts D3 already |
+| `@radix-ui/react-slider` for savings % | HTML `<input type="range">` | No accessible keyboard behavior, no styled thumb, inconsistent with Radix UI component model in the rest of the app |
+| Separate `"savingsRateConfig"` key | Adding to `"monthlyData"` key | Keeps schema boundaries clean; zero migration risk for existing user data; matches pattern used by `usePayPeriod`, `useSetupWizard`, `useSalaryHistory` |
+| Reuse `ComposedChart` + `Line` (mini-projection) | Separate chart library for sparklines | Overkill; existing pattern works; consistent tooltip/theming |
 
-## Integration Points
+---
 
-### Where new chart code connects to existing app
+## What NOT to Add
 
-| Integration | Existing Code | How |
-|---|---|---|
-| Investment data for projections | `useInvestmentsTracker` hook | Read `investments[]` with `currentValue`, `movements[]`, `type`, `currency` |
-| Patrimony data | `useMoneyTracker` hook | Read `monthlyData.salaries`, expenses, balances |
-| Currency conversion | `useCurrencyEngine` hook | Convert USD investments to ARS for unified patrimony chart |
-| Date formatting | `date-fns` + `es` locale | Reuse exact pattern from `salary-by-month.tsx` |
-| Chart container | `ChartContainer` from `components/ui/chart.tsx` | Wrap new charts same as existing ones |
-| Tooltip styling | `ChartTooltip` + `ChartTooltipContent` | Reuse existing tooltip pattern for consistent look |
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| Any waterfall-specific npm package | Tiny ecosystem, no maintenance signal, Recharts handles it | Recharts stacked Bar + Cell |
+| `@nivo/bar`, `victory`, `chart.js` | Second charting library alongside working Recharts | Recharts BarChart |
+| Modifying `"monthlyData"` key for new config | Risks corrupting existing user data; breaks `migrateData` assumption | Separate `"savingsRateConfig"` key |
+| Radix `Switch` or `RadioGroup` for mode toggle | More complex than needed for 3 labeled options | Three `Button` styled as segmented group (existing component) |
 
-### New files to create
+---
 
-```
-lib/projections/
-  compound-interest.ts    -- FV calculation
-  linear-trend.ts         -- Linear regression
-  scenarios.ts            -- Scenario configs
-  generate-series.ts      -- Data shaping for Recharts
+## Version Compatibility
 
-components/charts/
-  investment-projection.tsx   -- Investment growth chart
-  patrimony-projection.tsx    -- Net worth chart
-  chart-horizon-selector.tsx  -- 3/6/12/24 month selector
-```
+| Package | Version | Compatible With | Notes |
+|---------|---------|-----------------|-------|
+| `@radix-ui/react-slider` | ^1.3.6 | React 18, Next.js 14, Tailwind 3 | Consistent API with other `@radix-ui/*` packages already installed |
+| Recharts | 3.8.1 | React 18 | Already installed and working; stacked Bar + Cell waterfall pattern unchanged since 2.x |
 
-## Confidence Assessment
-
-| Claim | Confidence | Basis |
-|---|---|---|
-| Recharts 3.x works with React 18 | HIGH | Official npm page states compatibility with React 17, 18, 19. Multiple sources confirm. |
-| Migration from 2.x to 3.x is minimal | HIGH | Official migration guide: "most applications should not require any changes." Project uses only standard public API. |
-| shadcn ChartContainer works with Recharts 3.x | HIGH | Wrapper uses `ResponsiveContainer` which is stable API. No internal state access. |
-| Compound interest needs no library | HIGH | `Math.pow(1 + r/n, n*t)` -- verified across multiple sources and standard financial math. |
-| Linear regression needs no library | HIGH | Standard least-squares formula, ~25 lines. Verified implementation pattern. |
-| `strokeDasharray` for dashed/dotted lines | HIGH | Official Recharts API, verified in docs and examples. |
-| `ComposedChart` for mixing Area + Line | HIGH | Standard Recharts component for mixed chart types. |
-| date-fns 4.x works for axis formatting | HIGH | Already working in project's existing charts. |
+---
 
 ## Sources
 
-- [Recharts 3.0 Migration Guide](https://github.com/recharts/recharts/wiki/3.0-migration-guide) -- official wiki
-- [Recharts GitHub Releases](https://github.com/recharts/recharts/releases) -- version history, 3.8.1 latest
-- [Recharts Line API](https://recharts.github.io/en-US/api/Line/) -- strokeDasharray documentation
-- [Recharts npm page](https://www.npmjs.com/package/recharts) -- React 18 compatibility confirmed
-- [simple-statistics GitHub](https://github.com/simple-statistics/simple-statistics) -- evaluated and rejected (overkill)
-- [Compound Interest in JavaScript](https://megafauna.dev/posts/javascript-compound-interest) -- confirms plain math approach
+- [Recharts Waterfall Example](https://recharts.github.io/en-US/examples/Waterfall/) — official pattern: stacked Bar + transparent baseline + Cell coloring (MEDIUM confidence — confirmed to exist; pattern verified via community implementations)
+- [How to Create a Waterfall Chart in Recharts — Celia Ong](https://medium.com/2359media/tutorial-how-to-create-a-waterfall-chart-in-recharts-15a0e980d4b) — `pv` transparent baseline + `Cell` coloring walkthrough; matches official example approach (MEDIUM confidence)
+- [Recharts Feature Request #7010](https://github.com/recharts/recharts/issues/7010) — confirms no native waterfall component as of Feb 2026 (HIGH confidence — GitHub issue, directly verified)
+- [@radix-ui/react-slider npm](https://www.npmjs.com/package/@radix-ui/react-slider) — version 1.3.6 confirmed (HIGH confidence)
+- [shadcn Slider docs](https://ui.shadcn.com/docs/components/radix/slider) — `npx shadcn@latest add slider` against `@radix-ui/react-slider` (HIGH confidence)
+- Codebase: `package.json`, `hooks/useLocalStorage.ts`, `components/charts/patrimony-chart.tsx`, `lib/projection/income-projection.ts`, `lib/projection/types.ts` — read directly (HIGH confidence)
+
+---
+*Stack research for: Monthly Flow Panel v1.3 — waterfall chart, savings rate selector, mini-projection*
+*Researched: 2026-04-07*

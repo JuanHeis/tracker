@@ -1,145 +1,413 @@
-# Architecture Patterns: Predictive Financial Charts
+# Architecture Research: Monthly Flow Panel (v1.3)
 
-**Domain:** Predictive chart integration into existing expense tracker
-**Researched:** 2026-04-03
+**Domain:** Monthly flow visualization + savings rate config integration into existing expense tracker
+**Researched:** 2026-04-07
+**Confidence:** HIGH — based on direct codebase analysis, not inference
 
-## Existing Architecture Summary
+---
 
-### Hooks (data layer)
-- `useInvestmentsTracker` — investments[], CRUD, currentValue, movements, gain/loss
-- `useCurrencyEngine` — globalUsdRate, ARS/USD balances, exchange calculations
-- `useSalaryHistory` — salary entries, employment config, pay date
-- `useRecurringExpenses` — recurring expense definitions, instances, payment tracking
-- `useLoans` — loans given/owed, payments
-- `useMoneyTracker` — monthlyData (the master data structure), expenses, incomes
+## Existing Architecture (What We're Integrating Into)
 
-### Chart Infrastructure (already exists)
-- `components/ui/chart.tsx` — shadcn ChartContainer, ChartConfig, ChartTooltip, ChartTooltipContent
-- `components/charts-container.tsx` — Wraps existing charts (ExpensesByMonth, SalaryByMonth)
-- `components/charts/salary-by-month.tsx` — BarChart with Recharts, uses ChartContainer pattern
-- `components/charts/expenses-by-month.tsx` — BarChart with Recharts
-- Already using: ResponsiveContainer, XAxis, YAxis, Tooltip, Bar, BarChart
-- Already imported: date-fns with `es` locale, lucide icons
+### Layer Map
 
-### Data Structures
-- `monthlyData` — keyed by "yyyy-MM", contains expenses, incomes, salaries per month
-- `investments[]` — each has movements[], currentValue, type, currency, rate (PF)
-- `salaryHistory` — entries with amount, effectiveDate
-- `recurringExpenses[]` — definitions with amount, frequency
-- `patrimonio` calculated in PatrimonioCard from: arsBalance + usdBalance*rate + investments + loans
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  PRESENTATION LAYER (components/)                                    │
+│                                                                      │
+│  expense-tracker.tsx  ← main orchestrator, renders all tabs         │
+│  charts-container.tsx ← calls useProjectionEngine, renders charts   │
+│  simulator-dialog.tsx ← receives monthlyNetFlow prop, runs sim      │
+└────────────────────────────────────┬────────────────────────────────┘
+                                     │ props
+┌────────────────────────────────────▼────────────────────────────────┐
+│  STATE MANAGEMENT LAYER (hooks/)                                     │
+│                                                                      │
+│  useMoneyTracker.ts          ← orchestrator (calls all sub-hooks)   │
+│    ├─ useExpensesTracker.ts  ← filteredExpenses (by month+view)     │
+│    ├─ useIncomes.ts          ← filteredIncomes, salary resolution    │
+│    ├─ useInvestmentsTracker  ← investments[], movements, CRUD       │
+│    ├─ useRecurringExpenses   ← recurringExpenses[], instances        │
+│    ├─ useSalaryHistory.ts    ← getSalaryForMonth(), incomeConfig     │
+│    ├─ useCurrencyEngine.ts   ← globalUsdRate, balances              │
+│    └─ ...others (loans, transfers, budgets, payPeriod)              │
+│                                                                      │
+│  useProjectionEngine.ts  ← pure useMemo hook, receives data as args │
+│                             calls estimateMonthlyNetSavings() TODAY  │
+└────────────────────────────────────┬────────────────────────────────┘
+                                     │ pure functions
+┌────────────────────────────────────▼────────────────────────────────┐
+│  PURE MATH LAYER (lib/projection/)                                   │
+│                                                                      │
+│  scenario-engine.ts    ← projectPatrimonyScenarios(p, savings, n)   │
+│  net-flow.ts           ← calculateMonthlyNetFlow, averageMonthlyNetFlow │
+│  income-projection.ts  ← estimateMonthlyNetSavings() ← TARGET       │
+│  compound-interest.ts  ← investment rate math                       │
+│  patrimony-history.ts  ← reconstructHistoricalPatrimony             │
+│  simulator.ts          ← applySimulatedExpenses, buildSimulatorData  │
+└─────────────────────────────────────────────────────────────────────┘
+                                     │
+┌────────────────────────────────────▼────────────────────────────────┐
+│  PERSISTENCE LAYER (hooks/useLocalStorage.ts)                        │
+│                                                                      │
+│  "monthlyData"          ← master state (_migrationVersion: 8)       │
+│  "recurringExpenses"    ← own key (useRecurringExpenses)            │
+│  "salaryHistory"        ← own key (useSalaryHistory)                │
+│  "customAnnualRates"    ← own key (charts-container)                │
+│  "savingsRateConfig"    ← NEW key (useSavingsRate, to be created)   │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-## Recommended Architecture for v1.2
+---
+
+## What v1.3 Adds and Modifies
 
 ### New Files
 
 ```
-lib/
-  projections/
-    compound-interest.ts    — FV = PV × (1 + r/n)^(n×t)
-    linear-projection.ts    — salary income over time
-    patrimonio-projection.ts — combines investment + salary + expense projections
-    historical-reconstruction.ts — derives past patrimonio from monthlyData
-    types.ts                — ProjectionPoint, Scenario, ProjectionConfig
+lib/projection/
+  savings-rate.ts           NEW — computeSavingsEstimate(), SavingsRateConfig type
 
 hooks/
-  useProjections.ts         — orchestrator hook that reads from existing hooks
-                              and returns chart-ready data arrays
+  useSavingsRate.ts         NEW — persists SavingsRateConfig in "savingsRateConfig" key
+  useMonthlyFlowData.ts     NEW — derives waterfall data from existing filteredExpenses
 
 components/
-  charts/
-    patrimonio-projection-chart.tsx  — hero chart: historical + projected patrimonio
-    investment-projection-chart.tsx  — investment portfolio projection
-    projection-controls.tsx          — horizon selector, scenario toggles
+  monthly-flow-panel.tsx    NEW — panel shell (waterfall + selector + mini-projection)
+  waterfall-chart.tsx       NEW — Recharts BarChart waterfall implementation
+  savings-rate-selector.tsx NEW — toggle group: Auto | % | Fijo with input
 ```
 
-### Data Flow
+### Modified Files
 
 ```
-localStorage
-  ↓
-Existing hooks (useInvestmentsTracker, useSalaryHistory, useRecurringExpenses, useCurrencyEngine)
-  ↓
-useProjections (new orchestrator hook)
-  ├── reads: investments, salary, recurringExpenses, monthlyData, globalUsdRate
-  ├── calls: historical-reconstruction (past patrimonio per month)
-  ├── calls: compound-interest (per investment)
-  ├── calls: linear-projection (salary income)
-  ├── calls: patrimonio-projection (combined)
-  └── returns: { historicalData[], projectionData[], scenarios: { optimista, base, pesimista } }
-  ↓
-Chart Components (Recharts)
-  ├── patrimonio-projection-chart.tsx — ComposedChart with Area (historical) + Line (projected)
-  ├── investment-projection-chart.tsx — ComposedChart with stacked areas
-  └── projection-controls.tsx — horizon selector + scenario toggles
+hooks/useProjectionEngine.ts    MODIFIED — replace estimateMonthlyNetSavings() call
+                                            with computeSavingsEstimate() call
+                                            add savingsRateConfig parameter
+
+components/charts-container.tsx MODIFIED — pass savingsRateConfig to useProjectionEngine
+                                            (or receive monthlyNetSavings as prop)
+
+components/expense-tracker.tsx  MODIFIED — render MonthlyFlowPanel in expenses tab
+                                            pass useSavingsRate data down
+
+components/simulator-dialog.tsx MODIFIED — monthlyNetFlow prop already uses historicalNetFlow,
+                                            but if mode = "auto" no change needed;
+                                            if mode = "percentage"/"fixed" → use computed value
 ```
 
-### Integration Points
+### Unchanged Files
 
-| Existing Component | Integration | Change Type |
-|-------------------|-------------|-------------|
-| `charts-container.tsx` | Add new projection charts alongside existing bar charts | Modified |
-| `expense-tracker.tsx` | Pass additional hook data to charts container | Modified |
-| `patrimonio-card.tsx` | No changes — charts live separately | Unchanged |
-| `components/ui/chart.tsx` | Reuse ChartContainer, ChartTooltip pattern | Unchanged |
-| All existing hooks | Read-only consumption — no modifications | Unchanged |
+```
+lib/projection/scenario-engine.ts    UNCHANGED — API is stable, only its input changes
+lib/projection/net-flow.ts           UNCHANGED — averageMonthlyNetFlow still used in "auto" mode
+lib/projection/patrimony-history.ts  UNCHANGED
+lib/projection/compound-interest.ts  UNCHANGED
+hooks/useMoneyTracker.ts             UNCHANGED (likely) — pass-through of savingsRateConfig
+hooks/useLocalStorage.ts             UNCHANGED
+All other components                 UNCHANGED
+```
 
-### Key Design Decisions
+---
 
-**1. Projection logic as pure functions in `lib/projections/`**
-- Why: Testable, no React dependency, can be used in hooks or directly
-- Pattern: `(config: ProjectionConfig) => ProjectionPoint[]`
+## Integration Points
 
-**2. Single orchestrator hook `useProjections`**
-- Why: Centralizes data gathering from multiple hooks, memoizes expensive calculations
-- Uses `useMemo` to avoid recalculating on every render
-- Dependencies: only recalculates when underlying data changes
+### Point 1: `computeSavingsEstimate()` replaces `estimateMonthlyNetSavings()`
 
-**3. Charts in existing `charts-container.tsx`**
-- Why: Charts already live there. Adding new ones is natural extension.
-- Alternative considered: New tab — rejected because charts complement existing data views
+**Location:** `hooks/useProjectionEngine.ts` line 164
 
-**4. ComposedChart for mixed historical + projection**
-- Why: Need Area (filled, historical) + Line (dashed, projection) on same axes
-- Recharts ComposedChart supports mixing Area, Line, Bar in single chart
+**Current call:**
+```typescript
+const netSavings = estimateMonthlyNetSavings(
+  currentSalary,
+  recurringExpenses,
+  globalUsdRate
+);
+```
 
-**5. No localStorage changes**
-- Why: Projections are computed from existing data. CRITICAL: user is actively using the app.
-- All projection config (horizon, scenarios) can live in component state or URL params
+**New call (after refactor):**
+```typescript
+const netSavings = computeSavingsEstimate(savingsRateConfig, {
+  historicalNetFlow: averageMonthlyNetFlow(
+    calculateMonthlyNetFlow(historical), 6
+  ),
+  currentSalary,
+});
+```
 
-### Historical Reconstruction Strategy
+`projectPatrimonyScenarios(currentPatrimony, netSavings, horizonMonths)` at line 214 is unchanged — it receives a plain number.
 
-The hardest part: calculating patrimonio for each past month.
+**What changes in the hook signature:**
+```typescript
+export function useProjectionEngine(
+  monthlyData: MonthlyData,
+  salaryEntries: SalaryEntry[],
+  recurringExpenses: RecurringExpense[],   // can stay (still used for income calc)
+  globalUsdRate: number,
+  options?: {
+    ...existing...
+    savingsRateConfig?: SavingsRateConfig;  // NEW optional param
+  }
+)
+```
 
-**Approach:** Walk through monthlyData chronologically:
-1. For each month, sum: salary income - expenses + other incomes
-2. Track running ARS and USD liquid balances
-3. For investments: reconstruct value at each month from movements (sum of movements up to that month, plus appreciation if rate known)
-4. patrimonio_month = liquid_ars + liquid_usd * rate_at_month + investment_values_at_month
+When `savingsRateConfig` is absent, fall back to `estimateMonthlyNetSavings()` for backward compatibility during rollout.
 
-**Simplification:** Use current globalUsdRate for all months (user doesn't have historical rates). Add a note "USD convertido a cotización actual" in tooltip.
+### Point 2: `ChartsContainer` passes `savingsRateConfig`
 
-### Performance Considerations
+**Location:** `components/charts-container.tsx` line 43
 
-- **Memoize aggressively:** Projection calculations can be expensive with many investments × many months. Use `useMemo` with proper dependency arrays.
-- **Lazy computation:** Only calculate when chart is visible (the charts tab).
-- **Data point density:** Monthly granularity is sufficient. No need for daily points.
-- **Recharts performance:** ~100 data points (24 months × a few lines) is trivial for Recharts.
+`ChartsContainer` already calls `useProjectionEngine` directly. It needs to receive `savingsRateConfig` as a prop from `expense-tracker.tsx`, or call `useSavingsRate` itself.
 
-### Build Order (Suggested Phases)
+Recommended: `ChartsContainer` calls `useSavingsRate()` directly (simpler, avoids prop threading).
 
-1. **Projection engine** — Pure functions in `lib/projections/`, no UI. Can be unit tested.
-2. **Historical reconstruction** — Derives past data from monthlyData. Most complex logic.
-3. **useProjections hook** — Wires existing hooks to projection engine. Returns chart-ready data.
-4. **Chart components** — Recharts UI consuming hook data. Visual polish.
-5. **Controls & scenarios** — Horizon selector, scenario toggles.
+```typescript
+// charts-container.tsx
+import { useSavingsRate } from "@/hooks/useSavingsRate";
 
-This order minimizes risk: each layer can be verified before the next depends on it.
+const { savingsRateConfig } = useSavingsRate();
+
+const projection = useProjectionEngine(
+  monthlyData, salaryEntries, recurringExpenses, globalUsdRate,
+  { ..., savingsRateConfig }
+);
+```
+
+### Point 3: `SimulatorDialog` receives updated `monthlyNetFlow`
+
+**Location:** `components/expense-tracker.tsx` line 1008
+
+Currently:
+```typescript
+monthlyNetFlow={historicalNetFlow}  // averageMonthlyNetFlow(points, 6)
+```
+
+After refactor, `historicalNetFlow` is the "auto" mode value. If the user has selected `mode: "percentage"` or `mode: "fixed"`, the simulator should use `computeSavingsEstimate(savingsRateConfig, {...})` instead.
+
+```typescript
+// expense-tracker.tsx
+import { computeSavingsEstimate } from "@/lib/projection/savings-rate";
+
+const effectiveNetFlow = computeSavingsEstimate(savingsRateConfig, {
+  historicalNetFlow,
+  currentSalary,
+});
+// Pass effectiveNetFlow to SimulatorDialog instead of historicalNetFlow
+```
+
+### Point 4: `MonthlyFlowPanel` placement in `expense-tracker.tsx`
+
+The panel is rendered above the expenses table in the "Gastos" tab. It receives data via props — no internal hook calls — so it can be relocated to a "Resumen" tab later without changing component logic.
+
+```typescript
+// expense-tracker.tsx (inside expenses tab content)
+<MonthlyFlowPanel
+  flowData={monthlyFlowData}       // from useMonthlyFlowData hook
+  savingsRateConfig={savingsRateConfig}
+  onSavingsRateChange={setSavingsRateConfig}
+  currentPatrimony={currentPatrimony}
+  projectedPatrimony={miniProjection}
+/>
+```
+
+---
+
+## New Component and Hook Details
+
+### `lib/projection/savings-rate.ts` (pure functions)
+
+```typescript
+export interface SavingsRateConfig {
+  mode: "auto" | "percentage" | "fixed";
+  percentageValue?: number;  // 0-100, mode "percentage" only
+  fixedValue?: number;       // ARS amount, mode "fixed" only
+}
+
+export function computeSavingsEstimate(
+  config: SavingsRateConfig,
+  context: {
+    historicalNetFlow: number;  // averageMonthlyNetFlow result
+    currentSalary: number;
+  }
+): number {
+  switch (config.mode) {
+    case "auto":       return context.historicalNetFlow;
+    case "percentage": return Math.round(context.currentSalary * (config.percentageValue ?? 0) / 100);
+    case "fixed":      return config.fixedValue ?? 0;
+  }
+}
+```
+
+This function has zero dependencies and is trivially unit-testable.
+
+### `hooks/useSavingsRate.ts`
+
+```typescript
+const DEFAULT_CONFIG: SavingsRateConfig = { mode: "auto" };
+
+export function useSavingsRate() {
+  const [savingsRateConfig, setSavingsRateConfig] =
+    useLocalStorage<SavingsRateConfig>("savingsRateConfig", DEFAULT_CONFIG);
+
+  return { savingsRateConfig, setSavingsRateConfig };
+}
+```
+
+Uses own localStorage key — no risk of breaking `monthlyData` schema.
+
+### `hooks/useMonthlyFlowData.ts`
+
+Computes the waterfall breakdown for a given month. Receives pre-filtered data as arguments (not calling hooks internally):
+
+```typescript
+export interface MonthlyFlowData {
+  totalIncome: number;         // salary + extraIncomes (ARS)
+  fixedExpenses: number;       // sum of expenses where recurringId != null
+  variableExpenses: number;    // sum of expenses where recurringId == null
+  investmentContributions: number; // sum of non-initial aporte movements in month
+  libre: number;               // totalIncome - fixedExpenses - variableExpenses - investmentContributions
+  breakdown: {
+    income: { salary: number; extras: number };
+    fixed: { name: string; amount: number }[];
+    variable: { category: string; total: number }[];
+  };
+}
+
+export function computeMonthlyFlowData(
+  filteredExpenses: Expense[],
+  filteredIncomes: ExtraIncome[],
+  currentSalary: number,
+  investments: Investment[],
+  monthKey: string,       // "yyyy-MM" to filter investment movements
+  globalUsdRate: number
+): MonthlyFlowData
+```
+
+This is a pure function in `hooks/useMonthlyFlowData.ts` or `lib/projection/monthly-flow.ts`. The hook wrapper calls it inside `useMemo`.
+
+---
+
+## Data Flow: How All Pieces Connect
+
+```
+useMoneyTracker
+  ├─ filteredExpenses          ─┐
+  ├─ filteredIncomes            ├─► useMonthlyFlowData ──► MonthlyFlowData
+  ├─ monthlyData.investments    ┘
+  └─ globalUsdRate
+
+useSavingsRate ──────────────────────► SavingsRateConfig
+                                              │
+                          ┌───────────────────┼──────────────────┐
+                          ▼                   ▼                  ▼
+                  computeSavingsEstimate  SavingsRateSelector  ChartsContainer
+                          │                                       │
+                          └──────────────► useProjectionEngine ◄─┘
+                                                  │
+                                        projectPatrimonyScenarios
+                                        (API unchanged)
+```
+
+---
+
+## Recommended Build Order
+
+The ordering follows strict dependency chains — each step can be verified before the next depends on it.
+
+### Step 1: Pure function foundation
+Create `lib/projection/savings-rate.ts` with `SavingsRateConfig` type and `computeSavingsEstimate()`.
+No React, no hooks, testable in isolation.
+
+### Step 2: Persistence hook
+Create `hooks/useSavingsRate.ts` using existing `useLocalStorage` pattern.
+Write a unit test for `computeSavingsEstimate()` (all 3 modes).
+
+### Step 3: Projection engine refactor
+Modify `hooks/useProjectionEngine.ts` to accept optional `savingsRateConfig` parameter.
+When present: call `computeSavingsEstimate()`. When absent: fall back to `estimateMonthlyNetSavings()`.
+This preserves ChartsContainer behavior during the transition.
+
+### Step 4: Wire ChartsContainer and SimulatorDialog
+`ChartsContainer`: call `useSavingsRate()` directly, pass config to `useProjectionEngine`.
+`expense-tracker.tsx`: replace `historicalNetFlow` passed to `SimulatorDialog` with `computeSavingsEstimate(savingsRateConfig, {...})`.
+
+### Step 5: Waterfall data hook
+Create `hooks/useMonthlyFlowData.ts` (or pure function in `lib/`).
+Input: `filteredExpenses`, `filteredIncomes`, `currentSalary`, `investments`, `monthKey`, `globalUsdRate`.
+Output: `MonthlyFlowData`. Verified by inspecting the numbers against known month data.
+
+### Step 6: UI components (leaf-first)
+Build in order: `savings-rate-selector.tsx` → `waterfall-chart.tsx` → `monthly-flow-panel.tsx`.
+Each receives data as props. No internal hook calls.
+
+### Step 7: Wire MonthlyFlowPanel into expense-tracker.tsx
+Add `useMonthlyFlowData` call in `expense-tracker.tsx`. Render `<MonthlyFlowPanel>` above expenses table in the "Gastos" tab. Pass mini-projection from `projectedPatrimony` from `useProjectionEngine`.
+
+---
+
+## Component Responsibilities
+
+| Component | Owns | Communicates With |
+|-----------|------|-------------------|
+| `useSavingsRate` | SavingsRateConfig persistence | `useLocalStorage` (storage), `ChartsContainer` + `MonthlyFlowPanel` (consumers) |
+| `useMonthlyFlowData` | Waterfall data derivation | `useMoneyTracker` data (inputs), `MonthlyFlowPanel` (consumer) |
+| `computeSavingsEstimate` | Monthly savings number | `useProjectionEngine` (primary consumer), `expense-tracker.tsx` for simulator |
+| `useProjectionEngine` | All projection math | `ChartsContainer` (consumer), now accepts `savingsRateConfig` as optional param |
+| `MonthlyFlowPanel` | Panel shell + layout | Receives `flowData`, `savingsRateConfig`, `projectedPatrimony` as props |
+| `WaterfallChart` | Recharts waterfall rendering | Receives `MonthlyFlowData` as prop |
+| `SavingsRateSelector` | Toggle UI + input | Receives `config` + `onChange` as props |
+
+---
+
+## Anti-Patterns to Avoid
+
+### Anti-Pattern 1: Calling useSavingsRate inside useProjectionEngine
+
+**What it would look like:** `useProjectionEngine` reads `savingsRateConfig` from `useLocalStorage` internally.
+**Why wrong:** `useProjectionEngine` is explicitly designed to receive all data as parameters for decoupling and testability (decision documented in `.planning/STATE.md` entry [15-02]). Breaking this couples projection math to storage.
+**Do this instead:** Pass `savingsRateConfig` as an optional field in the `options` parameter.
+
+### Anti-Pattern 2: Putting waterfall aggregation logic inside the component
+
+**What it would look like:** `MonthlyFlowPanel` calls `filteredExpenses.filter(e => e.recurringId)` inline.
+**Why wrong:** Makes the component untestable and unmovable between tabs. The component spec requires it to be "autocontenido" (self-contained via props).
+**Do this instead:** `useMonthlyFlowData` hook in `expense-tracker.tsx` computes the aggregation. `MonthlyFlowPanel` receives `MonthlyFlowData` as a prop.
+
+### Anti-Pattern 3: Adding savingsRateConfig to monthlyData
+
+**What it would look like:** `monthlyData.savingsRateConfig = { mode: "auto" }` and a migration entry.
+**Why wrong:** `monthlyData` already has 8 migration versions. SavingsRateConfig is app-level config, not per-month financial data. Mixing them increases schema fragility.
+**Do this instead:** Own localStorage key `"savingsRateConfig"` via `useSavingsRate`. Zero migration needed.
+
+### Anti-Pattern 4: Creating a new Recharts library for the waterfall
+
+**What it would look like:** Adding `recharts-waterfall` or similar npm package.
+**Why wrong:** The existing `BarChart` from Recharts 3.x handles waterfalls with stacked bars and custom shapes. The project constraint is explicit: "No agregar nueva librería de charts."
+**Do this instead:** `BarChart` with a running-offset technique — each bar is `[offset, offset + value]` using Recharts' `Cell` + `Bar` with custom domain.
+
+---
+
+## Scaling Considerations
+
+This is a localStorage single-user app. Scaling in this context means performance as data grows.
+
+| Concern | Mitigation |
+|---------|------------|
+| `useMonthlyFlowData` recomputing on every render | `useMemo` with `[filteredExpenses, filteredIncomes, currentSalary, selectedMonth]` dependencies |
+| `computeSavingsEstimate` called in 3 places | It's O(1) — no memoization needed |
+| `MonthlyFlowPanel` re-rendering when unrelated state changes | Props-only interface means React bailout works correctly; wrap in `React.memo` if needed |
+| Waterfall chart with many expense rows | Aggregate by category (already in breakdown design) — chart has ~5 bars regardless of expense count |
+
+---
 
 ## Sources
 
-- Existing codebase analysis (hooks, components, chart patterns)
-- Recharts ComposedChart documentation
-- shadcn/ui chart component patterns
+- Direct codebase analysis: `hooks/useProjectionEngine.ts`, `hooks/useMoneyTracker.ts`, `lib/projection/` (all files)
+- `components/charts-container.tsx`, `components/simulator-dialog.tsx` — call site analysis
+- `.planning/phases/18-flujo-mensual-panel-unificado/PROMPT.md` — feature specification
+- `.planning/PROJECT.md` — milestone requirements
+- `.planning/codebase/ARCHITECTURE.md` — existing architecture patterns (2026-03-31)
 
 ---
-*Research completed: 2026-04-03*
+
+*Architecture research for: Monthly Flow Panel (v1.3)*
+*Researched: 2026-04-07*
