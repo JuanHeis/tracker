@@ -81,6 +81,9 @@ import type { CustomAnnualRates } from "@/lib/projection/types";
 import { reconstructHistoricalPatrimony } from "@/lib/projection/patrimony-history";
 import { calculateMonthlyNetFlow, averageMonthlyNetFlow } from "@/lib/projection/net-flow";
 import { SetupWizard } from "@/components/setup-wizard/setup-wizard";
+import { useSavingsRate } from "@/hooks/useSavingsRate";
+import { SavingsRateSelector } from "@/components/savings-rate-selector";
+import { SAVINGS_RATE_KEY } from "@/lib/projection/savings-rate";
 
 function validateField(
   name: string,
@@ -260,6 +263,9 @@ export function ExpenseTracker() {
     return averageMonthlyNetFlow(flows, 6);
   }, [monthlyData, salaryHistory.entries, globalUsdRate]);
 
+  // Savings rate hook (config persisted in localStorage, estimate computed from mode)
+  const savingsRate = useSavingsRate(currentMonthSalary.amount, historicalNetFlow);
+
   // Otros ingresos: sum of ARS extra incomes for current period
   const otrosIngresosArs = filteredIncomes
     .filter((i: any) => i.currencyType !== CurrencyType.USD)
@@ -373,6 +379,7 @@ export function ExpenseTracker() {
     localStorage.removeItem("recurringExpenses");
     localStorage.removeItem("budgetData");
     localStorage.removeItem("globalUsdRate");
+    localStorage.removeItem(SAVINGS_RATE_KEY);
     window.location.reload();
   };
 
@@ -731,6 +738,13 @@ export function ExpenseTracker() {
               globalUsdRate={globalUsdRate}
               exchangeGainLoss={calculateExchangeGainLoss()}
               onDelete={handleDeleteUsdPurchase}
+            />
+            <SavingsRateSelector
+              config={savingsRate.config}
+              onConfigChange={savingsRate.setConfig}
+              estimate={savingsRate.estimate}
+              currentSalary={currentMonthSalary.amount}
+              averageNetFlow={historicalNetFlow}
             />
           </div>
         </div>

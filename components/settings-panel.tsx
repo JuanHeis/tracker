@@ -19,6 +19,7 @@ import { FormattedAmount } from "./formatted-amount";
 import { useTheme } from "next-themes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { STORAGE_KEYS } from "@/hooks/useDataPersistence";
+import { SAVINGS_RATE_KEY } from "@/lib/projection/savings-rate";
 import { format, parse } from "date-fns";
 import { es } from "date-fns/locale";
 import type { SalaryEntry, IncomeConfig } from "@/hooks/useSalaryHistory";
@@ -688,6 +689,7 @@ export function SettingsPanel({
               );
               if (!confirmed) return;
               STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+              localStorage.removeItem(SAVINGS_RATE_KEY);
               window.location.reload();
             }}
           >
