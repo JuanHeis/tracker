@@ -181,7 +181,7 @@
 - [x] **SAVE-01**: User puede elegir modo de tasa de ahorro: auto (promedio historico), porcentaje del sueldo, o monto fijo
 - [x] **SAVE-02**: En modo auto, se muestra el valor calculado con `averageMonthlyNetFlow`
 - [x] **SAVE-03**: En modo porcentaje, slider/input 0-100 que muestra el monto resultante
-- [ ] **SAVE-04**: La configuracion persiste entre sesiones en localStorage (key propia `"savingsRateConfig"`)
+- [x] **SAVE-04**: La configuracion persiste entre sesiones en localStorage (key propia `"savingsRateConfig"`)
 
 ### Mini-Proyeccion
 
@@ -307,7 +307,7 @@
 | SAVE-01 | Phase 18 | Complete |
 | SAVE-02 | Phase 18 | Complete |
 | SAVE-03 | Phase 18 | Complete |
-| SAVE-04 | Phase 18 | Pending |
+| SAVE-04 | Phase 18 | Complete |
 | REF-01 | Phase 18 | Complete |
 | REF-02 | Phase 19 | Pending |
 | REF-03 | Phase 19 | Pending |

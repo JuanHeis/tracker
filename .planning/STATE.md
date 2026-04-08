@@ -6,9 +6,9 @@ status: executing
 last_updated: "2026-04-08"
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -22,12 +22,12 @@ See: .planning/PROJECT.md (updated 2026-04-07)
 
 ## Current Position
 
-Phase: 18 of 21 (Savings Rate Engine & Persistence)
-Plan: 1 of 2 in current phase
-Status: Executing
-Last activity: 2026-04-08 — Completed 18-01 (Savings Rate Engine TDD)
+Phase: 18 of 21 (Savings Rate Engine & Persistence) -- COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase Complete
+Last activity: 2026-04-08 — Completed 18-02 (Savings Rate Hook & Selector UI)
 
-Progress: [████████████████████░░░░░░░░░░] 77/92 plans (v1.0-v1.2 complete, v1.3: 1/2 phase 18)
+Progress: [█████████████████████░░░░░░░░░] 78/92 plans (v1.0-v1.2 complete, v1.3: 2/2 phase 18)
 
 ## Performance Metrics
 
@@ -48,6 +48,9 @@ Progress: [████████████████████░░░
 
 Recent decisions affecting current work:
 
+- [18-02]: SavingsRateSelector placed in sidebar below ExchangeSummary (temporary, Phase 21 relocates)
+- [18-02]: Default percentage mode starts at 20%
+- [18-02]: Used Intl.NumberFormat es-AR for ARS formatting in savings selector
 - [18-01]: No clamping on fixed mode -- user specifies exact amount
 - [18-01]: Math.round on percentage mode for integer result consistency
 - [v1.3 Roadmap]: computeSavingsEstimate() is critical path -- Phase 18 first, unblocks everything
@@ -59,6 +62,7 @@ Recent decisions affecting current work:
 - [v1.3 Roadmap]: MonthlyFlowPanel is props-only (no internal hooks) for tab mobility
 - [v1.3 Roadmap]: Only new dependency: @radix-ui/react-slider for savings rate slider
 - [v1.3 Roadmap]: Phase 19 and 20 can run in parallel (both depend on 18, independent of each other)
+- [Phase 18]: SavingsRateSelector placed in sidebar below ExchangeSummary (temporary, Phase 21 relocates)
 
 ### Pending Todos
 
@@ -71,5 +75,5 @@ None. All patterns confirmed HIGH confidence from research.
 ## Session Continuity
 
 Last session: 2026-04-08
-Stopped at: Completed 18-01-PLAN.md
+Stopped at: Completed 18-02-PLAN.md (Phase 18 complete)
 Resume file: None

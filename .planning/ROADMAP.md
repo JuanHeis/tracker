@@ -56,7 +56,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Cross-cutting constraint:** MonthlyFlowPanel must be props-only (no internal hooks) for tab mobility. SavingsRateConfig uses own localStorage key ("savingsRateConfig") -- no schema migration needed.
 
-- [ ] **Phase 18: Savings Rate Engine & Persistence** - Pure computeSavingsEstimate() function, useSavingsRate hook with 3-mode persistence, and SavingsRateSelector UI
+- [x] **Phase 18: Savings Rate Engine & Persistence** - Pure computeSavingsEstimate() function, useSavingsRate hook with 3-mode persistence, and SavingsRateSelector UI (completed 2026-04-08)
 - [ ] **Phase 19: Projection Engine Refactor** - Wire computeSavingsEstimate() into useProjectionEngine and SimulatorDialog, replacing estimateMonthlyNetSavings()
 - [ ] **Phase 20: Waterfall Chart** - computeWaterfallData() function, useMonthlyFlowData hook, and WaterfallChart component with range-value pattern
 - [ ] **Phase 21: Monthly Flow Panel Assembly** - MonthlyFlowPanel shell composing waterfall + savings rate + mini-projection + inline simulation, wired into expense-tracker.tsx
@@ -421,7 +421,7 @@ Plans:
 | 15. Projection Engine | v1.2 | 2/2 | Complete | 2026-04-03 |
 | 16. Chart Components | v1.2 | 2/2 | Complete | 2026-04-03 |
 | 17. Simulador de Gastos Futuros | v1.2 | 2/2 | Complete | 2026-04-06 |
-| 18. Savings Rate Engine & Persistence | 1/2 | In Progress|  | - |
+| 18. Savings Rate Engine & Persistence | 2/2 | Complete   | 2026-04-08 | - |
 | 19. Projection Engine Refactor | v1.3 | 0/? | Not started | - |
 | 20. Waterfall Chart | v1.3 | 0/? | Not started | - |
 | 21. Monthly Flow Panel Assembly | v1.3 | 0/? | Not started | - |
