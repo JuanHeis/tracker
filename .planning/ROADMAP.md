@@ -354,7 +354,11 @@ Plans:
   2. In auto mode, user sees the calculated value derived from averageMonthlyNetFlow; in percentage mode, user sees the resulting monthly amount update as the slider moves
   3. The savings rate configuration persists across browser sessions (stored in localStorage under "savingsRateConfig" key)
   4. computeSavingsEstimate() pure function exists and returns the correct savings scalar for all three modes given the user's financial data
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 18-01-PLAN.md — TDD computeSavingsEstimate pure function + types + shadcn Slider (SAVE-01, SAVE-02, SAVE-03, REF-01)
+- [ ] 18-02-PLAN.md — useSavingsRate hook + SavingsRateSelector UI + wiring into app + factory reset (SAVE-01, SAVE-02, SAVE-03, SAVE-04, REF-01)
 
 ### Phase 19: Projection Engine Refactor
 **Goal**: All projection consumers (Charts tab and Simulator) use the configured savings rate instead of the old estimateMonthlyNetSavings() calculation
@@ -417,7 +421,7 @@ Plans:
 | 15. Projection Engine | v1.2 | 2/2 | Complete | 2026-04-03 |
 | 16. Chart Components | v1.2 | 2/2 | Complete | 2026-04-03 |
 | 17. Simulador de Gastos Futuros | v1.2 | 2/2 | Complete | 2026-04-06 |
-| 18. Savings Rate Engine & Persistence | v1.3 | 0/? | Not started | - |
+| 18. Savings Rate Engine & Persistence | v1.3 | 0/2 | In progress | - |
 | 19. Projection Engine Refactor | v1.3 | 0/? | Not started | - |
 | 20. Waterfall Chart | v1.3 | 0/? | Not started | - |
 | 21. Monthly Flow Panel Assembly | v1.3 | 0/? | Not started | - |
