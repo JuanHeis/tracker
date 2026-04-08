@@ -178,9 +178,9 @@
 
 ### Tasa de Ahorro
 
-- [ ] **SAVE-01**: User puede elegir modo de tasa de ahorro: auto (promedio historico), porcentaje del sueldo, o monto fijo
-- [ ] **SAVE-02**: En modo auto, se muestra el valor calculado con `averageMonthlyNetFlow`
-- [ ] **SAVE-03**: En modo porcentaje, slider/input 0-100 que muestra el monto resultante
+- [x] **SAVE-01**: User puede elegir modo de tasa de ahorro: auto (promedio historico), porcentaje del sueldo, o monto fijo
+- [x] **SAVE-02**: En modo auto, se muestra el valor calculado con `averageMonthlyNetFlow`
+- [x] **SAVE-03**: En modo porcentaje, slider/input 0-100 que muestra el monto resultante
 - [ ] **SAVE-04**: La configuracion persiste entre sesiones en localStorage (key propia `"savingsRateConfig"`)
 
 ### Mini-Proyeccion
@@ -195,7 +195,7 @@
 
 ### Refactor Proyecciones
 
-- [ ] **REF-01**: `computeSavingsEstimate()` reemplaza `estimateMonthlyNetSavings()` en el projection engine
+- [x] **REF-01**: `computeSavingsEstimate()` reemplaza `estimateMonthlyNetSavings()` en el projection engine
 - [ ] **REF-02**: Charts tab usa la tasa de ahorro configurada en vez del calculo viejo
 - [ ] **REF-03**: SimulatorDialog tambien usa la tasa de ahorro configurada
 
@@ -304,11 +304,11 @@
 | SIM-04 | Phase 17 | Complete |
 | SIM-05 | Phase 17 | Complete |
 | SIM-06 | Phase 17 | Complete |
-| SAVE-01 | Phase 18 | Pending |
-| SAVE-02 | Phase 18 | Pending |
-| SAVE-03 | Phase 18 | Pending |
+| SAVE-01 | Phase 18 | Complete |
+| SAVE-02 | Phase 18 | Complete |
+| SAVE-03 | Phase 18 | Complete |
 | SAVE-04 | Phase 18 | Pending |
-| REF-01 | Phase 18 | Pending |
+| REF-01 | Phase 18 | Complete |
 | REF-02 | Phase 19 | Pending |
 | REF-03 | Phase 19 | Pending |
 | FLOW-01 | Phase 20 | Pending |

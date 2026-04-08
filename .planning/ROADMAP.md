@@ -421,7 +421,7 @@ Plans:
 | 15. Projection Engine | v1.2 | 2/2 | Complete | 2026-04-03 |
 | 16. Chart Components | v1.2 | 2/2 | Complete | 2026-04-03 |
 | 17. Simulador de Gastos Futuros | v1.2 | 2/2 | Complete | 2026-04-06 |
-| 18. Savings Rate Engine & Persistence | v1.3 | 0/2 | In progress | - |
+| 18. Savings Rate Engine & Persistence | 1/2 | In Progress|  | - |
 | 19. Projection Engine Refactor | v1.3 | 0/? | Not started | - |
 | 20. Waterfall Chart | v1.3 | 0/? | Not started | - |
 | 21. Monthly Flow Panel Assembly | v1.3 | 0/? | Not started | - |
