@@ -4,7 +4,8 @@
 
 - ✅ **v1.0 MVP** - Phases 1-10 (shipped 2026-04-02)
 - ✅ **v1.1 Setup Wizard & Manual** - Phases 11-13 (shipped 2026-04-03)
-- 🚧 **v1.2 Graficos Predictivos** - Phases 14-16 (in progress)
+- ✅ **v1.2 Graficos Predictivos** - Phases 14-17 (shipped 2026-04-06)
+- 🚧 **v1.3 Flujo Mensual Panel Unificado** - Phases 18-21 (in progress)
 
 ## Phases
 
@@ -39,15 +40,26 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 </details>
 
-### 🚧 v1.2 Graficos Predictivos (In Progress)
-
-**Milestone Goal:** Visualizar la evolucion financiera pasada y proyectar el futuro con graficos interactivos usando datos reales del usuario.
-
-**Cross-cutting constraint:** INFRA-03 — All phases treat localStorage as read-only. Zero mutations to MonthlyData, Investment, or any existing interface. Charts derive data; they never write it.
+<details>
+<summary>v1.2 Graficos Predictivos (Phases 14-17) - SHIPPED 2026-04-06</summary>
 
 - [x] **Phase 14: Recharts Upgrade & Chart Infrastructure** - Upgrade Recharts to 3.x, verify existing charts, establish projection chart patterns (completed 2026-04-03)
 - [x] **Phase 15: Projection Engine** - Pure math functions for compound interest, linear projection, historical reconstruction, scenarios, and orchestrator hook (completed 2026-04-03)
 - [x] **Phase 16: Chart Components** - Patrimony and investment projection charts with scenarios, horizon selector, and disclaimers (completed 2026-04-03)
+- [x] **Phase 17: Simulador de Gastos Futuros** - Ephemeral expense simulator with before/after projection chart and summary stats (completed 2026-04-06)
+
+</details>
+
+### 🚧 v1.3 Flujo Mensual Panel Unificado (In Progress)
+
+**Milestone Goal:** Panel de flujo mensual que muestre waterfall del mes, selector de tasa de ahorro con 3 modos, mini-proyeccion inline, y reemplace estimateMonthlyNetSavings() por tasa de ahorro real/configurada.
+
+**Cross-cutting constraint:** MonthlyFlowPanel must be props-only (no internal hooks) for tab mobility. SavingsRateConfig uses own localStorage key ("savingsRateConfig") -- no schema migration needed.
+
+- [ ] **Phase 18: Savings Rate Engine & Persistence** - Pure computeSavingsEstimate() function, useSavingsRate hook with 3-mode persistence, and SavingsRateSelector UI
+- [ ] **Phase 19: Projection Engine Refactor** - Wire computeSavingsEstimate() into useProjectionEngine and SimulatorDialog, replacing estimateMonthlyNetSavings()
+- [ ] **Phase 20: Waterfall Chart** - computeWaterfallData() function, useMonthlyFlowData hook, and WaterfallChart component with range-value pattern
+- [ ] **Phase 21: Monthly Flow Panel Assembly** - MonthlyFlowPanel shell composing waterfall + savings rate + mini-projection + inline simulation, wired into expense-tracker.tsx
 
 ## Phase Details
 
@@ -265,6 +277,9 @@ Plans:
 
 </details>
 
+<details>
+<summary>v1.2 Graficos Predictivos Phase Details (Phases 14-17)</summary>
+
 ### Phase 14: Recharts Upgrade & Chart Infrastructure
 **Goal**: Recharts 3.x is installed and working, existing charts are verified, and the pattern for projection charts is established
 **Depends on**: Phase 13 (v1.1 complete)
@@ -292,8 +307,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 15-01-PLAN.md — Projection types + pure math functions (compound interest, income, patrimony history, scenarios)
-- [ ] 15-02-PLAN.md — useProjectionEngine hook orchestrating all projections into chart-ready output
+- [x] 15-01-PLAN.md — Projection types + pure math functions (compound interest, income, patrimony history, scenarios)
+- [x] 15-02-PLAN.md — useProjectionEngine hook orchestrating all projections into chart-ready output
 
 ### Phase 16: Chart Components
 **Goal**: User sees interactive projection charts integrated into the app — patrimony evolution and investment growth with scenarios, horizon control, and honest disclaimers
@@ -305,19 +320,83 @@ Plans:
   3. User sees three scenario lines (optimista/base/pesimista) with different visual styles (opacity or dash patterns), and can toggle each scenario on/off
   4. User can switch the projection horizon between 3, 6, 12, and 24 months using a selector control, and charts update immediately
   5. Every chart displays a visible disclaimer noting that projections use current exchange rate and assumed growth rates (e.g., "Proyeccion a cotizacion actual: $X ARS/USD")
-
 **Plans**: 2 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — PatrimonyChart + ChartControls + ChartDisclaimer + ChartsContainer wiring (CHART-01, CHART-03, CHART-04, CHART-05)
-- [ ] 16-02-PLAN.md — InvestmentChart with stacked areas by type + ChartsContainer integration (CHART-02, CHART-05)
+- [x] 16-01-PLAN.md — PatrimonyChart + ChartControls + ChartDisclaimer + ChartsContainer wiring (CHART-01, CHART-03, CHART-04, CHART-05)
+- [x] 16-02-PLAN.md — InvestmentChart with stacked areas by type + ChartsContainer integration (CHART-02, CHART-05)
+
+### Phase 17: Simulador de Gastos Futuros
+**Goal**: User can simulate hypothetical future expenses (one-time and installment-based) in a self-contained dialog and instantly see the impact on their projected patrimony via a before/after chart — without modifying any real data
+**Depends on**: Phase 16
+**Requirements**: SIM-01, SIM-02, SIM-03, SIM-04, SIM-05, SIM-06
+**Success Criteria** (what must be TRUE):
+  1. User can define one-time and installment expenses with nombre, monto total, cuotas, and currency (ARS/USD)
+  2. User can add multiple simulated expenses and manage them in an editable list with delete buttons
+  3. User sees a mini chart with "Sin gastos simulados" vs "Con gastos simulados" lines that update when expenses are added/removed
+  4. User sees summary numbers: total cost, monthly max impact, and balance at worst month
+  5. User can select projection horizon (3, 6, 12, 24 months)
+  6. Simulator is ephemeral (closing discards data), accessible from taskbar, and writes nothing to localStorage
+**Plans**: 2 plans
+
+Plans:
+- [x] 17-01-PLAN.md — Simulation engine: pure TS functions for applying expenses to projections + summary computation (SIM-01, SIM-03, SIM-04)
+- [x] 17-02-PLAN.md — SimulatorDialog UI with form, expense list, mini chart, summary stats, and taskbar wiring (SIM-01, SIM-02, SIM-03, SIM-04, SIM-05, SIM-06)
+
+</details>
+
+### Phase 18: Savings Rate Engine & Persistence
+**Goal**: User can configure how their monthly savings are estimated (auto/percentage/fixed), with the computation and persistence layer ready for downstream consumers
+**Depends on**: Phase 17 (v1.2 complete)
+**Requirements**: SAVE-01, SAVE-02, SAVE-03, SAVE-04, REF-01
+**Success Criteria** (what must be TRUE):
+  1. User can switch between three savings rate modes: auto (uses historical average), percentage of salary (0-100% slider), or fixed monthly amount
+  2. In auto mode, user sees the calculated value derived from averageMonthlyNetFlow; in percentage mode, user sees the resulting monthly amount update as the slider moves
+  3. The savings rate configuration persists across browser sessions (stored in localStorage under "savingsRateConfig" key)
+  4. computeSavingsEstimate() pure function exists and returns the correct savings scalar for all three modes given the user's financial data
+**Plans**: TBD
+
+### Phase 19: Projection Engine Refactor
+**Goal**: All projection consumers (Charts tab and Simulator) use the configured savings rate instead of the old estimateMonthlyNetSavings() calculation
+**Depends on**: Phase 18
+**Requirements**: REF-02, REF-03
+**Success Criteria** (what must be TRUE):
+  1. User opens the Charts tab and patrimony projections reflect the savings rate they configured in the panel (not the old hardcoded estimate)
+  2. User opens the Simulator and its baseline projection uses the same configured savings rate as the Charts tab -- both show identical baseline numbers
+  3. Changing the savings rate mode/value updates both Charts and Simulator projections consistently
+**Plans**: TBD
+
+### Phase 20: Waterfall Chart
+**Goal**: User sees a visual breakdown of how their monthly income flows through expense categories to arrive at free cash
+**Depends on**: Phase 18
+**Requirements**: FLOW-01, FLOW-02, FLOW-03, FLOW-04, FLOW-05
+**Success Criteria** (what must be TRUE):
+  1. User sees a waterfall chart showing: total income bar, then subtractive bars for gastos fijos (recurrentes), gastos variables (manuales), inversiones, ending with "libre" remainder
+  2. Fixed expenses are automatically classified by the presence of recurringId on the expense; all others are variable
+  3. Each waterfall segment shows subcategory breakdown (e.g., within "Gastos fijos": Netflix, alquiler, etc.)
+  4. When user adds a new expense, the waterfall updates to reflect the change without manual refresh
+  5. USD expenses are converted to ARS using each transaction's own usdRate (not the global rate)
+**Plans**: TBD
+
+### Phase 21: Monthly Flow Panel Assembly
+**Goal**: User has a complete Monthly Flow panel that combines waterfall, savings rate selector, mini-projection, and inline simulation into a single cohesive view
+**Depends on**: Phase 19, Phase 20
+**Requirements**: MPROJ-01, MPROJ-02, ISIM-01, ISIM-02
+**Success Criteria** (what must be TRUE):
+  1. Below the waterfall, user sees estimated patrimony at 12 months with three scenario lines (pesimista/base/optimista)
+  2. When user changes the savings rate, the mini-projection updates in real time to reflect the new estimate
+  3. User can enter a hypothetical monthly expense in an inline input and see both the waterfall and mini-projection adjust immediately
+  4. The inline simulation is ephemeral -- refreshing the page or navigating away discards the hypothetical expense
+  5. MonthlyFlowPanel is a props-only component that can be placed in any tab without internal hook dependencies
+**Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
 - v1.0: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 (complete)
 - v1.1: 11 -> 12 -> 13 (complete)
-- v1.2: 14 -> 15 -> 16
+- v1.2: 14 -> 15 -> 16 -> 17 (complete)
+- v1.3: 18 -> 19 + 20 (parallel, both depend on 18) -> 21
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -334,24 +413,11 @@ Plans:
 | 11. Core Setup Wizard | v1.1 | 2/2 | Complete | 2026-04-02 |
 | 12. Investments Step & Re-run | v1.1 | 2/2 | Complete | 2026-04-03 |
 | 13. Manual de Uso | v1.1 | 1/1 | Complete | 2026-04-03 |
-| 14. Recharts Upgrade & Chart Infrastructure | 2/2 | Complete    | 2026-04-03 | - |
-| 15. Projection Engine | 2/2 | Complete    | 2026-04-03 | - |
-| 16. Chart Components | 2/2 | Complete    | 2026-04-03 | - |
-
-### Phase 17: Simulador de Gastos Futuros
-
-**Goal:** User can simulate hypothetical future expenses (one-time and installment-based) in a self-contained dialog and instantly see the impact on their projected patrimony via a before/after chart — without modifying any real data
-**Depends on:** Phase 16
-**Requirements**: SIM-01, SIM-02, SIM-03, SIM-04, SIM-05, SIM-06
-**Success Criteria** (what must be TRUE):
-  1. User can define one-time and installment expenses with nombre, monto total, cuotas, and currency (ARS/USD)
-  2. User can add multiple simulated expenses and manage them in an editable list with delete buttons
-  3. User sees a mini chart with "Sin gastos simulados" vs "Con gastos simulados" lines that update when expenses are added/removed
-  4. User sees summary numbers: total cost, monthly max impact, and balance at worst month
-  5. User can select projection horizon (3, 6, 12, 24 months)
-  6. Simulator is ephemeral (closing discards data), accessible from taskbar, and writes nothing to localStorage
-**Plans**: 2 plans
-
-Plans:
-- [ ] 17-01-PLAN.md — Simulation engine: pure TS functions for applying expenses to projections + summary computation (SIM-01, SIM-03, SIM-04)
-- [ ] 17-02-PLAN.md — SimulatorDialog UI with form, expense list, mini chart, summary stats, and taskbar wiring (SIM-01, SIM-02, SIM-03, SIM-04, SIM-05, SIM-06)
+| 14. Recharts Upgrade & Chart Infrastructure | v1.2 | 2/2 | Complete | 2026-04-03 |
+| 15. Projection Engine | v1.2 | 2/2 | Complete | 2026-04-03 |
+| 16. Chart Components | v1.2 | 2/2 | Complete | 2026-04-03 |
+| 17. Simulador de Gastos Futuros | v1.2 | 2/2 | Complete | 2026-04-06 |
+| 18. Savings Rate Engine & Persistence | v1.3 | 0/? | Not started | - |
+| 19. Projection Engine Refactor | v1.3 | 0/? | Not started | - |
+| 20. Waterfall Chart | v1.3 | 0/? | Not started | - |
+| 21. Monthly Flow Panel Assembly | v1.3 | 0/? | Not started | - |

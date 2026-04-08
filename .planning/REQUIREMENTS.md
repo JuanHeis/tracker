@@ -139,12 +139,12 @@
 
 ### Simulador de Gastos Futuros
 
-- **SIM-01**: User puede definir gastos puntuales (1 cuota) y en cuotas (N cuotas) con nombre, monto total, cantidad de cuotas, y moneda (ARS/USD)
-- **SIM-02**: User puede agregar multiples gastos simulados y gestionarlos en una lista editable con botones de eliminar
-- **SIM-03**: User ve mini chart con dos lineas: "Sin gastos simulados" vs "Con gastos simulados" que se actualiza al agregar/eliminar gastos
-- **SIM-04**: User ve numeros resumen: costo total, maximo impacto mensual, y saldo en el peor mes
-- **SIM-05**: User puede seleccionar horizonte de proyeccion (3, 6, 12, 24 meses) dentro del simulador
-- **SIM-06**: Simulador es efimero (cerrar descarta datos), accesible desde taskbar, y no escribe nada a localStorage
+- [x] **SIM-01**: User puede definir gastos puntuales (1 cuota) y en cuotas (N cuotas) con nombre, monto total, cantidad de cuotas, y moneda (ARS/USD)
+- [x] **SIM-02**: User puede agregar multiples gastos simulados y gestionarlos en una lista editable con botones de eliminar
+- [x] **SIM-03**: User ve mini chart con dos lineas: "Sin gastos simulados" vs "Con gastos simulados" que se actualiza al agregar/eliminar gastos
+- [x] **SIM-04**: User ve numeros resumen: costo total, maximo impacto mensual, y saldo en el peor mes
+- [x] **SIM-05**: User puede seleccionar horizonte de proyeccion (3, 6, 12, 24 meses) dentro del simulador
+- [x] **SIM-06**: Simulador es efimero (cerrar descarta datos), accesible desde taskbar, y no escribe nada a localStorage
 
 ## v2 Requirements
 
@@ -171,33 +171,33 @@
 ### Waterfall
 
 - [ ] **FLOW-01**: User ve un waterfall chart del mes mostrando: ingresos totales → gastos fijos (recurrentes) → gastos variables (manuales) → inversiones → libre
-- [ ] **FLOW-02**: Gastos fijos se clasifican automáticamente por `recurringId` presente en el expense
-- [ ] **FLOW-03**: Cada segmento del waterfall muestra desglose por subcategoría
+- [ ] **FLOW-02**: Gastos fijos se clasifican automaticamente por `recurringId` presente en el expense
+- [ ] **FLOW-03**: Cada segmento del waterfall muestra desglose por subcategoria
 - [ ] **FLOW-04**: El waterfall se actualiza cuando el usuario carga un nuevo gasto
-- [ ] **FLOW-05**: Montos en USD se convierten a ARS usando `expense.usdRate` de cada transacción
+- [ ] **FLOW-05**: Montos en USD se convierten a ARS usando `expense.usdRate` de cada transaccion
 
 ### Tasa de Ahorro
 
-- [ ] **SAVE-01**: User puede elegir modo de tasa de ahorro: auto (promedio histórico), porcentaje del sueldo, o monto fijo
+- [ ] **SAVE-01**: User puede elegir modo de tasa de ahorro: auto (promedio historico), porcentaje del sueldo, o monto fijo
 - [ ] **SAVE-02**: En modo auto, se muestra el valor calculado con `averageMonthlyNetFlow`
 - [ ] **SAVE-03**: En modo porcentaje, slider/input 0-100 que muestra el monto resultante
-- [ ] **SAVE-04**: La configuración persiste entre sesiones en localStorage (key propia `"savingsRateConfig"`)
+- [ ] **SAVE-04**: La configuracion persiste entre sesiones en localStorage (key propia `"savingsRateConfig"`)
 
-### Mini-Proyección
+### Mini-Proyeccion
 
 - [ ] **MPROJ-01**: Debajo del waterfall, user ve patrimonio estimado a 12 meses con 3 escenarios (pesimista/base/optimista)
-- [ ] **MPROJ-02**: La mini-proyección se actualiza en tiempo real al cambiar la tasa de ahorro
+- [ ] **MPROJ-02**: La mini-proyeccion se actualiza en tiempo real al cambiar la tasa de ahorro
 
-### Simulación Inline
+### Simulacion Inline
 
-- [ ] **ISIM-01**: User puede ingresar un gasto hipotético mensual dentro del panel y ver cómo cambia el waterfall y la mini-proyección en tiempo real
-- [ ] **ISIM-02**: La simulación es efímera (no persiste, no modifica datos reales)
+- [ ] **ISIM-01**: User puede ingresar un gasto hipotetico mensual dentro del panel y ver como cambia el waterfall y la mini-proyeccion en tiempo real
+- [ ] **ISIM-02**: La simulacion es efimera (no persiste, no modifica datos reales)
 
 ### Refactor Proyecciones
 
 - [ ] **REF-01**: `computeSavingsEstimate()` reemplaza `estimateMonthlyNetSavings()` en el projection engine
-- [ ] **REF-02**: Charts tab usa la tasa de ahorro configurada en vez del cálculo viejo
-- [ ] **REF-03**: SimulatorDialog también usa la tasa de ahorro configurada
+- [ ] **REF-02**: Charts tab usa la tasa de ahorro configurada en vez del calculo viejo
+- [ ] **REF-03**: SimulatorDialog tambien usa la tasa de ahorro configurada
 
 ## Out of Scope
 
@@ -304,15 +304,31 @@
 | SIM-04 | Phase 17 | Complete |
 | SIM-05 | Phase 17 | Complete |
 | SIM-06 | Phase 17 | Complete |
+| SAVE-01 | Phase 18 | Pending |
+| SAVE-02 | Phase 18 | Pending |
+| SAVE-03 | Phase 18 | Pending |
+| SAVE-04 | Phase 18 | Pending |
+| REF-01 | Phase 18 | Pending |
+| REF-02 | Phase 19 | Pending |
+| REF-03 | Phase 19 | Pending |
+| FLOW-01 | Phase 20 | Pending |
+| FLOW-02 | Phase 20 | Pending |
+| FLOW-03 | Phase 20 | Pending |
+| FLOW-04 | Phase 20 | Pending |
+| FLOW-05 | Phase 20 | Pending |
+| MPROJ-01 | Phase 21 | Pending |
+| MPROJ-02 | Phase 21 | Pending |
+| ISIM-01 | Phase 21 | Pending |
+| ISIM-02 | Phase 21 | Pending |
 
 **Coverage:**
-- v1 requirements: 46 total — all complete
-- v1.1 requirements: 11 total — all complete
-- v1.2 requirements: 19 total — all complete
-- v1.3 requirements: 15 total — pending
-- Mapped to phases: 76 complete + 15 pending = 91 total
+- v1 requirements: 46 total -- all complete
+- v1.1 requirements: 11 total -- all complete
+- v1.2 requirements: 19 total -- all complete
+- v1.3 requirements: 17 total -- pending (mapped to Phases 18-21)
+- Mapped to phases: 76 complete + 17 pending = 93 total
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-01*
-*Last updated: 2026-04-07 — v1.3 requirements added (FLOW, SAVE, MPROJ, ISIM, REF)*
+*Last updated: 2026-04-07 -- v1.3 requirements mapped to Phases 18-21*
