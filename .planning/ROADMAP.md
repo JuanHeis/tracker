@@ -371,7 +371,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 19-01-PLAN.md — Wire savingsRate.estimate into useProjectionEngine and SimulatorDialog, delete estimateMonthlyNetSavings() (REF-02, REF-03)
+- [x] 19-01-PLAN.md — Wire savingsRate.estimate into useProjectionEngine and SimulatorDialog, delete estimateMonthlyNetSavings() (REF-02, REF-03)
 
 ### Phase 20: Waterfall Chart
 **Goal**: User sees a visual breakdown of how their monthly income flows through expense categories to arrive at free cash
@@ -425,6 +425,6 @@ Plans:
 | 16. Chart Components | v1.2 | 2/2 | Complete | 2026-04-03 |
 | 17. Simulador de Gastos Futuros | v1.2 | 2/2 | Complete | 2026-04-06 |
 | 18. Savings Rate Engine & Persistence | 2/2 | Complete    | 2026-04-08 | - |
-| 19. Projection Engine Refactor | v1.3 | 0/1 | Not started | - |
+| 19. Projection Engine Refactor | v1.3 | 1/1 | Complete    | 2026-04-10 |
 | 20. Waterfall Chart | v1.3 | 0/? | Not started | - |
 | 21. Monthly Flow Panel Assembly | v1.3 | 0/? | Not started | - |
