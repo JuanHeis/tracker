@@ -7,7 +7,6 @@ import { es } from "date-fns/locale";
 import type { MonthlyData } from "@/hooks/useMoneyTracker";
 import type { SalaryEntry } from "@/hooks/useSalaryHistory";
 import { getSalaryForMonth } from "@/hooks/useSalaryHistory";
-import type { RecurringExpense } from "@/hooks/useRecurringExpenses";
 import { CurrencyType } from "@/constants/investments";
 
 import type {
@@ -24,10 +23,7 @@ import {
   projectInvestment,
   computeObservedMonthlyRate,
 } from "@/lib/projection/compound-interest";
-import {
-  projectIncome,
-  estimateMonthlyNetSavings,
-} from "@/lib/projection/income-projection";
+import { projectIncome } from "@/lib/projection/income-projection";
 import { reconstructHistoricalPatrimony } from "@/lib/projection/patrimony-history";
 import { projectPatrimonyScenarios } from "@/lib/projection/scenario-engine";
 import type { Investment } from "@/hooks/useMoneyTracker";
@@ -118,7 +114,7 @@ function capitalize(s: string): string {
 export function useProjectionEngine(
   monthlyData: MonthlyData,
   salaryEntries: SalaryEntry[],
-  recurringExpenses: RecurringExpense[],
+  monthlyNetSavings: number,
   globalUsdRate: number,
   options?: {
     horizonMonths?: number;
@@ -160,12 +156,8 @@ export function useProjectionEngine(
     );
     const currentSalary = salaryResolution.amount;
 
-    // 5. Monthly net savings
-    const netSavings = estimateMonthlyNetSavings(
-      currentSalary,
-      recurringExpenses,
-      globalUsdRate
-    );
+    // 5. Monthly net savings (passed in from caller via savingsRate.estimate)
+    const netSavings = monthlyNetSavings;
 
     // 6. Income projection (flat-line for PROJ-03)
     const incomeProjection = projectIncome(currentSalary, horizonMonths);
@@ -299,7 +291,7 @@ export function useProjectionEngine(
   }, [
     monthlyData,
     salaryEntries,
-    recurringExpenses,
+    monthlyNetSavings,
     globalUsdRate,
     horizonMonths,
     includeContributions,

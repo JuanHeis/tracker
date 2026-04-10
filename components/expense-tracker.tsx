@@ -606,7 +606,7 @@ export function ExpenseTracker() {
                     monthlyData={monthlyData}
                     selectedYear={selectedYear}
                     salaryEntries={salaryHistory.entries}
-                    recurringExpenses={recurringExpenses}
+                    monthlyNetSavings={savingsRate.estimate}
                     globalUsdRate={globalUsdRate}
                   />
                 </CardContent>
@@ -1019,7 +1019,7 @@ export function ExpenseTracker() {
         open={simulatorOpen}
         onOpenChange={setSimulatorOpen}
         currentPatrimony={simCurrentPatrimony}
-        monthlyNetFlow={historicalNetFlow}
+        monthlyNetFlow={savingsRate.estimate}
         globalUsdRate={globalUsdRate}
         investments={monthlyData.investments.filter(i => i.status === "Activa" && !i.isLiquid)}
         customAnnualRates={customAnnualRates}

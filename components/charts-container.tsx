@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { MonthlyData } from "@/hooks/useMoneyTracker";
 import type { SalaryEntry } from "@/hooks/useSalaryHistory";
-import type { RecurringExpense } from "@/hooks/useRecurringExpenses";
 import { useProjectionEngine } from "@/hooks/useProjectionEngine";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import type { CustomAnnualRates } from "@/lib/projection/types";
@@ -18,7 +17,7 @@ interface ChartsContainerProps {
   monthlyData: MonthlyData;
   selectedYear: string;
   salaryEntries: SalaryEntry[];
-  recurringExpenses: RecurringExpense[];
+  monthlyNetSavings: number;
   globalUsdRate: number;
 }
 
@@ -26,7 +25,7 @@ export default function ChartsContainer({
   monthlyData,
   selectedYear,
   salaryEntries,
-  recurringExpenses,
+  monthlyNetSavings,
   globalUsdRate,
 }: ChartsContainerProps) {
   const [customAnnualRates] = useLocalStorage<CustomAnnualRates>("customAnnualRates", {});
@@ -43,7 +42,7 @@ export default function ChartsContainer({
   const projection = useProjectionEngine(
     monthlyData,
     salaryEntries,
-    recurringExpenses,
+    monthlyNetSavings,
     globalUsdRate,
     { horizonMonths, includeContributions, customAnnualRates, useRealRates, contributionOverrides }
   );
