@@ -402,8 +402,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 21-01-PLAN.md — MiniProjectionChart + MonthlyFlowPanel shell component (MPROJ-01, MPROJ-02, ISIM-01, ISIM-02)
-- [ ] 21-02-PLAN.md — Wire MonthlyFlowPanel into expense-tracker.tsx, replace ResumenCard, relocate SavingsRateSelector (MPROJ-01, MPROJ-02, ISIM-01, ISIM-02)
+- [x] 21-01-PLAN.md — MiniProjectionChart + MonthlyFlowPanel shell component (MPROJ-01, MPROJ-02, ISIM-01, ISIM-02)
+- [x] 21-02-PLAN.md — Wire MonthlyFlowPanel into expense-tracker.tsx, replace ResumenCard, relocate SavingsRateSelector (MPROJ-01, MPROJ-02, ISIM-01, ISIM-02)
 
 ## Progress
 
@@ -435,4 +435,4 @@ Plans:
 | 18. Savings Rate Engine & Persistence | v1.3 | 2/2 | Complete | 2026-04-08 |
 | 19. Projection Engine Refactor | v1.3 | 1/1 | Complete | 2026-04-10 |
 | 20. Waterfall Chart | v1.3 | 2/2 | Complete | 2026-04-11 |
-| 21. Monthly Flow Panel Assembly | v1.3 | 0/2 | Not started | - |
+| 21. Monthly Flow Panel Assembly | v1.3 | 2/2 | Complete   | 2026-04-11 |
