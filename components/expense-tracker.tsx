@@ -49,7 +49,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ResumenCard } from "@/components/resumen-card";
+import { MonthlyFlowPanel } from "@/components/monthly-flow-panel";
 import { PatrimonioCard } from "@/components/patrimonio-card";
 import { SettingsPanel } from "@/components/settings-panel";
 import { ExpensesTable } from "@/components/expenses-table";
@@ -82,7 +82,8 @@ import { reconstructHistoricalPatrimony } from "@/lib/projection/patrimony-histo
 import { calculateMonthlyNetFlow, averageMonthlyNetFlow } from "@/lib/projection/net-flow";
 import { SetupWizard } from "@/components/setup-wizard/setup-wizard";
 import { useSavingsRate } from "@/hooks/useSavingsRate";
-import { SavingsRateSelector } from "@/components/savings-rate-selector";
+import { useMonthlyFlowData } from "@/hooks/useMonthlyFlowData";
+import { useProjectionEngine } from "@/hooks/useProjectionEngine";
 import { SAVINGS_RATE_KEY } from "@/lib/projection/savings-rate";
 
 function validateField(
@@ -265,6 +266,38 @@ export function ExpenseTracker() {
 
   // Savings rate hook (config persisted in localStorage, estimate computed from mode)
   const savingsRate = useSavingsRate(currentMonthSalary.amount, historicalNetFlow);
+
+  // Waterfall data for MonthlyFlowPanel
+  const waterfallData = useMonthlyFlowData(
+    monthlyData.expenses,
+    monthlyData.investments,
+    currentMonthSalary.amount,
+    monthlyData.extraIncomes || [],
+    selectedMonth,
+    viewMode,
+    incomeConfig.payDay,
+  );
+
+  // Mini-projection for MonthlyFlowPanel (12-month horizon, no contributions)
+  const miniProjection = useProjectionEngine(
+    monthlyData,
+    salaryHistory.entries,
+    savingsRate.estimate,
+    globalUsdRate,
+    { horizonMonths: 12 }
+  );
+
+  // Derive mini-projection chart data for MonthlyFlowPanel
+  const miniProjectionChartData = useMemo(() => {
+    return miniProjection.patrimonyData
+      .filter(p => p.proyeccionBase !== null)
+      .map(p => ({
+        month: p.month,
+        optimista: p.proyeccionOptimista ?? 0,
+        base: p.proyeccionBase ?? 0,
+        pesimista: p.proyeccionPesimista ?? 0,
+      }));
+  }, [miniProjection.patrimonyData]);
 
   // Otros ingresos: sum of ARS extra incomes for current period
   const otrosIngresosArs = filteredIncomes
@@ -696,27 +729,16 @@ export function ExpenseTracker() {
           </Tabs>
 
           <div className="flex flex-col gap-4">
-            <ResumenCard
-              ingresoFijo={currentMonthSalary.amount}
-              ingresoFijoIsOverride={currentMonthSalary.isOverride}
-              otrosIngresos={otrosIngresosArs}
-              aguinaldoAmount={aguinaldoData?.amount ?? null}
-              aguinaldoInfo={
-                aguinaldoData
-                  ? { bestSalary: aguinaldoData.bestSalary, isOverride: aguinaldoData.isOverride }
-                  : null
-              }
-              totalGastos={totalExpenses}
-              aportesInversiones={dualBalancesForCards.arsInvestmentContributions}
-              porPagarArs={porPagarArs}
-              porPagarUsd={porPagarUsd}
-              disponible={availableMoney}
-              isPendiente={isPendiente}
-              payDay={incomeConfig.payDay}
-              aguinaldoPreview={aguinaldoPreviewData}
-              onSetAguinaldoOverride={setAguinaldoOverride}
-              onClearAguinaldoOverride={clearAguinaldoOverride}
-              selectedMonth={selectedMonth}
+            <MonthlyFlowPanel
+              waterfallData={waterfallData}
+              savingsRateConfig={savingsRate.config}
+              onSavingsRateConfigChange={savingsRate.setConfig}
+              savingsEstimate={savingsRate.estimate}
+              currentSalary={currentMonthSalary.amount}
+              averageNetFlow={historicalNetFlow}
+              currentPatrimony={miniProjection.currentPatrimony}
+              projectedPatrimony={miniProjection.projectedPatrimony}
+              projectionData={miniProjectionChartData}
             />
             <PatrimonioCard
               arsBalancePeriod={dualBalancesForCards.arsBalancePeriod}
@@ -738,13 +760,6 @@ export function ExpenseTracker() {
               globalUsdRate={globalUsdRate}
               exchangeGainLoss={calculateExchangeGainLoss()}
               onDelete={handleDeleteUsdPurchase}
-            />
-            <SavingsRateSelector
-              config={savingsRate.config}
-              onConfigChange={savingsRate.setConfig}
-              estimate={savingsRate.estimate}
-              currentSalary={currentMonthSalary.amount}
-              averageNetFlow={historicalNetFlow}
             />
           </div>
         </div>
