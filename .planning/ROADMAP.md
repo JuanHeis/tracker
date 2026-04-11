@@ -383,7 +383,11 @@ Plans:
   3. Each waterfall segment shows subcategory breakdown (e.g., within "Gastos fijos": Netflix, alquiler, etc.)
   4. When user adds a new expense, the waterfall updates to reflect the change without manual refresh
   5. USD expenses are converted to ARS using each transaction's own usdRate (not the global rate)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 20-01-PLAN.md — TDD computeWaterfallData pure function with types and tests (FLOW-01, FLOW-02, FLOW-03, FLOW-05)
+- [ ] 20-02-PLAN.md — useMonthlyFlowData hook + WaterfallChart component + tooltip (FLOW-01, FLOW-03, FLOW-04)
 
 ### Phase 21: Monthly Flow Panel Assembly
 **Goal**: User has a complete Monthly Flow panel that combines waterfall, savings rate selector, mini-projection, and inline simulation into a single cohesive view
@@ -426,5 +430,5 @@ Plans:
 | 17. Simulador de Gastos Futuros | v1.2 | 2/2 | Complete | 2026-04-06 |
 | 18. Savings Rate Engine & Persistence | 2/2 | Complete    | 2026-04-08 | - |
 | 19. Projection Engine Refactor | v1.3 | 1/1 | Complete    | 2026-04-10 |
-| 20. Waterfall Chart | v1.3 | 0/? | Not started | - |
+| 20. Waterfall Chart | v1.3 | 0/2 | Not started | - |
 | 21. Monthly Flow Panel Assembly | v1.3 | 0/? | Not started | - |
