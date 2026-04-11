@@ -50,6 +50,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { MonthlyFlowPanel } from "@/components/monthly-flow-panel";
+import { ResumenCard } from "@/components/resumen-card";
 import { PatrimonioCard } from "@/components/patrimonio-card";
 import { SettingsPanel } from "@/components/settings-panel";
 import { ExpensesTable } from "@/components/expenses-table";
@@ -729,6 +730,28 @@ export function ExpenseTracker() {
           </Tabs>
 
           <div className="flex flex-col gap-4">
+            <ResumenCard
+              ingresoFijo={currentMonthSalary.amount}
+              ingresoFijoIsOverride={currentMonthSalary.isOverride}
+              otrosIngresos={otrosIngresosArs}
+              aguinaldoAmount={aguinaldoData?.amount ?? null}
+              aguinaldoInfo={
+                aguinaldoData
+                  ? { bestSalary: aguinaldoData.bestSalary, isOverride: aguinaldoData.isOverride }
+                  : null
+              }
+              totalGastos={totalExpenses}
+              aportesInversiones={dualBalancesForCards.arsInvestmentContributions}
+              porPagarArs={porPagarArs}
+              porPagarUsd={porPagarUsd}
+              disponible={availableMoney}
+              isPendiente={isPendiente}
+              payDay={incomeConfig.payDay}
+              aguinaldoPreview={aguinaldoPreviewData}
+              onSetAguinaldoOverride={setAguinaldoOverride}
+              onClearAguinaldoOverride={clearAguinaldoOverride}
+              selectedMonth={selectedMonth}
+            />
             <MonthlyFlowPanel
               waterfallData={waterfallData}
               savingsRateConfig={savingsRate.config}
