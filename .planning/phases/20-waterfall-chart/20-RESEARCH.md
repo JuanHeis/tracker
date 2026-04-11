@@ -463,22 +463,17 @@ Based on the project's existing color conventions (green for income, red for exp
 | A2 | Animation duration of 600ms with ease-out easing | Code Examples | Low -- within Claude's discretion area |
 | A3 | Salary for waterfall includes only the resolved salary amount (no aguinaldo in the bar) | Architecture | Medium -- unclear if aguinaldo should be part of "Ingresos" bar in aguinaldo months; however ResumenCard shows it separately, so following that pattern |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Aguinaldo inclusion in Ingresos bar**
+1. **Aguinaldo inclusion in Ingresos bar** — RESOLVED
    - What we know: ResumenCard shows aguinaldo as a separate line item under ingresos. The waterfall shows "Ingresos totales" as the first bar.
-   - What's unclear: Should aguinaldo be included in the Ingresos bar during June/December? The FLOW-01 description says "ingresos totales" which likely includes all income.
-   - Recommendation: Include aguinaldo in the Ingresos total (salary + extraIncomes + aguinaldo if applicable). The subcategory tooltip can break it down as "Ingreso fijo: $X", "Aguinaldo: $Y", "Otros ingresos: $Z". This matches the "total income" concept.
+   - Resolution: `salaryAmount` parameter is the resolved salary from `getSalaryForMonth()` which does NOT include aguinaldo. The waterfall excludes aguinaldo from the Ingresos bar to match ResumenCard's separation pattern. Aguinaldo is a semi-annual bonus, not monthly flow — including it would distort the monthly waterfall in June/December. If the user later wants it, Phase 21 can add it as an optional toggle.
 
-2. **Negative "Libre" segment**
-   - What we know: If expenses + investments exceed income, the "Libre" value would be negative.
-   - What's unclear: How to visually represent a negative remainder in the waterfall.
-   - Recommendation: If libre is negative, render the bar below the X-axis (barBottom = libreAmount, barTop = 0) with a distinct color (e.g., red tint). The running total naturally handles this since barBottom will be negative.
+2. **Negative "Libre" segment** — RESOLVED
+   - Resolution: If libre is negative, render the bar below the X-axis (barBottom = libreAmount, barTop = 0). Plan 01 `<behavior>` edge case section already handles this: "Negative libre (expenses > income): Libre bar has barBottom=negative, barTop=0". The running total arithmetic naturally handles this.
 
-3. **Extra incomes in USD**
-   - What we know: ExtraIncome has currencyType and usdRate fields, same as Expense.
-   - What's unclear: D-09 mentions expense.usdRate conversion, but extraIncomes also need the same treatment.
-   - Recommendation: Apply the same per-transaction usdRate conversion pattern to extraIncomes: `income.currencyType === "USD" ? income.amount * income.usdRate : income.amount`.
+3. **Extra incomes in USD** — RESOLVED
+   - Resolution: Apply the same per-transaction usdRate conversion to extraIncomes: `income.currencyType === "USD" ? income.amount * income.usdRate : income.amount`. Plan 01 `<behavior>` edge case section already includes: "Extra incomes included in Ingresos total (including USD extraIncomes converted)". The `toArsIncome()` helper mirrors the `toArs()` expense helper.
 
 ## Sources
 
