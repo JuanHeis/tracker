@@ -399,7 +399,11 @@ Plans:
   3. User can enter a hypothetical monthly expense in an inline input and see both the waterfall and mini-projection adjust immediately
   4. The inline simulation is ephemeral -- refreshing the page or navigating away discards the hypothetical expense
   5. MonthlyFlowPanel is a props-only component that can be placed in any tab without internal hook dependencies
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 21-01-PLAN.md — MiniProjectionChart + MonthlyFlowPanel shell component (MPROJ-01, MPROJ-02, ISIM-01, ISIM-02)
+- [ ] 21-02-PLAN.md — Wire MonthlyFlowPanel into expense-tracker.tsx, replace ResumenCard, relocate SavingsRateSelector (MPROJ-01, MPROJ-02, ISIM-01, ISIM-02)
 
 ## Progress
 
@@ -428,7 +432,7 @@ Plans:
 | 15. Projection Engine | v1.2 | 2/2 | Complete | 2026-04-03 |
 | 16. Chart Components | v1.2 | 2/2 | Complete | 2026-04-03 |
 | 17. Simulador de Gastos Futuros | v1.2 | 2/2 | Complete | 2026-04-06 |
-| 18. Savings Rate Engine & Persistence | 2/2 | Complete    | 2026-04-08 | - |
-| 19. Projection Engine Refactor | v1.3 | 1/1 | Complete    | 2026-04-10 |
-| 20. Waterfall Chart | v1.3 | 2/2 | Complete   | 2026-04-11 |
-| 21. Monthly Flow Panel Assembly | v1.3 | 0/? | Not started | - |
+| 18. Savings Rate Engine & Persistence | v1.3 | 2/2 | Complete | 2026-04-08 |
+| 19. Projection Engine Refactor | v1.3 | 1/1 | Complete | 2026-04-10 |
+| 20. Waterfall Chart | v1.3 | 2/2 | Complete | 2026-04-11 |
+| 21. Monthly Flow Panel Assembly | v1.3 | 0/2 | Not started | - |
