@@ -136,11 +136,29 @@ export function useExpensesTracker(
       ...(isPending ? { isPaid: false as const } : { isPaid: undefined }),
     };
 
+    const isSiblingInstallment = (expense: Expense) =>
+      expense.id !== editingExpense.id &&
+      expense.installments &&
+      editingExpense.installments &&
+      expense.installments.startDate === editingExpense.installments.startDate &&
+      expense.installments.total === editingExpense.installments.total;
+
     updateMonthlyData({
       ...monthlyData,
-      expenses: monthlyData.expenses.map((expense) =>
-        expense.id === editingExpense.id ? updatedExpense : expense
-      ),
+      expenses: monthlyData.expenses.map((expense) => {
+        if (expense.id === editingExpense.id) return updatedExpense;
+        if (isSiblingInstallment(expense)) {
+          return {
+            ...expense,
+            name: updatedExpense.name,
+            amount: updatedExpense.amount,
+            usdRate: updatedExpense.usdRate,
+            category: updatedExpense.category,
+            currencyType: updatedExpense.currencyType,
+          };
+        }
+        return expense;
+      }),
     });
 
     setOpen(false);
