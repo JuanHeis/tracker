@@ -270,9 +270,9 @@ function buildIngresosSubcategories(
     extraMap.set(ei.name, (extraMap.get(ei.name) ?? 0) + amount);
   }
 
-  for (const [name, amount] of extraMap) {
+  extraMap.forEach((amount, name) => {
     items.push({ name, amount });
-  }
+  });
 
   // Sort by amount descending
   items.sort((a, b) => b.amount - a.amount);
