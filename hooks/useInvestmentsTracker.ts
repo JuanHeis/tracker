@@ -67,12 +67,13 @@ export function useInvestmentsTracker(
     });
   };
 
-  const handleAddMovement = (investmentId: string, movement: { date: string; type: "aporte" | "retiro"; amount: number }) => {
+  const handleAddMovement = (investmentId: string, movement: { date: string; type: "aporte" | "retiro"; amount: number; pendingIngreso?: boolean }) => {
     const newMovement: InvestmentMovement = {
       id: crypto.randomUUID(),
       date: movement.date,
       type: movement.type,
       amount: movement.amount,
+      ...(movement.pendingIngreso && { pendingIngreso: true }),
     };
     updateInvestment(investmentId, (inv) => {
       const valueAdjustment = movement.type === "aporte" ? movement.amount : -movement.amount;
@@ -93,6 +94,28 @@ export function useInvestmentsTracker(
     }));
   };
 
+  const handleConfirmRetiro = (
+    investmentId: string,
+    movementId: string,
+    receivedAmount?: number
+  ) => {
+    updateInvestment(investmentId, (inv) => ({
+      ...inv,
+      movements: inv.movements.map((m) =>
+        m.id === movementId
+          ? {
+              ...m,
+              pendingIngreso: undefined,
+              ...(receivedAmount !== undefined && receivedAmount !== m.amount
+                ? { receivedAmount }
+                : {}),
+            }
+          : m
+      ),
+      lastUpdated: format(new Date(), "yyyy-MM-dd"),
+    }));
+  };
+
   const handleUpdateValue = (investmentId: string, newValue: number) => {
     updateInvestment(investmentId, (inv) => ({
       ...inv,
@@ -103,18 +126,24 @@ export function useInvestmentsTracker(
 
   const handleFinalizeInvestment = (investmentId: string) => {
     const today = format(new Date(), "yyyy-MM-dd");
-    updateInvestment(investmentId, (inv) => ({
-      ...inv,
-      status: "Finalizada" as const,
-      movements: [...inv.movements, {
-        id: crypto.randomUUID(),
-        date: today,
-        type: "retiro" as const,
-        amount: inv.currentValue,
-      }],
-      currentValue: 0,
-      lastUpdated: today,
-    }));
+    updateInvestment(investmentId, (inv) => {
+      // Only add a retiro movement if there's remaining value to withdraw
+      const newMovements = inv.currentValue > 0
+        ? [...inv.movements, {
+            id: crypto.randomUUID(),
+            date: today,
+            type: "retiro" as const,
+            amount: inv.currentValue,
+          }]
+        : inv.movements;
+      return {
+        ...inv,
+        status: "Finalizada" as const,
+        movements: newMovements,
+        currentValue: 0,
+        lastUpdated: today,
+      };
+    });
   };
 
   const handleUpdatePFFields = (investmentId: string, fields: { tna?: number; plazoDias?: number; startDate?: string }) => {
@@ -191,6 +220,7 @@ export function useInvestmentsTracker(
     // New movement and value operations
     handleAddMovement,
     handleDeleteMovement,
+    handleConfirmRetiro,
     handleUpdateValue,
     handleFinalizeInvestment,
     handleUpdatePFFields,

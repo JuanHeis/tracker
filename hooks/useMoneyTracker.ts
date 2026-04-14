@@ -66,6 +66,8 @@ export interface InvestmentMovement {
   type: "aporte" | "retiro";
   amount: number;
   isInitial?: boolean;   // true for wizard-loaded patrimony (not counted as monthly outflow)
+  pendingIngreso?: boolean;   // true = retiro requested but funds not yet received
+  receivedAmount?: number;    // actual amount received (may differ from amount due to exchange rate)
 }
 
 export interface Investment {
@@ -776,6 +778,7 @@ export function useMoneyTracker() {
     // New movement and value operations
     handleAddMovement: investmentsTracker.handleAddMovement,
     handleDeleteMovement: investmentsTracker.handleDeleteMovement,
+    handleConfirmRetiro: investmentsTracker.handleConfirmRetiro,
     handleUpdateValue: investmentsTracker.handleUpdateValue,
     handleFinalizeInvestment: investmentsTracker.handleFinalizeInvestment,
     handleUpdatePFFields: investmentsTracker.handleUpdatePFFields,

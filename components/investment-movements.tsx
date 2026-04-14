@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format, parse } from "date-fns";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Check } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -32,21 +32,26 @@ interface InvestmentMovementsProps {
   investment: Investment;
   onAddMovement: (
     investmentId: string,
-    movement: { date: string; type: "aporte" | "retiro"; amount: number }
+    movement: { date: string; type: "aporte" | "retiro"; amount: number; pendingIngreso?: boolean }
   ) => void;
   onDeleteMovement: (investmentId: string, movementId: string) => void;
+  onConfirmRetiro: (investmentId: string, movementId: string, receivedAmount?: number) => void;
 }
 
 export function InvestmentMovements({
   investment,
   onAddMovement,
   onDeleteMovement,
+  onConfirmRetiro,
 }: InvestmentMovementsProps) {
   const [showAll, setShowAll] = useState(false);
   const [movementType, setMovementType] = useState<"aporte" | "retiro">(
     "aporte"
   );
+  const [markPending, setMarkPending] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [confirmingMovement, setConfirmingMovement] = useState<string | null>(null);
+  const [adjustedAmount, setAdjustedAmount] = useState<number>(0);
 
   const handleConfirmDelete = () => {
     if (deleteTarget) {
@@ -76,10 +81,12 @@ export function InvestmentMovements({
       date,
       type: movementType,
       amount,
+      ...(movementType === "retiro" && markPending ? { pendingIngreso: true } : {}),
     });
 
     e.currentTarget.reset();
     setMovementType("aporte");
+    setMarkPending(false);
   };
 
   return (
@@ -129,6 +136,17 @@ export function InvestmentMovements({
           <Button type="submit" size="sm" className="h-8">
             <Plus className="h-4 w-4" />
           </Button>
+          {movementType === "retiro" && (
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none ml-1">
+              <input
+                type="checkbox"
+                checked={markPending}
+                onChange={(e) => setMarkPending(e.target.checked)}
+                className="rounded border-gray-300 h-3.5 w-3.5 accent-amber-500"
+              />
+              Pendiente de ingreso
+            </label>
+          )}
         </form>
       )}
 
@@ -166,18 +184,44 @@ export function InvestmentMovements({
                   >
                     {movement.type === "aporte" ? "Aporte" : "Retiro"}
                   </Badge>
+                  {movement.pendingIngreso && (
+                    <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 text-[10px] px-1.5 py-0">
+                      Pendiente
+                    </Badge>
+                  )}
                   <span className="tabular-nums font-medium">
                     {currencySymbol(investment.currencyType)}{movement.amount.toLocaleString()}
+                    {movement.receivedAmount !== undefined && movement.receivedAmount !== movement.amount && (
+                      <span className="text-xs text-muted-foreground ml-1">
+                        (recibido: {currencySymbol(investment.currencyType)}{movement.receivedAmount.toLocaleString()})
+                      </span>
+                    )}
                   </span>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
-                  onClick={() => setDeleteTarget(movement.id)}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
+                <div className="flex items-center gap-0.5">
+                  {movement.type === "retiro" && movement.pendingIngreso && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-green-600 hover:bg-green-100 dark:hover:bg-green-900"
+                      onClick={() => {
+                        setConfirmingMovement(movement.id);
+                        setAdjustedAmount(movement.amount);
+                      }}
+                      title="Confirmar ingreso"
+                    >
+                      <Check className="h-3 w-3" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
+                    onClick={() => setDeleteTarget(movement.id)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -217,6 +261,49 @@ export function InvestmentMovements({
             className="bg-red-600 hover:bg-red-700 text-white"
           >
             Eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog open={!!confirmingMovement} onOpenChange={(open) => !open && setConfirmingMovement(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirmar ingreso del retiro</AlertDialogTitle>
+          <AlertDialogDescription>
+            El monto original del retiro es {currencySymbol(investment.currencyType)}
+            {(() => {
+              const mov = investment.movements.find(m => m.id === confirmingMovement);
+              return mov ? mov.amount.toLocaleString() : "0";
+            })()}.
+            Si recibiste un monto diferente, ajustalo abajo.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="py-2">
+          <label className="text-sm text-muted-foreground">Monto recibido</label>
+          <CurrencyInput
+            value={adjustedAmount}
+            onValueChange={(val) => setAdjustedAmount(val)}
+            className="h-8 w-full mt-1"
+          />
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              if (confirmingMovement) {
+                onConfirmRetiro(
+                  investment.id,
+                  confirmingMovement,
+                  adjustedAmount > 0 ? adjustedAmount : undefined
+                );
+                setConfirmingMovement(null);
+                setAdjustedAmount(0);
+              }
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            Confirmar ingreso
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

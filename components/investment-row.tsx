@@ -30,9 +30,10 @@ interface InvestmentRowProps {
   onToggleExpand: () => void;
   onAddMovement: (
     investmentId: string,
-    movement: { date: string; type: "aporte" | "retiro"; amount: number }
+    movement: { date: string; type: "aporte" | "retiro"; amount: number; pendingIngreso?: boolean }
   ) => void;
   onDeleteMovement: (investmentId: string, movementId: string) => void;
+  onConfirmRetiro: (investmentId: string, movementId: string, receivedAmount?: number) => void;
   onUpdateValue: (investmentId: string, newValue: number) => void;
   onUpdatePFFields: (
     investmentId: string,
@@ -56,6 +57,7 @@ export function InvestmentRow({
   onToggleExpand,
   onAddMovement,
   onDeleteMovement,
+  onConfirmRetiro,
   onUpdateValue,
   onUpdatePFFields,
   onFinalize,
@@ -65,6 +67,9 @@ export function InvestmentRow({
   const isHydrated = useHydration();
   const isPF = investment.type === "Plazo Fijo";
   const isFinalized = investment.status === "Finalizada";
+  const hasPendingRetiros = investment.movements.some(
+    (m) => m.type === "retiro" && m.pendingIngreso
+  );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const handleConfirmDelete = () => {
@@ -74,10 +79,14 @@ export function InvestmentRow({
     }
   };
 
-  const capitalInvested = investment.movements.reduce(
-    (sum, m) => (m.type === "aporte" ? sum + m.amount : sum - m.amount),
-    0
-  );
+  const capitalInvested = isFinalized
+    ? investment.movements
+        .filter((m) => m.type === "aporte")
+        .reduce((sum, m) => sum + m.amount, 0)
+    : investment.movements.reduce(
+        (sum, m) => (m.type === "aporte" ? sum + m.amount : sum - m.amount),
+        0
+      );
 
   return (
     <>
@@ -103,6 +112,11 @@ export function InvestmentRow({
             {isPFExpired(investment) && !isFinalized && (
               <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 text-[10px] px-1.5 py-0">
                 Vencido
+              </Badge>
+            )}
+            {hasPendingRetiros && !isFinalized && (
+              <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 text-[10px] px-1.5 py-0">
+                Pendiente
               </Badge>
             )}
           </div>
@@ -178,6 +192,7 @@ export function InvestmentRow({
                 investment={investment}
                 onAddMovement={onAddMovement}
                 onDeleteMovement={onDeleteMovement}
+                onConfirmRetiro={onConfirmRetiro}
               />
             </div>
           </TableCell>

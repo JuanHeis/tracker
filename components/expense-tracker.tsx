@@ -173,6 +173,7 @@ export function ExpenseTracker() {
     // New investment operations (wired for 02-04 InvestmentsTable rewrite)
     handleAddMovement,
     handleDeleteMovement,
+    handleConfirmRetiro,
     handleUpdateValue,
     handleFinalizeInvestment,
     handleUpdatePFFields,
@@ -274,9 +275,11 @@ export function ExpenseTracker() {
     monthlyData.investments,
     currentMonthSalary.amount,
     monthlyData.extraIncomes || [],
+    monthlyData.transfers || [],
     selectedMonth,
     viewMode,
     incomeConfig.payDay,
+    savingsRate.estimate,
   );
 
   // Mini-projection for MonthlyFlowPanel (12-month horizon, no contributions)
@@ -620,6 +623,7 @@ export function ExpenseTracker() {
                     onDelete={handleDeleteInvestment}
                     onAddMovement={handleAddMovement}
                     onDeleteMovement={handleDeleteMovement}
+                    onConfirmRetiro={handleConfirmRetiro}
                     onUpdateValue={handleUpdateValue}
                     onFinalize={handleFinalizeInvestment}
                     onUpdatePFFields={handleUpdatePFFields}

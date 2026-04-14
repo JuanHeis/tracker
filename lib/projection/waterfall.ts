@@ -4,6 +4,7 @@ import type {
   Expense,
   ExtraIncome,
   Investment,
+  Transfer,
 } from "@/hooks/useMoneyTracker";
 import { CurrencyType } from "@/constants/investments";
 import { parseISO, isWithinInterval } from "date-fns";
@@ -31,9 +32,11 @@ export interface WaterfallInput {
   investments: Investment[];
   salaryAmount: number;
   extraIncomes: ExtraIncome[];
+  transfers: Transfer[];
   selectedMonth: string;
   viewMode: ViewMode;
   payDay: number;
+  savingsEstimate: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -45,6 +48,7 @@ export const WATERFALL_COLORS = {
   gastosFijos: "#ef4444",
   gastosVariables: "#f97316",
   inversiones: "#3b82f6",
+  ahorro: "#8b5cf6",
   libre: "#10b981",
 } as const;
 
@@ -127,9 +131,11 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
     investments,
     salaryAmount,
     extraIncomes,
+    transfers,
     selectedMonth,
     viewMode,
     payDay,
+    savingsEstimate,
   } = input;
 
   const dateRange = getFilterDateRange(selectedMonth, viewMode, payDay);
@@ -141,6 +147,11 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
   const filteredExtraIncomes = extraIncomes.filter((ei) =>
     isInRange(ei.date, dateRange),
   );
+
+  // --- Initial balance from adjustment transfers within date range ---
+  const initialBalanceArs = transfers
+    .filter((t) => t.type === "adjustment_ars" && isInRange(t.date, dateRange))
+    .reduce((sum, t) => sum + (t.amount ?? 0), 0);
 
   // --- Classify expenses ---
   const { fixed, variable } = classifyExpenses(filteredExpenses);
@@ -156,7 +167,7 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
   );
 
   // --- Ingresos total ---
-  const ingresosTotal = salaryAmount + extraIncomesTotal;
+  const ingresosTotal = salaryAmount + extraIncomesTotal + initialBalanceArs;
 
   // --- Investment movements (filtered by date, exclude isInitial) ---
   let investmentNet = 0;
@@ -174,7 +185,9 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
       if (mov.type === "aporte") {
         invNet += mov.amount;
       } else {
-        invNet -= mov.amount;
+        // Use receivedAmount when available (actual cash received may differ
+        // from withdrawal amount due to exchange rate at settlement time)
+        invNet -= mov.receivedAmount ?? mov.amount;
       }
     }
 
@@ -199,6 +212,7 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
     subcategories: buildIngresosSubcategories(
       salaryAmount,
       filteredExtraIncomes,
+      initialBalanceArs,
     ),
   };
 
@@ -236,6 +250,18 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
     ),
   };
 
+  // --- Ahorro (savings) bar ---
+  const ahorroAmount = Math.max(0, savingsEstimate);
+  running -= ahorroAmount;
+  const ahorroBar: WaterfallBar = {
+    name: "Ahorro",
+    barBottom: running,
+    barTop: running + ahorroAmount,
+    amount: ahorroAmount,
+    fill: WATERFALL_COLORS.ahorro,
+    subcategories: [],
+  };
+
   const libreAmount = running;
   const libreBar: WaterfallBar = {
     name: "Libre",
@@ -246,7 +272,13 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
     subcategories: [],
   };
 
-  return [ingresoBar, gastosFijosBar, gastosVariablesBar, inversionesBar, libreBar];
+  // Only include Ahorro bar if there's a savings amount
+  const bars = [ingresoBar, gastosFijosBar, gastosVariablesBar, inversionesBar];
+  if (ahorroAmount > 0) {
+    bars.push(ahorroBar);
+  }
+  bars.push(libreBar);
+  return bars;
 }
 
 // ---------------------------------------------------------------------------
@@ -256,8 +288,13 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
 function buildIngresosSubcategories(
   salaryAmount: number,
   extraIncomes: ExtraIncome[],
+  initialBalanceArs: number,
 ): SubcategoryItem[] {
   const items: SubcategoryItem[] = [];
+
+  if (initialBalanceArs > 0) {
+    items.push({ name: "Saldo Inicial", amount: initialBalanceArs });
+  }
 
   if (salaryAmount > 0) {
     items.push({ name: "Sueldo", amount: salaryAmount });
