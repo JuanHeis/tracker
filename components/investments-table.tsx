@@ -46,6 +46,7 @@ interface InvestmentsTableProps {
   onConfirmRetiro: (investmentId: string, movementId: string, receivedAmount?: number) => void;
   onUpdateValue: (investmentId: string, newValue: number) => void;
   onUpdatePFFields: (investmentId: string, fields: { tna?: number; plazoDias?: number; startDate?: string }) => void;
+  onEditMovement: (investmentId: string, movementId: string, updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number }) => void;
   onFinalize: (investmentId: string) => void;
 }
 
@@ -56,6 +57,7 @@ export function InvestmentsTable({
   onAddMovement,
   onDeleteMovement,
   onConfirmRetiro,
+  onEditMovement,
   onUpdateValue,
   onUpdatePFFields,
   onFinalize,
@@ -148,6 +150,7 @@ export function InvestmentsTable({
               onAddMovement={onAddMovement}
               onDeleteMovement={onDeleteMovement}
               onConfirmRetiro={onConfirmRetiro}
+              onEditMovement={onEditMovement}
               onUpdateValue={onUpdateValue}
               onUpdatePFFields={onUpdatePFFields}
               onFinalize={handleFinalizeRequest}

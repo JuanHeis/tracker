@@ -781,6 +781,7 @@ export function useMoneyTracker() {
     handleAddMovement: investmentsTracker.handleAddMovement,
     handleDeleteMovement: investmentsTracker.handleDeleteMovement,
     handleConfirmRetiro: investmentsTracker.handleConfirmRetiro,
+    handleEditMovement: investmentsTracker.handleEditMovement,
     handleUpdateValue: investmentsTracker.handleUpdateValue,
     handleFinalizeInvestment: investmentsTracker.handleFinalizeInvestment,
     handleUpdatePFFields: investmentsTracker.handleUpdatePFFields,

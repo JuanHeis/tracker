@@ -77,10 +77,14 @@ export function useInvestmentsTracker(
     };
     updateInvestment(investmentId, (inv) => {
       const valueAdjustment = movement.type === "aporte" ? movement.amount : -movement.amount;
+      // Don't adjust currentValue for pending retiros — money hasn't left the investment yet
+      const skipValueAdjust = movement.pendingIngreso && movement.type === "retiro";
       return {
         ...inv,
         movements: [...inv.movements, newMovement],
-        currentValue: inv.type === "Plazo Fijo" ? inv.currentValue : inv.currentValue + valueAdjustment,
+        currentValue: inv.type === "Plazo Fijo" || skipValueAdjust
+          ? inv.currentValue
+          : inv.currentValue + valueAdjustment,
         lastUpdated: format(new Date(), "yyyy-MM-dd"),
       };
     });
@@ -99,21 +103,94 @@ export function useInvestmentsTracker(
     movementId: string,
     receivedAmount?: number
   ) => {
-    updateInvestment(investmentId, (inv) => ({
-      ...inv,
-      movements: inv.movements.map((m) =>
-        m.id === movementId
-          ? {
-              ...m,
-              pendingIngreso: undefined,
-              ...(receivedAmount !== undefined && receivedAmount !== m.amount
-                ? { receivedAmount }
-                : {}),
-            }
-          : m
-      ),
-      lastUpdated: format(new Date(), "yyyy-MM-dd"),
-    }));
+    updateInvestment(investmentId, (inv) => {
+      const mov = inv.movements.find((m) => m.id === movementId);
+      // Now apply the currentValue reduction that was deferred at creation
+      const valueReduction = mov ? mov.amount : 0;
+      return {
+        ...inv,
+        movements: inv.movements.map((m) =>
+          m.id === movementId
+            ? {
+                ...m,
+                pendingIngreso: undefined,
+                ...(receivedAmount !== undefined && receivedAmount !== m.amount
+                  ? { receivedAmount }
+                  : {}),
+              }
+            : m
+        ),
+        currentValue: inv.type === "Plazo Fijo"
+          ? inv.currentValue
+          : inv.currentValue - valueReduction,
+        lastUpdated: format(new Date(), "yyyy-MM-dd"),
+      };
+    });
+  };
+
+  const handleEditMovement = (
+    investmentId: string,
+    movementId: string,
+    updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number }
+  ) => {
+    updateInvestment(investmentId, (inv) => {
+      const mov = inv.movements.find((m) => m.id === movementId);
+      if (!mov || mov.type !== "retiro") return inv;
+
+      // Validate amount if provided
+      if (updates.amount !== undefined && updates.amount <= 0) return inv;
+
+      const wasPending = !!mov.pendingIngreso;
+      const willBePending = updates.pendingIngreso !== undefined ? updates.pendingIngreso : wasPending;
+      const oldAmount = mov.amount;
+      const newAmount = updates.amount !== undefined ? updates.amount : oldAmount;
+
+      // Calculate currentValue adjustment (skip for Plazo Fijo)
+      let valueAdjustment = 0;
+      if (inv.type !== "Plazo Fijo") {
+        if (wasPending && !willBePending) {
+          // Toggling from pending to confirmed: reduce currentValue by new amount
+          valueAdjustment = -newAmount;
+        } else if (!wasPending && willBePending) {
+          // Toggling from confirmed to pending: restore currentValue by old amount
+          valueAdjustment = oldAmount;
+        } else if (!wasPending && !willBePending && updates.amount !== undefined) {
+          // Both confirmed, amount changed: adjust by difference (old - new)
+          valueAdjustment = oldAmount - newAmount;
+        }
+        // If both pending, no value adjustment needed
+      }
+
+      // Build updated movement
+      const updatedMovement: typeof mov = {
+        ...mov,
+        ...(updates.amount !== undefined && { amount: updates.amount }),
+        ...(updates.pendingIngreso !== undefined && {
+          pendingIngreso: updates.pendingIngreso || undefined,
+        }),
+      };
+
+      // Handle receivedAmount
+      if (willBePending) {
+        // Clear receivedAmount when toggling to pending
+        delete updatedMovement.receivedAmount;
+      } else if (updates.receivedAmount !== undefined) {
+        if (updates.receivedAmount !== updatedMovement.amount) {
+          updatedMovement.receivedAmount = updates.receivedAmount;
+        } else {
+          delete updatedMovement.receivedAmount;
+        }
+      }
+
+      return {
+        ...inv,
+        movements: inv.movements.map((m) =>
+          m.id === movementId ? updatedMovement : m
+        ),
+        currentValue: inv.currentValue + valueAdjustment,
+        lastUpdated: format(new Date(), "yyyy-MM-dd"),
+      };
+    });
   };
 
   const handleUpdateValue = (investmentId: string, newValue: number) => {
@@ -224,5 +301,6 @@ export function useInvestmentsTracker(
     handleUpdateValue,
     handleFinalizeInvestment,
     handleUpdatePFFields,
+    handleEditMovement,
   };
 }

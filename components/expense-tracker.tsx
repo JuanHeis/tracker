@@ -174,6 +174,7 @@ export function ExpenseTracker() {
     handleAddMovement,
     handleDeleteMovement,
     handleConfirmRetiro,
+    handleEditMovement,
     handleUpdateValue,
     handleFinalizeInvestment,
     handleUpdatePFFields,
@@ -624,6 +625,7 @@ export function ExpenseTracker() {
                     onAddMovement={handleAddMovement}
                     onDeleteMovement={handleDeleteMovement}
                     onConfirmRetiro={handleConfirmRetiro}
+                    onEditMovement={handleEditMovement}
                     onUpdateValue={handleUpdateValue}
                     onFinalize={handleFinalizeInvestment}
                     onUpdatePFFields={handleUpdatePFFields}

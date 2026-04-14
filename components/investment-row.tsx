@@ -34,6 +34,7 @@ interface InvestmentRowProps {
   ) => void;
   onDeleteMovement: (investmentId: string, movementId: string) => void;
   onConfirmRetiro: (investmentId: string, movementId: string, receivedAmount?: number) => void;
+  onEditMovement: (investmentId: string, movementId: string, updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number }) => void;
   onUpdateValue: (investmentId: string, newValue: number) => void;
   onUpdatePFFields: (
     investmentId: string,
@@ -58,6 +59,7 @@ export function InvestmentRow({
   onAddMovement,
   onDeleteMovement,
   onConfirmRetiro,
+  onEditMovement,
   onUpdateValue,
   onUpdatePFFields,
   onFinalize,
@@ -193,6 +195,7 @@ export function InvestmentRow({
                 onAddMovement={onAddMovement}
                 onDeleteMovement={onDeleteMovement}
                 onConfirmRetiro={onConfirmRetiro}
+                onEditMovement={onEditMovement}
               />
             </div>
           </TableCell>
