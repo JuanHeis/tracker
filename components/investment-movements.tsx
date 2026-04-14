@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format, parse } from "date-fns";
-import { Trash2, Plus, Check } from "lucide-react";
+import { Trash2, Plus, Check, Pencil } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -17,6 +17,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 import {
   Select,
   SelectContent,
@@ -36,6 +43,7 @@ interface InvestmentMovementsProps {
   ) => void;
   onDeleteMovement: (investmentId: string, movementId: string) => void;
   onConfirmRetiro: (investmentId: string, movementId: string, receivedAmount?: number) => void;
+  onEditMovement: (investmentId: string, movementId: string, updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number }) => void;
 }
 
 export function InvestmentMovements({
@@ -43,6 +51,7 @@ export function InvestmentMovements({
   onAddMovement,
   onDeleteMovement,
   onConfirmRetiro,
+  onEditMovement,
 }: InvestmentMovementsProps) {
   const [showAll, setShowAll] = useState(false);
   const [movementType, setMovementType] = useState<"aporte" | "retiro">(
@@ -52,6 +61,10 @@ export function InvestmentMovements({
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [confirmingMovement, setConfirmingMovement] = useState<string | null>(null);
   const [adjustedAmount, setAdjustedAmount] = useState<number>(0);
+  const [editingMovement, setEditingMovement] = useState<string | null>(null);
+  const [editAmount, setEditAmount] = useState<number>(0);
+  const [editPending, setEditPending] = useState<boolean>(false);
+  const [editReceivedAmount, setEditReceivedAmount] = useState<number>(0);
 
   const handleConfirmDelete = () => {
     if (deleteTarget) {
@@ -199,6 +212,22 @@ export function InvestmentMovements({
                   </span>
                 </div>
                 <div className="flex items-center gap-0.5">
+                  {movement.type === "retiro" && !movement.isInitial && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900"
+                      onClick={() => {
+                        setEditingMovement(movement.id);
+                        setEditAmount(movement.amount);
+                        setEditPending(!!movement.pendingIngreso);
+                        setEditReceivedAmount(movement.receivedAmount ?? movement.amount);
+                      }}
+                      title="Editar retiro"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  )}
                   {movement.type === "retiro" && movement.pendingIngreso && (
                     <Button
                       variant="ghost"
@@ -308,6 +337,92 @@ export function InvestmentMovements({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    <Dialog open={!!editingMovement} onOpenChange={(open) => { if (!open) setEditingMovement(null); }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Editar retiro</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-muted-foreground">Monto del retiro</label>
+            <CurrencyInput
+              value={editAmount}
+              onValueChange={(val) => setEditAmount(val)}
+              className="h-8 w-full"
+            />
+          </div>
+          <label className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={editPending}
+              onChange={(e) => setEditPending(e.target.checked)}
+              className="rounded border-gray-300 h-3.5 w-3.5 accent-amber-500"
+            />
+            Pendiente de ingreso
+          </label>
+          {!editPending && (
+            <div className="flex flex-col gap-1">
+              <label className="text-sm text-muted-foreground">Monto recibido</label>
+              <CurrencyInput
+                value={editReceivedAmount}
+                onValueChange={(val) => setEditReceivedAmount(val)}
+                className="h-8 w-full"
+              />
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setEditingMovement(null)}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={() => {
+              if (!editingMovement) return;
+              const originalMov = investment.movements.find((m) => m.id === editingMovement);
+              if (!originalMov) return;
+
+              const updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number } = {};
+
+              if (editAmount !== originalMov.amount) {
+                updates.amount = editAmount;
+              }
+
+              const wasPending = !!originalMov.pendingIngreso;
+              if (editPending !== wasPending) {
+                updates.pendingIngreso = editPending;
+              }
+
+              if (editPending) {
+                // When pending, clear receivedAmount
+                if (originalMov.receivedAmount !== undefined) {
+                  updates.receivedAmount = undefined;
+                }
+              } else {
+                // When confirmed, check if receivedAmount changed
+                const effectiveAmount = updates.amount !== undefined ? updates.amount : originalMov.amount;
+                if (editReceivedAmount !== (originalMov.receivedAmount ?? originalMov.amount)) {
+                  if (editReceivedAmount !== effectiveAmount) {
+                    updates.receivedAmount = editReceivedAmount;
+                  } else if (originalMov.receivedAmount !== undefined) {
+                    // receivedAmount equals amount now, clear it
+                    updates.receivedAmount = undefined;
+                  }
+                }
+              }
+
+              // Only call if there are actual changes
+              if (Object.keys(updates).length > 0) {
+                onEditMovement(investment.id, editingMovement, updates);
+              }
+              setEditingMovement(null);
+            }}
+          >
+            Guardar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </>
   );
 }
