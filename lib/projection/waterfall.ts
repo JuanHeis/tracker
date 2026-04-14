@@ -177,6 +177,7 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
     let invNet = 0;
     for (const mov of inv.movements) {
       if (mov.isInitial) continue;
+      if (mov.pendingIngreso) continue;
       if (!isInRange(mov.date, dateRange)) continue;
 
       // Movement amounts are stored in the investment's base currency.

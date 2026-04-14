@@ -211,6 +211,7 @@ export function reconstructHistoricalPatrimony(
         // For past months, use cumulative movements as proxy
         let movementSum = 0;
         for (const m of inv.movements) {
+          if (m.pendingIngreso) continue;
           if (toMonthKey(m.date) <= monthKey) {
             movementSum +=
               m.type === "aporte" ? m.amount : -m.amount;
