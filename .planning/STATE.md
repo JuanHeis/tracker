@@ -5,7 +5,7 @@ milestone_name: Flujo Mensual Panel Unificado
 status: executing
 stopped_at: Phase 21 execution complete, human verification pending
 last_updated: "2026-04-11T22:27:40.372Z"
-last_activity: 2026-04-14 -- Completed quick task 260414-eqc: Inversiones pendiente de ingreso
+last_activity: 2026-04-14 -- Completed quick task 260414-lgf: Editar retiros efectuados
 progress:
   total_phases: 23
   completed_phases: 21
@@ -82,6 +82,7 @@ None. All patterns confirmed HIGH confidence from research.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260414-eqc | Inversiones: pendiente de ingreso al retirar y ajuste de monto por cotizacion | 2026-04-14 | 600c0cd | [260414-eqc-inversiones-pendiente-de-ingreso-al-reti](./quick/260414-eqc-inversiones-pendiente-de-ingreso-al-reti/) |
+| 260414-lgf | Editar retiros efectuados y marcarlos como pendientes o no | 2026-04-14 | pending | [260414-lgf-editar-retiros-efectuados-y-marcarlos-co](./quick/260414-lgf-editar-retiros-efectuados-y-marcarlos-co/) |
 
 ## Session Continuity
 
