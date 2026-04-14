@@ -57,9 +57,11 @@ function baseInput(overrides: Partial<WaterfallInput> = {}): WaterfallInput {
     investments: [],
     salaryAmount: 0,
     extraIncomes: [],
+    transfers: [],
     selectedMonth: "2026-03",
     viewMode: "mes",
     payDay: 1,
+    savingsEstimate: 0,
     ...overrides,
   };
 }
@@ -328,6 +330,89 @@ describe("computeWaterfallData", () => {
       expect(result[3].subcategories).toHaveLength(2);
       expect(result[3].subcategories[0]).toEqual({ name: "FCI Alpha", amount: 50000 });
       expect(result[3].subcategories[1]).toEqual({ name: "Crypto BTC", amount: 30000 });
+    });
+  });
+
+  // Ahorro (savings) bar
+  describe("Ahorro bar with savingsEstimate", () => {
+    it("includes Ahorro bar between Inversiones and Libre when savingsEstimate > 0", () => {
+      const input = baseInput({
+        salaryAmount: 500000,
+        savingsEstimate: 200000,
+      });
+      const result = computeWaterfallData(input);
+
+      expect(result).toHaveLength(6);
+      expect(result.map((b) => b.name)).toEqual([
+        "Ingresos",
+        "Gastos Fijos",
+        "Gastos Variables",
+        "Inversiones",
+        "Ahorro",
+        "Libre",
+      ]);
+    });
+
+    it("deducts savingsEstimate from Libre", () => {
+      const input = baseInput({
+        salaryAmount: 500000,
+        expenses: [makeExpense({ amount: 100000 })],
+        savingsEstimate: 150000,
+      });
+      const result = computeWaterfallData(input);
+
+      // Ingresos=500k, Gastos Variables=100k, Ahorro=150k => Libre=250k
+      const ahorro = result.find((b) => b.name === "Ahorro")!;
+      expect(ahorro.amount).toBe(150000);
+      expect(ahorro.fill).toBe(WATERFALL_COLORS.ahorro);
+
+      const libre = result.find((b) => b.name === "Libre")!;
+      expect(libre.amount).toBe(250000);
+    });
+
+    it("computes correct running totals for Ahorro bar position", () => {
+      const input = baseInput({
+        salaryAmount: 500000,
+        savingsEstimate: 200000,
+      });
+      const result = computeWaterfallData(input);
+
+      const ahorro = result.find((b) => b.name === "Ahorro")!;
+      // Running at this point: 500k (ingresos) - 0 (fijos) - 0 (variables) - 0 (inversiones) = 500k
+      // After ahorro: 500k - 200k = 300k
+      expect(ahorro.barBottom).toBe(300000);
+      expect(ahorro.barTop).toBe(500000);
+      expect(ahorro.amount).toBe(200000);
+
+      const libre = result.find((b) => b.name === "Libre")!;
+      expect(libre.amount).toBe(300000);
+      expect(libre.barBottom).toBe(0);
+      expect(libre.barTop).toBe(300000);
+    });
+
+    it("omits Ahorro bar when savingsEstimate is 0", () => {
+      const input = baseInput({
+        salaryAmount: 500000,
+        savingsEstimate: 0,
+      });
+      const result = computeWaterfallData(input);
+
+      expect(result).toHaveLength(5);
+      expect(result.map((b) => b.name)).not.toContain("Ahorro");
+    });
+
+    it("clamps negative savingsEstimate to 0 (no Ahorro bar)", () => {
+      const input = baseInput({
+        salaryAmount: 500000,
+        savingsEstimate: -10000,
+      });
+      const result = computeWaterfallData(input);
+
+      expect(result).toHaveLength(5);
+      expect(result.map((b) => b.name)).not.toContain("Ahorro");
+      // Libre should be full salary since negative savings is clamped to 0
+      const libre = result.find((b) => b.name === "Libre")!;
+      expect(libre.amount).toBe(500000);
     });
   });
 

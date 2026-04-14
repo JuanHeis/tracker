@@ -419,13 +419,15 @@ export function useMoneyTracker() {
     (monthlyData.investments || []).forEach((inv) => {
       if (inv.currencyType === CurrencyType.USD) {
         inv.movements.filter((mov) => !mov.isInitial).forEach((mov) => {
-          const impact = mov.type === "aporte" ? -mov.amount : mov.amount;
+          const retiroAmount = mov.receivedAmount ?? mov.amount;
+          const impact = mov.type === "aporte" ? -mov.amount : retiroAmount;
           usdBalance += impact;
           if (isInArsRange(mov.date)) usdBalancePeriod += impact;
         });
       } else {
         inv.movements.filter((mov) => !mov.isInitial).forEach((mov) => {
-          const impact = mov.type === "aporte" ? -mov.amount : mov.amount;
+          const retiroAmount = mov.receivedAmount ?? mov.amount;
+          const impact = mov.type === "aporte" ? -mov.amount : retiroAmount;
           arsBalanceAccumulated += impact;
           if (mov.type === "aporte") arsInvestmentContributions += mov.amount;
           if (isInArsRange(mov.date)) {
