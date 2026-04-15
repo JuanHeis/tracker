@@ -43,11 +43,6 @@ export function LoanPayments({ loan, onAddPayment }: LoanPaymentsProps) {
       return;
     }
 
-    if (amount > remaining) {
-      setPaymentError(`Monto no puede superar el restante (${symbol}${remaining.toLocaleString()})`);
-      return;
-    }
-
     setPaymentError("");
     onAddPayment(loan.id, { date, amount });
     e.currentTarget.reset();
@@ -83,7 +78,7 @@ export function LoanPayments({ loan, onAddPayment }: LoanPaymentsProps) {
             <CurrencyInput
               name="amount"
               required
-              placeholder={`Max ${symbol}${remaining.toLocaleString()}`}
+              placeholder={`Resta ${symbol}${remaining.toLocaleString()}`}
               className={cn("h-8 w-36 text-sm", paymentError && "border-red-500")}
               onValueChange={() => setPaymentError("")}
             />
