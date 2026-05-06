@@ -13,27 +13,35 @@ export function pfMonthlyRate(tnaPercent: number): number {
 
 /**
  * Compute the observed monthly rate of return from an investment's actual performance.
- * Uses: totalInvested (sum of aporte movements), currentValue, and time elapsed.
+ * Uses: netInvested (aportes minus retiros), currentValue, and time elapsed.
+ *
+ * Subtracting retiros is critical — without it, withdrawals look like losses (e.g. an
+ * FCI where you put in 600k and pulled out 400k would show a fake -67% drop instead of
+ * the real ~3% gain on the remaining capital).
  *
  * When sufficient history exists (>= 1 month), annualizes using compound interest math.
  * When data is recent (< 1 month, e.g. wizard-loaded investments where the user entered
  * their total aportes as initial value and then updated currentValue to real worth),
  * uses the simple total return as a monthly rate approximation.
  *
- * Returns null only when there's truly no data (no movements, zero invested, or
- * currentValue equals totalInvested meaning no observed return).
+ * Returns null when there's no data, no net capital remaining, or currentValue equals
+ * netInvested (no observed return to differentiate).
  */
 export function computeObservedMonthlyRate(investment: Investment): number | null {
   const aportes = investment.movements.filter((m) => m.type === "aporte");
   if (aportes.length === 0) return null;
 
-  const totalInvested = aportes.reduce((sum, m) => sum + m.amount, 0);
-  if (totalInvested <= 0) return null;
+  const totalAportes = aportes.reduce((sum, m) => sum + m.amount, 0);
+  const totalRetiros = investment.movements
+    .filter((m) => m.type === "retiro")
+    .reduce((sum, m) => sum + m.amount, 0);
+  const netInvested = totalAportes - totalRetiros;
+  if (netInvested <= 0) return null;
 
-  const ratio = investment.currentValue / totalInvested;
+  const ratio = investment.currentValue / netInvested;
   if (ratio <= 0) return null;
 
-  // No observed return (currentValue == totalInvested) -- nothing to differentiate
+  // No observed return (currentValue == netInvested) -- nothing to differentiate
   if (Math.abs(ratio - 1) < 0.0001) return null;
 
   // Calculate months elapsed from first aporte to now (use current date, not lastUpdated,
