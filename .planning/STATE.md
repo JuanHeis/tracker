@@ -5,7 +5,7 @@ milestone_name: Flujo Mensual Panel Unificado
 status: executing
 stopped_at: Phase 21 execution complete, human verification pending
 last_updated: "2026-06-01T17:26:00.463Z"
-last_activity: 2026-06-01 -- Phase 22 execution started
+last_activity: 2026-06-01 -- Completed quick task 260601-m3e: 260601-pmm purpose per movement
 progress:
   total_phases: 24
   completed_phases: 21
@@ -88,6 +88,7 @@ None. All patterns confirmed HIGH confidence from research.
 | 260414-eqc | Inversiones: pendiente de ingreso al retirar y ajuste de monto por cotizacion | 2026-04-14 | 600c0cd | [260414-eqc-inversiones-pendiente-de-ingreso-al-reti](./quick/260414-eqc-inversiones-pendiente-de-ingreso-al-reti/) |
 | 260414-lgf | Editar retiros efectuados y marcarlos como pendientes o no | 2026-04-14 | pending | [260414-lgf-editar-retiros-efectuados-y-marcarlos-co](./quick/260414-lgf-editar-retiros-efectuados-y-marcarlos-co/) |
 | 260601-eo4 | fix aguinaldo month offset, add previous month surplus to resumen, fix investment category in flujo mensual and resumen del mes bug | 2026-06-01 | 1bcda19 | [260601-eo4-fix-aguinaldo-month-offset-add-previous-](./quick/260601-eo4-fix-aguinaldo-month-offset-add-previous-/) |
+| 260601-m3e | 260601-pmm purpose per movement | 2026-06-01 | 3b7df88 | [260601-m3e-260601-pmm-purpose-per-movement](./quick/260601-m3e-260601-pmm-purpose-per-movement/) |
 
 ## Session Continuity
 
