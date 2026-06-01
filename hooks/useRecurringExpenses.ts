@@ -123,11 +123,13 @@ export function useRecurringExpenses() {
   };
 
   /**
-   * Generate missing recurring expense instances across ALL months.
+   * Generate missing recurring expense instances within the forward projection
+   * window.
    *
-   * Since all data lives in a single monthlyData object with expenses
-   * filtered by date, we iterate from each recurring's createdAt to the
-   * current month and create Expense instances for any missing months.
+   * For each active recurring we project forward only: from the current month
+   * (or a future createdAt) through current + RECURRING_PROJECTION_MONTHS months
+   * (4 months total). Past months are never backfilled. Missing Expense
+   * instances are created for any month in that window.
    *
    * Returns array of new Expense objects to be merged into monthlyData.expenses.
    */
@@ -142,7 +144,9 @@ export function useRecurringExpenses() {
     for (const rec of recurrings) {
       if (rec.status === "Cancelada") continue;
 
-      const months = iterateMonths(rec.createdAt, currentMonth);
+      const window = computeProjectionWindow(rec.createdAt, currentMonth);
+      if (!window) continue;
+      const months = iterateMonths(window.startMonth, window.endMonth);
 
       for (const month of months) {
         // Skip months after pausedAt if set
