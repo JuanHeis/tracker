@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { type Investment, type InvestmentMovement, type MonthlyData } from './useMoneyTracker';
+import { type Investment, type InvestmentMovement, type MonthlyData, type InvestmentPurpose } from './useMoneyTracker';
 import { CurrencyType, type InvestmentType } from '@/constants/investments';
 
 
@@ -55,6 +55,7 @@ export function useInvestmentsTracker(
       currentValue: investmentData.initialAmount,
       lastUpdated: now,
       createdAt: now,
+      purpose: "ahorro",   // default purpose explicitly — wizard will catch unclassified ones
       ...(investmentData.isLiquid && { isLiquid: true }),
       ...(investmentData.tna !== undefined && { tna: investmentData.tna }),
       ...(investmentData.plazoDias !== undefined && { plazoDias: investmentData.plazoDias }),
@@ -236,6 +237,14 @@ export function useInvestmentsTracker(
     });
   };
 
+  const handleUpdatePurpose = (investmentId: string, purpose: InvestmentPurpose) => {
+    updateInvestment(investmentId, (inv) => ({
+      ...inv,
+      purpose,
+      // intentionally NOT updating lastUpdated — purpose changes are metadata, not value updates
+    }));
+  };
+
   // Return ALL investments, sorted: active first (by createdAt desc), then finalized (by createdAt desc)
   const filteredInvestments = [...(monthlyData.investments || [])].sort((a, b) => {
     if (a.status === "Activa" && b.status !== "Activa") return -1;
@@ -302,5 +311,6 @@ export function useInvestmentsTracker(
     handleFinalizeInvestment,
     handleUpdatePFFields,
     handleEditMovement,
+    handleUpdatePurpose,
   };
 }

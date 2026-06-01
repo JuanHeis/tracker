@@ -877,6 +877,10 @@ export function useMoneyTracker() {
     handleUpdateValue: investmentsTracker.handleUpdateValue,
     handleFinalizeInvestment: investmentsTracker.handleFinalizeInvestment,
     handleUpdatePFFields: investmentsTracker.handleUpdatePFFields,
+    handleUpdatePurpose: investmentsTracker.handleUpdatePurpose,
+
+    // Direct data setter — needed for batch operations (e.g. wizard onComplete)
+    setMonthlyData,
 
     // Funciones de useSalaryHistory
     salaryHistory: salaryHistoryTracker.salaryHistory,
