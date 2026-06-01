@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-07)
 Phase: 22 (Resumen del Mes — Rediseño conceptual de cash flow) — EXECUTING
 Plan: 1 of 4
 Status: Executing Phase 22
-Last activity: 2026-06-01 -- Phase 22 execution started
+Last activity: 2026-06-01 -- Completed quick task 260601-nuv: los gastos recurrentes no deberian agregarse a meses pasados, solo al mes presente y futuro (3 meses adelante)
 
 Progress: [█████████████████████░░░░░░░░░] 78/92 plans (v1.0-v1.2 complete, v1.3: 2/2 phase 18)
 
@@ -89,6 +89,7 @@ None. All patterns confirmed HIGH confidence from research.
 | 260414-lgf | Editar retiros efectuados y marcarlos como pendientes o no | 2026-04-14 | pending | [260414-lgf-editar-retiros-efectuados-y-marcarlos-co](./quick/260414-lgf-editar-retiros-efectuados-y-marcarlos-co/) |
 | 260601-eo4 | fix aguinaldo month offset, add previous month surplus to resumen, fix investment category in flujo mensual and resumen del mes bug | 2026-06-01 | 1bcda19 | [260601-eo4-fix-aguinaldo-month-offset-add-previous-](./quick/260601-eo4-fix-aguinaldo-month-offset-add-previous-/) |
 | 260601-m3e | 260601-pmm purpose per movement | 2026-06-01 | 3b7df88 | [260601-m3e-260601-pmm-purpose-per-movement](./quick/260601-m3e-260601-pmm-purpose-per-movement/) |
+| 260601-nuv | los gastos recurrentes no deberian agregarse a meses pasados, solo al mes presente y futuro (3 meses adelante) | 2026-06-01 | ec7dd36 | [260601-nuv-los-gastos-recurrentes-no-deberian-agreg](./quick/260601-nuv-los-gastos-recurrentes-no-deberian-agreg/) |
 
 ## Session Continuity
 
