@@ -71,16 +71,15 @@ function baseInput(overrides: Partial<WaterfallInput> = {}): WaterfallInput {
 // ---------------------------------------------------------------------------
 
 describe("computeWaterfallData", () => {
-  // FLOW-01: Returns 5 bars with correct running totals
-  describe("FLOW-01: 5-bar structure and running totals", () => {
-    it("returns exactly 5 bars with correct names", () => {
+  // FLOW-01: Returns 4 bars with correct running totals (Inversiones merged into Ahorro)
+  describe("FLOW-01: 4-bar structure and running totals", () => {
+    it("returns exactly 4 bars with correct names (no Inversiones bar)", () => {
       const result = computeWaterfallData(baseInput());
-      expect(result).toHaveLength(5);
+      expect(result).toHaveLength(4);
       expect(result.map((b) => b.name)).toEqual([
         "Ingresos",
         "Gastos Fijos",
         "Gastos Variables",
-        "Inversiones",
         "Libre",
       ]);
     });
@@ -119,16 +118,8 @@ describe("computeWaterfallData", () => {
         amount: 100000,
       });
 
-      // Inversiones: none -> barBottom=400000, barTop=400000, amount=0
+      // Libre: barBottom=0, barTop=400000, amount=400000 (no Ahorro since savingsEstimate=0 and no investments)
       expect(result[3]).toMatchObject({
-        name: "Inversiones",
-        barBottom: 400000,
-        barTop: 400000,
-        amount: 0,
-      });
-
-      // Libre: barBottom=0, barTop=400000, amount=400000
-      expect(result[4]).toMatchObject({
         name: "Libre",
         barBottom: 0,
         barTop: 400000,
@@ -141,8 +132,7 @@ describe("computeWaterfallData", () => {
       expect(result[0].fill).toBe(WATERFALL_COLORS.ingresos);
       expect(result[1].fill).toBe(WATERFALL_COLORS.gastosFijos);
       expect(result[2].fill).toBe(WATERFALL_COLORS.gastosVariables);
-      expect(result[3].fill).toBe(WATERFALL_COLORS.inversiones);
-      expect(result[4].fill).toBe(WATERFALL_COLORS.libre);
+      expect(result[3].fill).toBe(WATERFALL_COLORS.libre);
     });
   });
 
@@ -265,7 +255,7 @@ describe("computeWaterfallData", () => {
 
   // Investment filtering
   describe("investment movement filtering", () => {
-    it("excludes isInitial movements and computes net investment", () => {
+    it("excludes isInitial movements and merges investment net into Ahorro bar", () => {
       const investmentA = makeInvestment({
         movements: [
           { id: "m1", date: "2026-03-05", type: "aporte", amount: 50000, isInitial: false },
@@ -284,8 +274,10 @@ describe("computeWaterfallData", () => {
       });
       const result = computeWaterfallData(input);
 
-      // Net: 50000 + 20000 - 10000 = 60000 (isInitial excluded)
-      expect(result[3].amount).toBe(60000);
+      // Net: 50000 + 20000 - 10000 = 60000 (isInitial excluded), merged into Ahorro
+      const ahorro = result.find((b) => b.name === "Ahorro")!;
+      expect(ahorro.amount).toBe(60000);
+      expect(result.map((b) => b.name)).not.toContain("Inversiones");
     });
 
     it("converts USD investment movements using investment currencyType and a default rate", () => {
@@ -303,12 +295,12 @@ describe("computeWaterfallData", () => {
       });
       const result = computeWaterfallData(input);
 
-      // USD investments should still show as a positive investment amount
-      // The exact conversion depends on implementation
-      expect(result[3].amount).toBeGreaterThan(0);
+      // USD investments should still show as a positive investment amount in Ahorro
+      const ahorro = result.find((b) => b.name === "Ahorro")!;
+      expect(ahorro.amount).toBeGreaterThan(0);
     });
 
-    it("builds subcategories for investments by investment name", () => {
+    it("builds subcategories for Ahorro bar by investment name", () => {
       const invA = makeInvestment({
         name: "FCI Alpha",
         movements: [
@@ -327,27 +319,27 @@ describe("computeWaterfallData", () => {
       });
       const result = computeWaterfallData(input);
 
-      expect(result[3].subcategories).toHaveLength(2);
-      expect(result[3].subcategories[0]).toEqual({ name: "FCI Alpha", amount: 50000 });
-      expect(result[3].subcategories[1]).toEqual({ name: "Crypto BTC", amount: 30000 });
+      const ahorro = result.find((b) => b.name === "Ahorro")!;
+      expect(ahorro.subcategories).toHaveLength(2);
+      expect(ahorro.subcategories[0]).toEqual({ name: "FCI Alpha", amount: 50000 });
+      expect(ahorro.subcategories[1]).toEqual({ name: "Crypto BTC", amount: 30000 });
     });
   });
 
-  // Ahorro (savings) bar
+  // Ahorro (savings) bar — now includes investment contributions
   describe("Ahorro bar with savingsEstimate", () => {
-    it("includes Ahorro bar between Inversiones and Libre when savingsEstimate > 0", () => {
+    it("includes Ahorro bar before Libre when savingsEstimate > 0", () => {
       const input = baseInput({
         salaryAmount: 500000,
         savingsEstimate: 200000,
       });
       const result = computeWaterfallData(input);
 
-      expect(result).toHaveLength(6);
+      expect(result).toHaveLength(5);
       expect(result.map((b) => b.name)).toEqual([
         "Ingresos",
         "Gastos Fijos",
         "Gastos Variables",
-        "Inversiones",
         "Ahorro",
         "Libre",
       ]);
@@ -370,6 +362,28 @@ describe("computeWaterfallData", () => {
       expect(libre.amount).toBe(250000);
     });
 
+    it("Ahorro amount equals investmentNet + savingsEstimate", () => {
+      const inv = makeInvestment({
+        name: "FCI",
+        movements: [
+          { id: "m1", date: "2026-03-05", type: "aporte", amount: 80000 },
+        ],
+      });
+      const input = baseInput({
+        salaryAmount: 500000,
+        investments: [inv],
+        savingsEstimate: 200000,
+      });
+      const result = computeWaterfallData(input);
+
+      const ahorro = result.find((b) => b.name === "Ahorro")!;
+      // investmentNet=80000 + savingsEstimate=200000 = 280000
+      expect(ahorro.amount).toBe(280000);
+
+      const libre = result.find((b) => b.name === "Libre")!;
+      expect(libre.amount).toBe(220000);
+    });
+
     it("computes correct running totals for Ahorro bar position", () => {
       const input = baseInput({
         salaryAmount: 500000,
@@ -378,7 +392,7 @@ describe("computeWaterfallData", () => {
       const result = computeWaterfallData(input);
 
       const ahorro = result.find((b) => b.name === "Ahorro")!;
-      // Running at this point: 500k (ingresos) - 0 (fijos) - 0 (variables) - 0 (inversiones) = 500k
+      // Running at this point: 500k (ingresos) - 0 (fijos) - 0 (variables) = 500k
       // After ahorro: 500k - 200k = 300k
       expect(ahorro.barBottom).toBe(300000);
       expect(ahorro.barTop).toBe(500000);
@@ -390,27 +404,46 @@ describe("computeWaterfallData", () => {
       expect(libre.barTop).toBe(300000);
     });
 
-    it("omits Ahorro bar when savingsEstimate is 0", () => {
+    it("omits Ahorro bar when savingsEstimate is 0 and no investments", () => {
       const input = baseInput({
         salaryAmount: 500000,
         savingsEstimate: 0,
       });
       const result = computeWaterfallData(input);
 
-      expect(result).toHaveLength(5);
+      expect(result).toHaveLength(4);
       expect(result.map((b) => b.name)).not.toContain("Ahorro");
     });
 
-    it("clamps negative savingsEstimate to 0 (no Ahorro bar)", () => {
+    it("clamps negative savingsEstimate to 0 but still shows Ahorro if investments exist", () => {
+      const inv = makeInvestment({
+        name: "FCI",
+        movements: [
+          { id: "m1", date: "2026-03-05", type: "aporte", amount: 50000 },
+        ],
+      });
+      const input = baseInput({
+        salaryAmount: 500000,
+        investments: [inv],
+        savingsEstimate: -10000,
+      });
+      const result = computeWaterfallData(input);
+
+      // ahorroAmount = 50000 + max(0, -10000) = 50000
+      const ahorro = result.find((b) => b.name === "Ahorro")!;
+      expect(ahorro.amount).toBe(50000);
+    });
+
+    it("omits Ahorro bar when savingsEstimate is 0 and no investments", () => {
       const input = baseInput({
         salaryAmount: 500000,
         savingsEstimate: -10000,
       });
       const result = computeWaterfallData(input);
 
-      expect(result).toHaveLength(5);
+      expect(result).toHaveLength(4);
       expect(result.map((b) => b.name)).not.toContain("Ahorro");
-      // Libre should be full salary since negative savings is clamped to 0
+      // Libre should be full salary since negative savings is clamped to 0 and no investments
       const libre = result.find((b) => b.name === "Libre")!;
       expect(libre.amount).toBe(500000);
     });
@@ -424,8 +457,10 @@ describe("computeWaterfallData", () => {
       for (const bar of result) {
         expect(bar.amount).toBe(0);
       }
-      expect(result[4].barBottom).toBe(0);
-      expect(result[4].barTop).toBe(0);
+      // Libre is last bar (index 3 when no Ahorro bar)
+      const libre = result.find((b) => b.name === "Libre")!;
+      expect(libre.barBottom).toBe(0);
+      expect(libre.barTop).toBe(0);
     });
 
     it("handles negative libre (expenses > income)", () => {
@@ -436,7 +471,7 @@ describe("computeWaterfallData", () => {
       const result = computeWaterfallData(input);
 
       // Libre is negative: -50000
-      const libre = result[4];
+      const libre = result.find((b) => b.name === "Libre")!;
       expect(libre.amount).toBe(-50000);
       expect(libre.barBottom).toBe(-50000);
       expect(libre.barTop).toBe(0);
@@ -487,7 +522,9 @@ describe("computeWaterfallData", () => {
       });
       const result = computeWaterfallData(input);
 
-      expect(result[3].amount).toBe(50000);
+      // Investment in range (50000) is merged into Ahorro bar
+      const ahorro = result.find((b) => b.name === "Ahorro")!;
+      expect(ahorro.amount).toBe(50000);
     });
 
     it("builds subcategories for Ingresos (salary + each extra income)", () => {

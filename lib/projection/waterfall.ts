@@ -237,22 +237,8 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
     subcategories: buildSubcategories(variable, (e) => e.name, toArs),
   };
 
-  running -= investmentNet;
-  const inversionesBar: WaterfallBar = {
-    name: "Inversiones",
-    barBottom: running,
-    barTop: running + investmentNet,
-    amount: investmentNet,
-    fill: WATERFALL_COLORS.inversiones,
-    subcategories: buildSubcategories(
-      Array.from(investmentByName.entries()),
-      ([name]) => name,
-      ([, amount]) => amount,
-    ),
-  };
-
-  // --- Ahorro (savings) bar ---
-  const ahorroAmount = Math.max(0, savingsEstimate);
+  // --- Ahorro bar: investment contributions + savings target ---
+  const ahorroAmount = investmentNet + Math.max(0, savingsEstimate);
   running -= ahorroAmount;
   const ahorroBar: WaterfallBar = {
     name: "Ahorro",
@@ -260,7 +246,7 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
     barTop: running + ahorroAmount,
     amount: ahorroAmount,
     fill: WATERFALL_COLORS.ahorro,
-    subcategories: [],
+    subcategories: buildAhorroSubcategories(investmentByName, savingsEstimate),
   };
 
   const libreAmount = running;
@@ -274,12 +260,35 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
   };
 
   // Only include Ahorro bar if there's a savings amount
-  const bars = [ingresoBar, gastosFijosBar, gastosVariablesBar, inversionesBar];
+  const bars = [ingresoBar, gastosFijosBar, gastosVariablesBar];
   if (ahorroAmount > 0) {
     bars.push(ahorroBar);
   }
   bars.push(libreBar);
   return bars;
+}
+
+// ---------------------------------------------------------------------------
+// Ahorro subcategories helper
+// ---------------------------------------------------------------------------
+
+function buildAhorroSubcategories(
+  investmentByName: Map<string, number>,
+  savingsEstimate: number,
+): SubcategoryItem[] {
+  const items: SubcategoryItem[] = [];
+
+  // Add each investment contribution
+  investmentByName.forEach((amount, name) => {
+    if (amount > 0) items.push({ name, amount });
+  });
+
+  // Add savings rate line if nonzero
+  if (savingsEstimate > 0) {
+    items.push({ name: "Meta de ahorro", amount: savingsEstimate });
+  }
+
+  return items.sort((a, b) => b.amount - a.amount);
 }
 
 // ---------------------------------------------------------------------------
