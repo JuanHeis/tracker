@@ -74,19 +74,36 @@ export interface AguinaldoPreview {
 }
 
 export function calculateAguinaldo(
-  targetMonth: string, // "yyyy-MM" — must be June or December
+  targetMonth: string, // "yyyy-MM" — must be July (7) or January (1)
   salaryHistory: SalaryEntry[],
   overrides: Record<string, { amount: number; usdRate: number }>
 ): AguinaldoResult {
-  const [year, month] = targetMonth.split("-").map(Number);
+  const [yearStr, monthStr] = targetMonth.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
 
-  // Semester: Jan(01)-Jun(06) for June, Jul(07)-Dec(12) for December
-  const semesterStartMonth = month <= 6 ? 1 : 7;
-  const semesterEndMonth = month <= 6 ? 6 : 12;
+  // Determine which semester to look back at
+  // July (7) → look at Jan(1)-Jun(6) of the same year
+  // January (1) → look at Jul(7)-Dec(12) of the PREVIOUS year
+  let semYear: number;
+  let semStart: number;
+  let semEnd: number;
+
+  if (month === 7) {
+    semYear = year;
+    semStart = 1;
+    semEnd = 6;
+  } else if (month === 1) {
+    semYear = year - 1;
+    semStart = 7;
+    semEnd = 12;
+  } else {
+    return { amount: 0, bestSalary: 0, isAuto: true };
+  }
 
   let bestSalary = 0;
-  for (let m = semesterStartMonth; m <= semesterEndMonth; m++) {
-    const mk = `${year}-${String(m).padStart(2, "0")}`;
+  for (let m = semStart; m <= semEnd; m++) {
+    const mk = `${semYear}-${String(m).padStart(2, "0")}`;
     const salary = getSalaryForMonth(mk, salaryHistory, overrides);
     bestSalary = Math.max(bestSalary, salary.amount);
   }
@@ -103,23 +120,37 @@ export function getAguinaldoPreview(
   salaryHistory: SalaryEntry[],
   overrides: Record<string, { amount: number; usdRate: number }>
 ): AguinaldoPreview | null {
-  const month = parseInt(currentMonth.split("-")[1], 10);
-  const year = currentMonth.split("-")[0];
+  const [yearStr, monthStr] = currentMonth.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
 
-  // Only May or November get a preview
-  if (month !== 5 && month !== 11) return null;
+  // Preview shown in June (for July payment) and December (for January payment)
+  if (month !== 6 && month !== 12) return null;
 
-  // Target: June for May, December for November
-  const targetMonthNum = month === 5 ? 6 : 12;
-  const targetMonth = `${year}-${String(targetMonthNum).padStart(2, "0")}`;
+  // Determine target payment month and the semester range already elapsed
+  let targetMonth: string;
+  let semYear: number;
+  let semStart: number;
+  let semEnd: number; // only months up to currentMonth are known
 
-  // Calculate using the semester up to and including current month
-  // (target month salary not yet known, so semester is partial)
-  const semesterStartMonth = month <= 6 ? 1 : 7;
+  if (month === 6) {
+    // Payment in July, semester Jan-Jun (Jun is current, so all months known)
+    targetMonth = `${year}-07`;
+    semYear = year;
+    semStart = 1;
+    semEnd = 6;
+  } else {
+    // month === 12
+    // Payment in January next year, semester Jul-Dec (Dec is current, all months known)
+    targetMonth = `${year + 1}-01`;
+    semYear = year;
+    semStart = 7;
+    semEnd = 12;
+  }
 
   let bestSalary = 0;
-  for (let m = semesterStartMonth; m <= month; m++) {
-    const mk = `${year}-${String(m).padStart(2, "0")}`;
+  for (let m = semStart; m <= semEnd; m++) {
+    const mk = `${semYear}-${String(m).padStart(2, "0")}`;
     const salary = getSalaryForMonth(mk, salaryHistory, overrides);
     bestSalary = Math.max(bestSalary, salary.amount);
   }

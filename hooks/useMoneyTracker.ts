@@ -678,8 +678,8 @@ export function useMoneyTracker() {
     isOverride: boolean;
   } | null => {
     const month = parseInt(monthKey.split("-")[1], 10);
-    // Aguinaldo only applies to June (6) and December (12)
-    if (month !== 6 && month !== 12) return null;
+    // Aguinaldo paid in July (7) and January (1) — a mes vencido
+    if (month !== 7 && month !== 1) return null;
 
     // Check override first
     const overrides = monthlyData.aguinaldoOverrides || {};
