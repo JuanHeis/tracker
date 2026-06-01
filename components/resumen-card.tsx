@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { format, parse } from "date-fns";
 import { es } from "date-fns/locale";
-import { Pencil, Check, X } from "lucide-react";
+import { Pencil, Check, X, AlertTriangle, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/currency-input";
@@ -22,19 +22,45 @@ import {
   TooltipTrigger,
   Tooltip,
 } from "@/components/ui/tooltip";
+import { type DeficitState } from "@/lib/resumen/deficit-detector";
 
 interface ResumenCardProps {
+  // Currency display state (orchestrator-controlled)
+  currency: "ARS" | "USD";
+  onCurrencyToggle: () => void;
+
+  // ARS metric block (always provided)
   ingresoFijo: number;
   ingresoFijoIsOverride: boolean;
   otrosIngresos: number;
-  sobrante: number;
+  sobranteRaw: number;              // SIGNED — can be negative
   aguinaldoAmount: number | null;
   aguinaldoInfo: { bestSalary: number; isOverride: boolean } | null;
   totalGastos: number;
-  aportesInversiones: number;
+  aportesNoNeutros: number;         // counts as egreso
+  aportesAll: number;               // for tooltip
   porPagarArs: number;
   porPagarUsd: number;
   disponible: number;
+  resultadoDelMes: number;          // SIGNED, always rendered
+
+  // USD parallel block (optional — required only when user can toggle)
+  usdMetrics?: {
+    otrosIngresos: number;
+    sobranteRaw: number;
+    totalGastos: number;
+    aportesNoNeutros: number;
+    aportesAll: number;
+    disponible: number;
+    resultadoDelMes: number;
+  };
+
+  // Deficit banners
+  deficitState: DeficitState;
+  deficitRecurrenteDismissed: boolean;
+  onDismissDeficitRecurrente: () => void;
+
+  // Pre-existing
   isPendiente: boolean;
   payDay: number;
   aguinaldoPreview: { estimatedAmount: number; bestSalary: number; targetMonth: string } | null;
@@ -44,17 +70,25 @@ interface ResumenCardProps {
 }
 
 export function ResumenCard({
+  currency,
+  onCurrencyToggle,
   ingresoFijo,
   ingresoFijoIsOverride,
   otrosIngresos,
-  sobrante,
+  sobranteRaw,
   aguinaldoAmount,
   aguinaldoInfo,
   totalGastos,
-  aportesInversiones,
+  aportesNoNeutros,
+  aportesAll,
   porPagarArs,
   porPagarUsd,
   disponible,
+  resultadoDelMes,
+  usdMetrics,
+  deficitState,
+  deficitRecurrenteDismissed,
+  onDismissDeficitRecurrente,
   isPendiente,
   payDay,
   aguinaldoPreview,
@@ -88,17 +122,91 @@ export function ResumenCard({
     }
   };
 
+  // Compute the active display block based on selected currency
+  const isUsd = currency === "USD";
+  const active = isUsd && usdMetrics
+    ? {
+        ingresoFijo: 0,                                // USD has no salary
+        otrosIngresos: usdMetrics.otrosIngresos,
+        sobranteRaw: usdMetrics.sobranteRaw,
+        aguinaldo: 0,                                  // USD has no aguinaldo
+        totalGastos: usdMetrics.totalGastos,
+        aportesNoNeutros: usdMetrics.aportesNoNeutros,
+        aportesAll: usdMetrics.aportesAll,
+        disponible: usdMetrics.disponible,
+        resultadoDelMes: usdMetrics.resultadoDelMes,
+      }
+    : {
+        ingresoFijo,
+        otrosIngresos,
+        sobranteRaw,
+        aguinaldo: aguinaldoAmount ?? 0,
+        totalGastos,
+        aportesNoNeutros,
+        aportesAll,
+        disponible,
+        resultadoDelMes,
+      };
+  const displaySobrantePositive = Math.max(0, active.sobranteRaw);
+  const showAguinaldoLine = !isUsd && aguinaldoAmount != null && aguinaldoInfo != null;
+  const showSalaryLine = !isUsd;
+  const currencyTagForFmt = currency;  // "ARS" or "USD" — feed to FormattedAmount
+  const showDeficitAnterior = active.sobranteRaw < 0;
+  const showDeficitRecurrente = deficitState.recurrente && !deficitRecurrenteDismissed;
+
   return (
     <Card className="h-fit">
       <TooltipProvider>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle>Resumen del Mes</CardTitle>
-          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-            Este mes
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+              Este mes
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={onCurrencyToggle}
+              title={`Cambiar a ${isUsd ? "ARS" : "USD"}`}
+            >
+              <DollarSign className="h-3 w-3 mr-1" />
+              {currency}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {/* Deficit recurrente banner */}
+            {showDeficitRecurrente && (
+              <div className="rounded-md bg-red-50 dark:bg-red-950 border border-red-300 dark:border-red-800 p-3 text-sm text-red-800 dark:text-red-200 flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  {deficitState.consecutiveNegativeMonths >= 2
+                    ? `Venís en déficit ${deficitState.consecutiveNegativeMonths} meses seguidos`
+                    : "Déficit acumulado supera el umbral configurado"}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 -mt-1 -mr-1"
+                  onClick={onDismissDeficitRecurrente}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+            {/* Deficit anterior banner */}
+            {showDeficitAnterior && (
+              <div className="rounded-md bg-amber-50 dark:bg-amber-950 border border-amber-300 dark:border-amber-800 p-3 text-sm text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                <span>
+                  Déficit anterior:{" "}
+                  <FormattedAmount value={Math.abs(active.sobranteRaw)} currency={currencyTagForFmt} />
+                </span>
+              </div>
+            )}
+
             {/* Pendiente de cobro banner */}
             {isPendiente && (
               <div className="rounded-md bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 p-3 text-sm text-amber-800 dark:text-amber-200">
@@ -120,49 +228,51 @@ export function ResumenCard({
             {/* INGRESOS section */}
             <p className="text-sm font-semibold text-green-600 dark:text-green-400 uppercase tracking-wide">Ingresos</p>
 
-            {/* Ingreso fijo */}
-            <div className="flex justify-between">
-              <span>Ingreso fijo:</span>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className={cn("font-medium text-green-600 dark:text-green-400 cursor-help", isPendiente && "opacity-50")}>
-                    <FormattedAmount value={ingresoFijo} currency="ARS" />
-                    {ingresoFijoIsOverride && (
-                      <span className="ml-1 text-xs text-muted-foreground">(ajuste)</span>
-                    )}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p>Ingreso fijo mensual{ingresoFijoIsOverride ? " (ajuste manual)" : " (desde historial)"}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-
-            {/* Otros ingresos */}
-            {otrosIngresos > 0 && (
+            {/* Ingreso fijo — ARS only */}
+            {showSalaryLine && (
               <div className="flex justify-between">
-                <span>Otros ingresos:</span>
+                <span>Ingreso fijo:</span>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="font-medium text-green-600 dark:text-green-400 cursor-help">
-                      <FormattedAmount value={otrosIngresos} currency="ARS" />
+                    <span className={cn("font-medium text-green-600 dark:text-green-400 cursor-help", isPendiente && "opacity-50")}>
+                      <FormattedAmount value={active.ingresoFijo} currency={currencyTagForFmt} />
+                      {ingresoFijoIsOverride && (
+                        <span className="ml-1 text-xs text-muted-foreground">(ajuste)</span>
+                      )}
                     </span>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>Suma de otros ingresos en ARS del periodo</p>
+                    <p>Ingreso fijo mensual{ingresoFijoIsOverride ? " (ajuste manual)" : " (desde historial)"}</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
             )}
 
-            {/* Sobrante anterior */}
-            {sobrante > 0 && (
+            {/* Otros ingresos */}
+            {active.otrosIngresos > 0 && (
+              <div className="flex justify-between">
+                <span>Otros ingresos:</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="font-medium text-green-600 dark:text-green-400 cursor-help">
+                      <FormattedAmount value={active.otrosIngresos} currency={currencyTagForFmt} />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Suma de otros ingresos en {currency} del periodo</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            )}
+
+            {/* Sobrante anterior — shown only if positive */}
+            {displaySobrantePositive > 0 && (
               <div className="flex justify-between">
                 <span>Sobrante anterior:</span>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="font-medium text-green-600 dark:text-green-400 cursor-help">
-                      <FormattedAmount value={sobrante} currency="ARS" />
+                      <FormattedAmount value={displaySobrantePositive} currency={currencyTagForFmt} />
                     </span>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
@@ -172,8 +282,8 @@ export function ResumenCard({
               </div>
             )}
 
-            {/* Aguinaldo */}
-            {aguinaldoAmount != null && aguinaldoInfo && (
+            {/* Aguinaldo — ARS only */}
+            {showAguinaldoLine && aguinaldoAmount != null && aguinaldoInfo && (
               <div className="flex items-center justify-between">
                 <span>
                   Aguinaldo {aguinaldoInfo.isOverride ? "(ajuste)" : "(auto)"}:
@@ -244,27 +354,29 @@ export function ResumenCard({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="font-medium text-red-500 cursor-help">
-                    <FormattedAmount value={totalGastos} currency="ARS" />
+                    <FormattedAmount value={active.totalGastos} currency={currencyTagForFmt} />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Total gastos en ARS del periodo</p>
+                  <p>Total gastos en {currency} del periodo</p>
                 </TooltipContent>
               </Tooltip>
             </div>
 
-            {/* Aportes inversiones */}
-            {aportesInversiones > 0 && (
+            {/* Aportes inversiones (no neutros) */}
+            {active.aportesNoNeutros > 0 && (
               <div className="flex justify-between">
-                <span>Aportes inversiones:</span>
+                <span>Aportes inversión:</span>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="font-medium text-blue-500 dark:text-blue-400 cursor-help">
-                      <FormattedAmount value={-aportesInversiones} currency="ARS" />
+                      <FormattedAmount value={-active.aportesNoNeutros} currency={currencyTagForFmt} />
                     </span>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>Aportes a inversiones en ARS del periodo</p>
+                    <p>Aportes del periodo: <FormattedAmount value={active.aportesAll} currency="$" /></p>
+                    <p>Neutros (tarjeta/objetivo): <FormattedAmount value={Math.max(0, active.aportesAll - active.aportesNoNeutros)} currency="$" /></p>
+                    <p>Cuenta como egreso (ahorro/especulación): <FormattedAmount value={active.aportesNoNeutros} currency="$" /></p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -309,35 +421,34 @@ export function ResumenCard({
               <TooltipTrigger asChild>
                 <div className="flex justify-between w-full cursor-help">
                   <span className="font-bold">Disponible:</span>
-                  <span className={cn("font-bold", disponible >= 0 ? "text-green-500" : "text-red-500")}>
-                    <FormattedAmount value={disponible} currency="ARS" />
+                  <span className={cn("font-bold", active.disponible >= 0 ? "text-green-500" : "text-red-500")}>
+                    <FormattedAmount value={active.disponible} currency={currencyTagForFmt} />
                   </span>
                 </div>
               </TooltipTrigger>
               <TooltipContent className="max-w-sm">
-                <p className="font-bold mb-1">Disponible = Ingresos - Egresos</p>
-                <p>Ingreso fijo: <FormattedAmount value={ingresoFijo} currency="$" /></p>
-                <p>+ Otros ingresos: <FormattedAmount value={otrosIngresos} currency="$" /></p>
-                {sobrante > 0 && (
-                  <p>+ Sobrante anterior: <FormattedAmount value={sobrante} currency="$" /></p>
-                )}
-                {aguinaldoAmount != null && (
-                  <p>+ Aguinaldo: <FormattedAmount value={aguinaldoAmount} currency="$" /></p>
-                )}
-                <p className="text-red-400">- Gastos: <FormattedAmount value={totalGastos} currency="$" /></p>
-                {aportesInversiones > 0 && (
-                  <p className="text-blue-400">- Aportes inv.: <FormattedAmount value={aportesInversiones} currency="$" /></p>
-                )}
-                {porPagarArs > 0 && (
-                  <p className="text-amber-400">- Por pagar ARS: <FormattedAmount value={porPagarArs} currency="$" /></p>
-                )}
-                {porPagarUsd > 0 && (
-                  <p className="text-amber-400">- Por pagar USD: <FormattedAmount value={porPagarUsd} currency="USD" /></p>
+                <p className="font-bold mb-1">Disponible = Sobrante anterior + Ingresos − Egresos</p>
+                <p>Sobrante anterior: <FormattedAmount value={active.sobranteRaw} currency="$" /></p>
+                {showSalaryLine && <p>+ Ingreso fijo: <FormattedAmount value={active.ingresoFijo} currency="$" /></p>}
+                <p>+ Otros ingresos: <FormattedAmount value={active.otrosIngresos} currency="$" /></p>
+                {showAguinaldoLine && <p>+ Aguinaldo: <FormattedAmount value={active.aguinaldo} currency="$" /></p>}
+                <p className="text-red-400">− Gastos: <FormattedAmount value={active.totalGastos} currency="$" /></p>
+                {active.aportesNoNeutros > 0 && (
+                  <p className="text-blue-400">− Aportes inv. (no neutros): <FormattedAmount value={active.aportesNoNeutros} currency="$" /></p>
                 )}
                 <hr className="my-1 border-border" />
-                <p className="font-bold">= <FormattedAmount value={disponible} currency="$" /></p>
+                <p className="font-bold">= <FormattedAmount value={active.disponible} currency="$" /></p>
               </TooltipContent>
             </Tooltip>
+
+            {/* Resultado del mes — always visible */}
+            <div className="flex justify-between text-sm text-muted-foreground -mt-2">
+              <span>Resultado del mes:</span>
+              <span className="tabular-nums">
+                {active.resultadoDelMes >= 0 ? "+" : ""}
+                <FormattedAmount value={active.resultadoDelMes} currency={currencyTagForFmt} />
+              </span>
+            </div>
           </div>
         </CardContent>
       </TooltipProvider>
