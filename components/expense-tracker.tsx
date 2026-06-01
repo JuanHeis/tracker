@@ -15,7 +15,7 @@ import {
   Handshake,
   Calculator,
 } from "lucide-react";
-import { format, lastDayOfMonth } from "date-fns";
+import { format, lastDayOfMonth, subMonths, parse } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -133,6 +133,7 @@ export function ExpenseTracker() {
     porPagarUsd,
     availableMoney,
     savings,
+    calculateAvailableForMonth,
     open,
     setOpen,
     openExtraIncome,
@@ -244,6 +245,19 @@ export function ExpenseTracker() {
   // Compute Resumen card line items from existing hook data
   const currentMonthSalary = getSalaryForMonth(selectedMonth, monthlyData.salaryOverrides || {});
   const dualBalancesForCards = calculateDualBalances();
+
+  // Previous month key
+  const prevMonthKey = useMemo(() => {
+    const d = parse(selectedMonth, "yyyy-MM", new Date());
+    return format(subMonths(d, 1), "yyyy-MM");
+  }, [selectedMonth]);
+
+  // Sobrante del mes anterior: what was "disponible" in the previous month
+  // Only show if positive (if they were in deficit, there's nothing to carry over)
+  const soranteDelMesAnterior = useMemo(() => {
+    const prev = calculateAvailableForMonth(prevMonthKey);
+    return prev > 0 ? prev : 0;
+  }, [prevMonthKey, calculateAvailableForMonth]);
 
   // Simulator patrimony: liquid ARS + USD (converted) + investments
   const simCurrentPatrimony = useMemo(() => {
@@ -740,6 +754,7 @@ export function ExpenseTracker() {
               ingresoFijo={currentMonthSalary.amount}
               ingresoFijoIsOverride={currentMonthSalary.isOverride}
               otrosIngresos={otrosIngresosArs}
+              sobrante={soranteDelMesAnterior}
               aguinaldoAmount={aguinaldoData?.amount ?? null}
               aguinaldoInfo={
                 aguinaldoData

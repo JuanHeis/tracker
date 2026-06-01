@@ -430,7 +430,7 @@ export function useMoneyTracker() {
           const retiroAmount = mov.receivedAmount ?? mov.amount;
           const impact = mov.type === "aporte" ? -mov.amount : retiroAmount;
           arsBalanceAccumulated += impact;
-          if (mov.type === "aporte") arsInvestmentContributions += mov.amount;
+          if (mov.type === "aporte" && isInArsRange(mov.date)) arsInvestmentContributions += mov.amount;
           if (isInArsRange(mov.date)) {
             arsBalance += impact;
           }
@@ -565,6 +565,88 @@ export function useMoneyTracker() {
       arsInvestments, usdInvestments, arsInvestmentContributions,
       arsLoansGiven, usdLoansGiven, arsDebts, usdDebts
     };
+  };
+
+  const calculateAvailableForMonth = (monthKey: string): number => {
+    const { start: rangeStart, end: rangeEnd } = getFilterDateRange(monthKey, viewMode, payDay);
+    const isInRange = (dateStr: string) => {
+      const d = parse(dateStr, "yyyy-MM-dd", new Date());
+      return d >= rangeStart && d <= rangeEnd;
+    };
+
+    const salaryRes = salaryHistoryTracker.getSalaryForMonth(monthKey, monthlyData.salaryOverrides || {});
+    let ars = salaryRes.amount;
+
+    monthlyData.extraIncomes.forEach((income) => {
+      if (income.currencyType !== CurrencyType.USD && isInRange(income.date)) {
+        ars += income.amount;
+      }
+    });
+
+    monthlyData.expenses.forEach((expense) => {
+      if (expense.currencyType !== CurrencyType.USD && isInRange(expense.date)) {
+        ars -= expense.amount;
+      }
+    });
+
+    (monthlyData.usdPurchases || []).forEach((purchase) => {
+      if (purchase.origin === "tracked" && isInRange(purchase.date)) {
+        ars -= purchase.arsAmount;
+      }
+    });
+
+    (monthlyData.investments || []).forEach((inv) => {
+      if (inv.currencyType !== CurrencyType.USD) {
+        inv.movements
+          .filter((mov) => !mov.isInitial && !mov.pendingIngreso && isInRange(mov.date))
+          .forEach((mov) => {
+            const retiro = mov.receivedAmount ?? mov.amount;
+            ars += mov.type === "aporte" ? -mov.amount : retiro;
+          });
+      }
+    });
+
+    (monthlyData.transfers || []).forEach((transfer) => {
+      if (!isInRange(transfer.date)) return;
+      switch (transfer.type) {
+        case "currency_ars_to_usd": ars -= transfer.arsAmount!; break;
+        case "currency_usd_to_ars": ars += transfer.arsAmount!; break;
+        case "cash_out": if (transfer.currency === "ARS") ars -= transfer.amount!; break;
+        case "cash_in": if (transfer.currency === "ARS") ars += transfer.amount!; break;
+        case "adjustment_ars": ars += transfer.amount!; break;
+      }
+    });
+
+    (monthlyData.loans || []).forEach((loan) => {
+      if (loan.currencyType !== CurrencyType.USD) {
+        if (loan.type === "preste") {
+          if (isInRange(loan.date)) ars -= loan.amount;
+          loan.payments.forEach(p => { if (isInRange(p.date)) ars += p.amount; });
+        } else {
+          loan.payments.forEach(p => { if (isInRange(p.date)) ars -= p.amount; });
+        }
+      }
+    });
+
+    // Add aguinaldo for that month (dependiente only)
+    if (salaryHistoryTracker.incomeConfig.employmentType === "dependiente") {
+      const monthNum = parseInt(monthKey.split("-")[1], 10);
+      if (monthNum === 7 || monthNum === 1) {
+        const overrides = monthlyData.aguinaldoOverrides || {};
+        if (overrides[monthKey]) {
+          ars += overrides[monthKey].amount;
+        } else {
+          const auto = calculateAguinaldo(
+            monthKey,
+            salaryHistoryTracker.salaryHistory.entries,
+            monthlyData.salaryOverrides || {}
+          );
+          ars += auto.amount;
+        }
+      }
+    }
+
+    return ars;
   };
 
   const expensesTracker = useExpensesTracker(
@@ -731,6 +813,7 @@ export function useMoneyTracker() {
     availableMoney,
     savings,
     calculateDualBalances,
+    calculateAvailableForMonth,
 
     // Funciones de useIncomes
     showSalaryForm: incomesTracker.showSalaryForm,

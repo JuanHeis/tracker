@@ -27,6 +27,7 @@ interface ResumenCardProps {
   ingresoFijo: number;
   ingresoFijoIsOverride: boolean;
   otrosIngresos: number;
+  sobrante: number;
   aguinaldoAmount: number | null;
   aguinaldoInfo: { bestSalary: number; isOverride: boolean } | null;
   totalGastos: number;
@@ -46,6 +47,7 @@ export function ResumenCard({
   ingresoFijo,
   ingresoFijoIsOverride,
   otrosIngresos,
+  sobrante,
   aguinaldoAmount,
   aguinaldoInfo,
   totalGastos,
@@ -148,6 +150,23 @@ export function ResumenCard({
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
                     <p>Suma de otros ingresos en ARS del periodo</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            )}
+
+            {/* Sobrante anterior */}
+            {sobrante > 0 && (
+              <div className="flex justify-between">
+                <span>Sobrante anterior:</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="font-medium text-green-600 dark:text-green-400 cursor-help">
+                      <FormattedAmount value={sobrante} currency="ARS" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Dinero que sobró del mes anterior y está disponible este mes</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -299,6 +318,9 @@ export function ResumenCard({
                 <p className="font-bold mb-1">Disponible = Ingresos - Egresos</p>
                 <p>Ingreso fijo: <FormattedAmount value={ingresoFijo} currency="$" /></p>
                 <p>+ Otros ingresos: <FormattedAmount value={otrosIngresos} currency="$" /></p>
+                {sobrante > 0 && (
+                  <p>+ Sobrante anterior: <FormattedAmount value={sobrante} currency="$" /></p>
+                )}
                 {aguinaldoAmount != null && (
                   <p>+ Aguinaldo: <FormattedAmount value={aguinaldoAmount} currency="$" /></p>
                 )}
