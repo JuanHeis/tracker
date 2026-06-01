@@ -70,6 +70,8 @@ export interface InvestmentMovement {
   receivedAmount?: number;    // actual amount received (may differ from amount due to exchange rate)
 }
 
+export type InvestmentPurpose = "ahorro" | "objetivo" | "tarjeta" | "especulacion";
+
 export interface Investment {
   id: string;
   name: string;
@@ -85,6 +87,12 @@ export interface Investment {
   tna?: number;          // Annual nominal rate as percentage
   plazoDias?: number;    // Term in days
   startDate?: string;    // PF start date for calculation
+  purpose?: InvestmentPurpose;  // Resumen del mes classification — default "ahorro" at read time
+}
+
+/** Read-time accessor — Investment.purpose is optional; treat undefined as "ahorro" per Phase 22 D3. */
+export function getInvestmentPurpose(inv: Investment): InvestmentPurpose {
+  return inv.purpose ?? "ahorro";
 }
 
 export interface ExtraIncome {
