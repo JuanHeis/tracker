@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Plus,
   DollarSign,
@@ -86,6 +86,15 @@ import { useSavingsRate } from "@/hooks/useSavingsRate";
 import { useMonthlyFlowData } from "@/hooks/useMonthlyFlowData";
 import { useProjectionEngine } from "@/hooks/useProjectionEngine";
 import { SAVINGS_RATE_KEY } from "@/lib/projection/savings-rate";
+import { computeMonthMetrics, type MonthMetrics } from "@/lib/resumen/month-metrics";
+import { evaluateDeficitState, type DeficitState } from "@/lib/resumen/deficit-detector";
+import {
+  RESUMEN_CONFIG_KEY,
+  DEFAULT_RESUMEN_CONFIG,
+  type ResumenConfig,
+} from "@/lib/resumen/resumen-config";
+import { getFilterDateRange } from "@/hooks/usePayPeriod";
+import { calculateAguinaldo } from "@/hooks/useSalaryHistory";
 
 function validateField(
   name: string,
@@ -252,12 +261,165 @@ export function ExpenseTracker() {
     return format(subMonths(d, 1), "yyyy-MM");
   }, [selectedMonth]);
 
-  // Sobrante del mes anterior: what was "disponible" in the previous month
-  // Only show if positive (if they were in deficit, there's nothing to carry over)
-  const soranteDelMesAnterior = useMemo(() => {
-    const prev = calculateAvailableForMonth(prevMonthKey);
-    return prev > 0 ? prev : 0;
+  // Signed sobrante anterior for ARS (used by ResumenCard's Disponible formula and deficit banner)
+  const sobranteAnteriorRawArs = useMemo(() => {
+    return calculateAvailableForMonth(prevMonthKey);
   }, [prevMonthKey, calculateAvailableForMonth]);
+
+  // Positive-clamped sobrante for legacy/positive-only consumers (MonthlyFlowPanel etc.)
+  const soranteDelMesAnterior = useMemo(() => {
+    return Math.max(0, sobranteAnteriorRawArs);
+  }, [sobranteAnteriorRawArs]);
+
+  // USD sobrante anterior — computed inline per pay period for the previous month
+  const computeUsdAvailableForMonth = useCallback((monthKey: string): number => {
+    const { start, end } = getFilterDateRange(monthKey, viewMode, incomeConfig.payDay);
+    const isInRange = (dateStr: string) => {
+      const d = parse(dateStr, "yyyy-MM-dd", new Date());
+      return d >= start && d <= end;
+    };
+    let usd = 0;
+    (monthlyData.extraIncomes || []).forEach((inc: any) => {
+      if (inc.currencyType === CurrencyType.USD && isInRange(inc.date)) usd += inc.amount;
+    });
+    monthlyData.expenses.forEach((exp: any) => {
+      if (exp.currencyType === CurrencyType.USD && isInRange(exp.date)) usd -= exp.amount;
+    });
+    (monthlyData.investments || []).forEach((inv: any) => {
+      if (inv.currencyType !== CurrencyType.USD) return;
+      inv.movements
+        .filter((m: any) => !m.isInitial && !m.pendingIngreso && isInRange(m.date))
+        .forEach((m: any) => {
+          const retiro = m.receivedAmount ?? m.amount;
+          usd += m.type === "aporte" ? -m.amount : retiro;
+        });
+    });
+    (monthlyData.usdPurchases || []).forEach((p: any) => {
+      if (isInRange(p.date)) usd += p.usdAmount;
+    });
+    (monthlyData.transfers || []).forEach((t: any) => {
+      if (!isInRange(t.date)) return;
+      switch (t.type) {
+        case "currency_ars_to_usd": usd += t.usdAmount!; break;
+        case "currency_usd_to_ars": usd -= t.usdAmount!; break;
+        case "cash_out": if (t.currency === "USD") usd -= t.amount!; break;
+        case "cash_in": if (t.currency === "USD") usd += t.amount!; break;
+        case "adjustment_usd": usd += t.amount!; break;
+      }
+    });
+    return usd;
+  }, [monthlyData, viewMode, incomeConfig.payDay]);
+
+  const sobranteAnteriorRawUsd = useMemo(
+    () => computeUsdAvailableForMonth(prevMonthKey),
+    [computeUsdAvailableForMonth, prevMonthKey],
+  );
+
+  // ARS and USD isInRange predicate (shared by both metric computations)
+  const arsIsInRange = useMemo(() => {
+    const { start, end } = getFilterDateRange(selectedMonth, viewMode, incomeConfig.payDay);
+    return (dateStr: string) => {
+      const d = parse(dateStr, "yyyy-MM-dd", new Date());
+      return d >= start && d <= end;
+    };
+  }, [selectedMonth, viewMode, incomeConfig.payDay]);
+
+  // ARS month metrics via the Plan 02 pure engine
+  const arsMetrics: MonthMetrics = useMemo(
+    () => computeMonthMetrics({
+      monthKey: selectedMonth,
+      currency: CurrencyType.ARS,
+      investments: monthlyData.investments || [],
+      expenses: monthlyData.expenses,
+      extraIncomes: monthlyData.extraIncomes || [],
+      salaryAmount: currentMonthSalary.amount,
+      aguinaldoAmount: aguinaldoData?.amount ?? 0,
+      sobranteAnteriorRaw: sobranteAnteriorRawArs,
+      isInRange: arsIsInRange,
+    }),
+    [selectedMonth, monthlyData.investments, monthlyData.expenses, monthlyData.extraIncomes, currentMonthSalary.amount, aguinaldoData?.amount, sobranteAnteriorRawArs, arsIsInRange],
+  );
+
+  // USD month metrics via the Plan 02 pure engine
+  const usdMetrics: MonthMetrics = useMemo(
+    () => computeMonthMetrics({
+      monthKey: selectedMonth,
+      currency: CurrencyType.USD,
+      investments: monthlyData.investments || [],
+      expenses: monthlyData.expenses,
+      extraIncomes: monthlyData.extraIncomes || [],
+      salaryAmount: 0,
+      aguinaldoAmount: 0,
+      sobranteAnteriorRaw: sobranteAnteriorRawUsd,
+      isInRange: arsIsInRange,   // same range function — USD uses ARS pay-period per existing convention
+    }),
+    [selectedMonth, monthlyData.investments, monthlyData.expenses, monthlyData.extraIncomes, sobranteAnteriorRawUsd, arsIsInRange],
+  );
+
+  // ARS resultado history (last 6 months, most recent first) for deficit detection
+  const resultadoHistoryArs = useMemo<number[]>(() => {
+    const history: number[] = [];
+    let cursorKey = prevMonthKey;
+    for (let i = 0; i < 6; i++) {
+      const sal = getSalaryForMonth(cursorKey, monthlyData.salaryOverrides || {});
+      const monthNum = parseInt(cursorKey.split("-")[1], 10);
+      let aguinaldo = 0;
+      if (incomeConfig.employmentType === "dependiente" && (monthNum === 7 || monthNum === 1)) {
+        const ov = (monthlyData.aguinaldoOverrides || {} as Record<string, { amount: number }>)[cursorKey];
+        aguinaldo = ov
+          ? ov.amount
+          : calculateAguinaldo(cursorKey, salaryHistory.entries, monthlyData.salaryOverrides || {}).amount;
+      }
+      const { start, end } = getFilterDateRange(cursorKey, viewMode, incomeConfig.payDay);
+      const isInRange = (dateStr: string) => {
+        const d = parse(dateStr, "yyyy-MM-dd", new Date());
+        return d >= start && d <= end;
+      };
+      const m = computeMonthMetrics({
+        monthKey: cursorKey,
+        currency: CurrencyType.ARS,
+        investments: monthlyData.investments || [],
+        expenses: monthlyData.expenses,
+        extraIncomes: monthlyData.extraIncomes || [],
+        salaryAmount: sal.amount,
+        aguinaldoAmount: aguinaldo,
+        sobranteAnteriorRaw: 0,  // for history evaluation we only care about resultadoDelMes
+        isInRange,
+      });
+      history.push(m.resultadoDelMes);
+      const d = parse(cursorKey, "yyyy-MM", new Date());
+      cursorKey = format(subMonths(d, 1), "yyyy-MM");
+    }
+    return history;
+  }, [prevMonthKey, monthlyData, getSalaryForMonth, salaryHistory.entries, incomeConfig.employmentType, incomeConfig.payDay, viewMode]);
+
+  // USD resultado history (last 6 months, most recent first) for deficit detection
+  const resultadoHistoryUsd = useMemo<number[]>(() => {
+    const history: number[] = [];
+    let cursorKey = prevMonthKey;
+    for (let i = 0; i < 6; i++) {
+      const { start, end } = getFilterDateRange(cursorKey, viewMode, incomeConfig.payDay);
+      const isInRange = (dateStr: string) => {
+        const d = parse(dateStr, "yyyy-MM-dd", new Date());
+        return d >= start && d <= end;
+      };
+      const m = computeMonthMetrics({
+        monthKey: cursorKey,
+        currency: CurrencyType.USD,
+        investments: monthlyData.investments || [],
+        expenses: monthlyData.expenses,
+        extraIncomes: monthlyData.extraIncomes || [],
+        salaryAmount: 0,
+        aguinaldoAmount: 0,
+        sobranteAnteriorRaw: 0,
+        isInRange,
+      });
+      history.push(m.resultadoDelMes);
+      const d = parse(cursorKey, "yyyy-MM", new Date());
+      cursorKey = format(subMonths(d, 1), "yyyy-MM");
+    }
+    return history;
+  }, [prevMonthKey, monthlyData, incomeConfig.payDay, viewMode]);
 
   // Simulator patrimony: liquid ARS + USD (converted) + investments
   const simCurrentPatrimony = useMemo(() => {
@@ -283,6 +445,30 @@ export function ExpenseTracker() {
 
   // Savings rate hook (config persisted in localStorage, estimate computed from mode)
   const savingsRate = useSavingsRate(currentMonthSalary.amount, historicalNetFlow);
+
+  // Phase 22: Resumen del mes redesign — config persistence and UI state
+  const [resumenConfig] = useLocalStorage<ResumenConfig>(
+    RESUMEN_CONFIG_KEY,
+    DEFAULT_RESUMEN_CONFIG,
+  );
+  const [resumenCurrency, setResumenCurrency] = useState<"ARS" | "USD">("ARS");
+  const [deficitRecurrenteDismissed, setDeficitRecurrenteDismissed] = useState(false);
+  useEffect(() => {
+    // When the user flips the currency toggle, re-evaluate the recurrente banner from scratch
+    setDeficitRecurrenteDismissed(false);
+  }, [resumenCurrency]);
+
+  // Deficit state computed from the active currency's history
+  const deficitState: DeficitState = useMemo(() => {
+    const activeHistory = resumenCurrency === "USD" ? resultadoHistoryUsd : resultadoHistoryArs;
+    const activeSobrante = resumenCurrency === "USD" ? sobranteAnteriorRawUsd : sobranteAnteriorRawArs;
+    return evaluateDeficitState(
+      activeHistory,
+      activeSobrante,
+      currentMonthSalary.amount,
+      resumenConfig.deficitThresholdPercent,
+    );
+  }, [resumenCurrency, resultadoHistoryArs, resultadoHistoryUsd, sobranteAnteriorRawArs, sobranteAnteriorRawUsd, currentMonthSalary.amount, resumenConfig.deficitThresholdPercent]);
 
   // Waterfall data for MonthlyFlowPanel
   const waterfallData = useMonthlyFlowData(
@@ -751,21 +937,37 @@ export function ExpenseTracker() {
 
           <div className="flex flex-col gap-4">
             <ResumenCard
+              currency={resumenCurrency}
+              onCurrencyToggle={() => setResumenCurrency(c => c === "ARS" ? "USD" : "ARS")}
               ingresoFijo={currentMonthSalary.amount}
               ingresoFijoIsOverride={currentMonthSalary.isOverride}
-              otrosIngresos={otrosIngresosArs}
-              sobrante={soranteDelMesAnterior}
+              otrosIngresos={arsMetrics.otrosIngresos}
+              sobranteRaw={sobranteAnteriorRawArs}
               aguinaldoAmount={aguinaldoData?.amount ?? null}
               aguinaldoInfo={
                 aguinaldoData
                   ? { bestSalary: aguinaldoData.bestSalary, isOverride: aguinaldoData.isOverride }
                   : null
               }
-              totalGastos={totalExpenses}
-              aportesInversiones={dualBalancesForCards.arsInvestmentContributions}
+              totalGastos={arsMetrics.totalGastos}
+              aportesNoNeutros={arsMetrics.aportesNoNeutros}
+              aportesAll={arsMetrics.aportesAll}
               porPagarArs={porPagarArs}
               porPagarUsd={porPagarUsd}
-              disponible={availableMoney}
+              disponible={arsMetrics.disponible}
+              resultadoDelMes={arsMetrics.resultadoDelMes}
+              usdMetrics={{
+                otrosIngresos: usdMetrics.otrosIngresos,
+                sobranteRaw: sobranteAnteriorRawUsd,
+                totalGastos: usdMetrics.totalGastos,
+                aportesNoNeutros: usdMetrics.aportesNoNeutros,
+                aportesAll: usdMetrics.aportesAll,
+                disponible: usdMetrics.disponible,
+                resultadoDelMes: usdMetrics.resultadoDelMes,
+              }}
+              deficitState={deficitState}
+              deficitRecurrenteDismissed={deficitRecurrenteDismissed}
+              onDismissDeficitRecurrente={() => setDeficitRecurrenteDismissed(true)}
               isPendiente={isPendiente}
               payDay={incomeConfig.payDay}
               aguinaldoPreview={aguinaldoPreviewData}
