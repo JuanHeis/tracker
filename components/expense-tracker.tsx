@@ -264,15 +264,9 @@ export function ExpenseTracker() {
     return format(subMonths(d, 1), "yyyy-MM");
   }, [selectedMonth]);
 
-  // Signed sobrante anterior for ARS (used by ResumenCard's Disponible formula and deficit banner)
-  const sobranteAnteriorRawArs = useMemo(() => {
-    return calculateAvailableForMonth(prevMonthKey);
-  }, [prevMonthKey, calculateAvailableForMonth]);
-
-  // Positive-clamped sobrante for legacy/positive-only consumers (MonthlyFlowPanel etc.)
-  const soranteDelMesAnterior = useMemo(() => {
-    return Math.max(0, sobranteAnteriorRawArs);
-  }, [sobranteAnteriorRawArs]);
+  // NOTE: sobranteAnteriorChainedArs/Usd and soranteDelMesAnterior are defined below,
+  // AFTER computeChainedDisponible/computeChainedDisponibleUsd (they depend on those
+  // helpers, which are declared later). See quick-260601-otj.
 
   // USD sobrante anterior — computed inline per pay period for the previous month
   const computeUsdAvailableForMonth = useCallback((monthKey: string): number => {
@@ -313,10 +307,6 @@ export function ExpenseTracker() {
     return usd;
   }, [monthlyData, viewMode, incomeConfig.payDay]);
 
-  const sobranteAnteriorRawUsd = useMemo(
-    () => computeUsdAvailableForMonth(prevMonthKey),
-    [computeUsdAvailableForMonth, prevMonthKey],
-  );
 
   // ARS and USD isInRange predicate (shared by both metric computations)
   const arsIsInRange = useMemo(() => {
@@ -327,9 +317,122 @@ export function ExpenseTracker() {
     };
   }, [selectedMonth, viewMode, incomeConfig.payDay]);
 
+  // Detect wizard month: the month that contains the adjustment_ars transfer
+  const wizardMonth = useMemo(() => {
+    const adj = (monthlyData.transfers || []).find((t) => t.type === "adjustment_ars");
+    return adj ? adj.date.slice(0, 7) : null;
+  }, [monthlyData.transfers]);
+
+  // Compute the true disponible for any month by chaining from the wizard month forward.
+  // For the wizard month itself, use calculateAvailableForMonth (which includes the wizard
+  // adjustment_ars, retiros, transfers, loans — all the one-time flows). For subsequent
+  // months, chain: sobrante = disponible of prior month (also computed via this function).
+  const computeChainedDisponible = useCallback((monthKey: string): number => {
+    if (!wizardMonth || monthKey < wizardMonth) {
+      return calculateAvailableForMonth(monthKey);
+    }
+    if (monthKey === wizardMonth) {
+      return calculateAvailableForMonth(monthKey);
+    }
+    // For months after wizard: sobrante = chained disponible of previous month.
+    // The wizard month's own sobrante is never propagated — it reflects one-time setup
+    // flows (adjustment_ars, initial retiros, loans) that don't represent a real monthly
+    // surplus/deficit to carry forward.
+    const prevKey = format(subMonths(parse(monthKey, "yyyy-MM", new Date()), 1), "yyyy-MM");
+    const sobranteAnterior = prevKey === wizardMonth ? 0 : computeChainedDisponible(prevKey);
+    const { start, end } = getFilterDateRange(monthKey, viewMode, incomeConfig.payDay);
+    const isInRange = (d: string) => {
+      const dt = parse(d, "yyyy-MM-dd", new Date());
+      return dt >= start && dt <= end;
+    };
+    const salRes = getSalaryForMonth(monthKey, monthlyData.salaryOverrides || {});
+    const monthNum = parseInt(monthKey.split("-")[1], 10);
+    let aguinaldo = 0;
+    if (incomeConfig.employmentType === "dependiente" && (monthNum === 7 || monthNum === 1)) {
+      const overrides = monthlyData.aguinaldoOverrides || {};
+      if ((overrides as Record<string, { amount: number }>)[monthKey]) {
+        aguinaldo = (overrides as Record<string, { amount: number }>)[monthKey].amount;
+      } else {
+        aguinaldo = calculateAguinaldo(monthKey, salaryHistory.entries, monthlyData.salaryOverrides || {}).amount;
+      }
+    }
+    const metrics = computeMonthMetrics({
+      monthKey,
+      currency: CurrencyType.ARS,
+      investments: monthlyData.investments || [],
+      expenses: monthlyData.expenses,
+      extraIncomes: monthlyData.extraIncomes || [],
+      salaryAmount: salRes.amount,
+      aguinaldoAmount: aguinaldo,
+      sobranteAnteriorRaw: sobranteAnterior,
+      isInRange,
+    });
+    return metrics.disponible;
+  }, [wizardMonth, calculateAvailableForMonth, monthlyData, viewMode, incomeConfig, getSalaryForMonth, salaryHistory]);
+
+  // USD analogue of computeChainedDisponible — chains the USD FLOW disponible month over
+  // month so the "Sobrante anterior" / "Déficit anterior" of the USD view also reflects
+  // flow (not cash), consistent with ARS. See quick-260601-otj.
+  const computeChainedDisponibleUsd = useCallback((monthKey: string): number => {
+    if (!wizardMonth || monthKey <= wizardMonth) {
+      return computeUsdAvailableForMonth(monthKey);
+    }
+    const prevKey = format(subMonths(parse(monthKey, "yyyy-MM", new Date()), 1), "yyyy-MM");
+    const sobranteAnterior = prevKey === wizardMonth ? 0 : computeChainedDisponibleUsd(prevKey);
+    const { start, end } = getFilterDateRange(monthKey, viewMode, incomeConfig.payDay);
+    const isInRange = (d: string) => {
+      const dt = parse(d, "yyyy-MM-dd", new Date());
+      return dt >= start && dt <= end;
+    };
+    const metrics = computeMonthMetrics({
+      monthKey,
+      currency: CurrencyType.USD,
+      investments: monthlyData.investments || [],
+      expenses: monthlyData.expenses,
+      extraIncomes: monthlyData.extraIncomes || [],
+      salaryAmount: 0,
+      aguinaldoAmount: 0,
+      sobranteAnteriorRaw: sobranteAnterior,
+      isInRange,
+    });
+    return metrics.disponible;
+  }, [wizardMonth, computeUsdAvailableForMonth, monthlyData, viewMode, incomeConfig.payDay]);
+
+  // Signed sobrante anterior for ARS — FLUJO encadenado (same value that drives "Disponible").
+  // Replaces the old calculateAvailableForMonth(prevMonthKey): that mixed in patrimonial
+  // movements (loans given, ARS↔USD conversions, retiros) which are NOT spent money and
+  // produced a phantom "Déficit anterior". For months before/without the wizard there is no
+  // prior flow chain, so fall back to the cash-flow of the previous month. See quick-260601-otj.
+  const sobranteAnteriorChainedArs = useMemo(() => {
+    if (wizardMonth && selectedMonth > wizardMonth) {
+      return computeChainedDisponible(prevMonthKey);
+    }
+    if (selectedMonth === wizardMonth) {
+      return 0; // the wizard month does not propagate sobrante (one-time setup flows)
+    }
+    return calculateAvailableForMonth(prevMonthKey);
+  }, [wizardMonth, selectedMonth, prevMonthKey, computeChainedDisponible, calculateAvailableForMonth]);
+
+  // USD counterpart of sobranteAnteriorChainedArs.
+  const sobranteAnteriorChainedUsd = useMemo(() => {
+    if (wizardMonth && selectedMonth > wizardMonth) {
+      return computeChainedDisponibleUsd(prevMonthKey);
+    }
+    if (selectedMonth === wizardMonth) {
+      return 0;
+    }
+    return computeUsdAvailableForMonth(prevMonthKey);
+  }, [wizardMonth, selectedMonth, prevMonthKey, computeChainedDisponibleUsd, computeUsdAvailableForMonth]);
+
+  // Positive-clamped sobrante for legacy/positive-only consumers (MonthlyFlowPanel etc.)
+  const soranteDelMesAnterior = useMemo(() => {
+    return Math.max(0, sobranteAnteriorChainedArs);
+  }, [sobranteAnteriorChainedArs]);
+
   // ARS month metrics via the Plan 02 pure engine
-  const arsMetrics: MonthMetrics = useMemo(
-    () => computeMonthMetrics({
+  const arsMetrics: MonthMetrics = useMemo(() => {
+    const sobranteReal = sobranteAnteriorChainedArs;
+    const base = computeMonthMetrics({
       monthKey: selectedMonth,
       currency: CurrencyType.ARS,
       investments: monthlyData.investments || [],
@@ -337,11 +440,16 @@ export function ExpenseTracker() {
       extraIncomes: monthlyData.extraIncomes || [],
       salaryAmount: currentMonthSalary.amount,
       aguinaldoAmount: aguinaldoData?.amount ?? 0,
-      sobranteAnteriorRaw: sobranteAnteriorRawArs,
+      sobranteAnteriorRaw: sobranteReal,
       isInRange: arsIsInRange,
-    }),
-    [selectedMonth, monthlyData.investments, monthlyData.expenses, monthlyData.extraIncomes, currentMonthSalary.amount, aguinaldoData?.amount, sobranteAnteriorRawArs, arsIsInRange],
-  );
+    });
+    // For the wizard month, disponible = calculateAvailableForMonth (includes wizard
+    // adjustment, retiros, transfers) rather than the sobrante+ingresos-egresos formula.
+    if (selectedMonth === wizardMonth) {
+      return { ...base, disponible: calculateAvailableForMonth(selectedMonth) };
+    }
+    return base;
+  }, [selectedMonth, wizardMonth, sobranteAnteriorChainedArs, monthlyData.investments, monthlyData.expenses, monthlyData.extraIncomes, currentMonthSalary.amount, aguinaldoData?.amount, arsIsInRange, calculateAvailableForMonth]);
 
   // USD month metrics via the Plan 02 pure engine
   const usdMetrics: MonthMetrics = useMemo(
@@ -353,10 +461,10 @@ export function ExpenseTracker() {
       extraIncomes: monthlyData.extraIncomes || [],
       salaryAmount: 0,
       aguinaldoAmount: 0,
-      sobranteAnteriorRaw: sobranteAnteriorRawUsd,
+      sobranteAnteriorRaw: sobranteAnteriorChainedUsd,
       isInRange: arsIsInRange,   // same range function — USD uses ARS pay-period per existing convention
     }),
-    [selectedMonth, monthlyData.investments, monthlyData.expenses, monthlyData.extraIncomes, sobranteAnteriorRawUsd, arsIsInRange],
+    [selectedMonth, monthlyData.investments, monthlyData.expenses, monthlyData.extraIncomes, sobranteAnteriorChainedUsd, arsIsInRange],
   );
 
   // ARS resultado history (last 6 months, most recent first) for deficit detection
@@ -464,14 +572,14 @@ export function ExpenseTracker() {
   // Deficit state computed from the active currency's history
   const deficitState: DeficitState = useMemo(() => {
     const activeHistory = resumenCurrency === "USD" ? resultadoHistoryUsd : resultadoHistoryArs;
-    const activeSobrante = resumenCurrency === "USD" ? sobranteAnteriorRawUsd : sobranteAnteriorRawArs;
+    const activeSobrante = resumenCurrency === "USD" ? sobranteAnteriorChainedUsd : sobranteAnteriorChainedArs;
     return evaluateDeficitState(
       activeHistory,
       activeSobrante,
       currentMonthSalary.amount,
       resumenConfig.deficitThresholdPercent,
     );
-  }, [resumenCurrency, resultadoHistoryArs, resultadoHistoryUsd, sobranteAnteriorRawArs, sobranteAnteriorRawUsd, currentMonthSalary.amount, resumenConfig.deficitThresholdPercent]);
+  }, [resumenCurrency, resultadoHistoryArs, resultadoHistoryUsd, sobranteAnteriorChainedArs, sobranteAnteriorChainedUsd, currentMonthSalary.amount, resumenConfig.deficitThresholdPercent]);
 
   // Phase 22 D3 + D10: wizard gate — auto-shows when investments lack purpose AND wizard not yet completed
   const needsPurposeWizard = useMemo(() => {
@@ -955,7 +1063,7 @@ export function ExpenseTracker() {
               ingresoFijo={currentMonthSalary.amount}
               ingresoFijoIsOverride={currentMonthSalary.isOverride}
               otrosIngresos={arsMetrics.otrosIngresos}
-              sobranteRaw={sobranteAnteriorRawArs}
+              sobranteRaw={sobranteAnteriorChainedArs}
               aguinaldoAmount={aguinaldoData?.amount ?? null}
               aguinaldoInfo={
                 aguinaldoData
@@ -971,7 +1079,7 @@ export function ExpenseTracker() {
               resultadoDelMes={arsMetrics.resultadoDelMes}
               usdMetrics={{
                 otrosIngresos: usdMetrics.otrosIngresos,
-                sobranteRaw: sobranteAnteriorRawUsd,
+                sobranteRaw: sobranteAnteriorChainedUsd,
                 totalGastos: usdMetrics.totalGastos,
                 aportesNoNeutros: usdMetrics.aportesNoNeutros,
                 aportesAll: usdMetrics.aportesAll,
