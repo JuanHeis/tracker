@@ -21,7 +21,9 @@ import { InvestmentValueCell, calculateGainLoss } from "./investment-value-cell"
 import { InvestmentMovements } from "./investment-movements";
 import { useHydration } from "@/hooks/useHydration";
 import { DATE_FORMAT } from "@/constants/date";
-import type { Investment } from "@/hooks/useMoneyTracker";
+import type { Investment, InvestmentPurpose } from "@/hooks/useMoneyTracker";
+import { getInvestmentPurpose } from "@/hooks/useMoneyTracker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { currencySymbol } from "@/constants/investments";
 
 interface InvestmentRowProps {
@@ -43,6 +45,7 @@ interface InvestmentRowProps {
   onFinalize: (investmentId: string) => void;
   onDelete: (investmentId: string) => void;
   onEdit: (investment: Investment) => void;
+  onUpdatePurpose: (investmentId: string, purpose: InvestmentPurpose) => void;
 }
 
 function isPFExpired(investment: Investment): boolean {
@@ -65,6 +68,7 @@ export function InvestmentRow({
   onFinalize,
   onDelete,
   onEdit,
+  onUpdatePurpose,
 }: InvestmentRowProps) {
   const isHydrated = useHydration();
   const isPF = investment.type === "Plazo Fijo";
@@ -124,6 +128,23 @@ export function InvestmentRow({
           </div>
         </TableCell>
         <TableCell>{investment.type}</TableCell>
+        <TableCell onClick={(e) => e.stopPropagation()}>
+          <Select
+            value={getInvestmentPurpose(investment)}
+            onValueChange={(val) => onUpdatePurpose(investment.id, val as InvestmentPurpose)}
+            disabled={isFinalized}
+          >
+            <SelectTrigger className="h-7 w-[120px] text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ahorro">Ahorro</SelectItem>
+              <SelectItem value="objetivo">Objetivo</SelectItem>
+              <SelectItem value="tarjeta">Tarjeta</SelectItem>
+              <SelectItem value="especulacion">Especulación</SelectItem>
+            </SelectContent>
+          </Select>
+        </TableCell>
         <TableCell className="tabular-nums">
           {isHydrated ? `${currencySymbol(investment.currencyType)}${capitalInvested.toLocaleString()}` : "---"}
         </TableCell>
@@ -187,7 +208,7 @@ export function InvestmentRow({
 
       {isExpanded && (
         <TableRow>
-          <TableCell colSpan={8} className="bg-muted/30 p-4">
+          <TableCell colSpan={9} className="bg-muted/30 p-4">
             <div className="space-y-4">
               {isPF && <PFFieldsEditor investment={investment} onUpdatePFFields={onUpdatePFFields} />}
               <InvestmentMovements

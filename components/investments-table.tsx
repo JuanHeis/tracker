@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
-import { Investment } from "@/hooks/useMoneyTracker";
+import { Investment, type InvestmentPurpose } from "@/hooks/useMoneyTracker";
 import { currencySymbol } from "@/constants/investments";
 import {
   Table,
@@ -48,6 +48,7 @@ interface InvestmentsTableProps {
   onUpdatePFFields: (investmentId: string, fields: { tna?: number; plazoDias?: number; startDate?: string }) => void;
   onEditMovement: (investmentId: string, movementId: string, updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number }) => void;
   onFinalize: (investmentId: string) => void;
+  onUpdatePurpose: (investmentId: string, purpose: InvestmentPurpose) => void;
 }
 
 export function InvestmentsTable({
@@ -61,6 +62,7 @@ export function InvestmentsTable({
   onUpdateValue,
   onUpdatePFFields,
   onFinalize,
+  onUpdatePurpose,
 }: InvestmentsTableProps) {
   const isHydrated = useHydration();
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -88,6 +90,7 @@ export function InvestmentsTable({
             <TableHead className="w-8"></TableHead>
             <TableHead>Nombre</TableHead>
             <TableHead>Tipo</TableHead>
+            <TableHead>Propósito</TableHead>
             <TableHead>Capital Invertido</TableHead>
             <TableHead>Valor Actual</TableHead>
             <TableHead>Ganancia/%</TableHead>
@@ -97,7 +100,7 @@ export function InvestmentsTable({
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell colSpan={8} className="h-24 text-center">
+            <TableCell colSpan={9} className="h-24 text-center">
               Cargando...
             </TableCell>
           </TableRow>
@@ -117,6 +120,7 @@ export function InvestmentsTable({
             <TableHead className="w-8"></TableHead>
             <TableHead>Nombre</TableHead>
             <TableHead>Tipo</TableHead>
+            <TableHead>Propósito</TableHead>
             <TableHead>Capital Invertido</TableHead>
             <TableHead>Valor Actual</TableHead>
             <TableHead>Ganancia/%</TableHead>
@@ -127,14 +131,14 @@ export function InvestmentsTable({
         <TableBody>
           {activeInvestments.length === 0 && finalizedInvestments.length === 0 && (
             <TableRow>
-              <TableCell colSpan={8} className="h-24 text-center">
+              <TableCell colSpan={9} className="h-24 text-center">
                 No hay inversiones registradas
               </TableCell>
             </TableRow>
           )}
           {activeInvestments.length === 0 && finalizedInvestments.length > 0 && (
             <TableRow>
-              <TableCell colSpan={8} className="h-16 text-center text-muted-foreground">
+              <TableCell colSpan={9} className="h-16 text-center text-muted-foreground">
                 No hay inversiones activas
               </TableCell>
             </TableRow>
@@ -156,6 +160,7 @@ export function InvestmentsTable({
               onFinalize={handleFinalizeRequest}
               onDelete={onDelete}
               onEdit={onEdit}
+              onUpdatePurpose={onUpdatePurpose}
             />
           ))}
         </TableBody>
