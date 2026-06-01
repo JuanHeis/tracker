@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format, parse } from "date-fns";
-import { Trash2, Plus, Check, Pencil } from "lucide-react";
+import { Trash2, Plus, Check, Pencil, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -32,18 +32,25 @@ import {
   SelectValue,
 } from "./ui/select";
 import { DATE_FORMAT } from "@/constants/date";
-import type { Investment } from "@/hooks/useMoneyTracker";
+import type { Investment, InvestmentPurpose } from "@/hooks/useMoneyTracker";
+import { getInvestmentPurpose } from "@/hooks/useMoneyTracker";
 import { currencySymbol } from "@/constants/investments";
+import {
+  INVESTMENT_PURPOSE_LABELS,
+  INVESTMENT_PURPOSE_ORDER,
+  getMovementPurpose,
+} from "@/constants/investment-purpose";
+import { computeBuckets } from "@/lib/investments/buckets";
 
 interface InvestmentMovementsProps {
   investment: Investment;
   onAddMovement: (
     investmentId: string,
-    movement: { date: string; type: "aporte" | "retiro"; amount: number; pendingIngreso?: boolean }
+    movement: { date: string; type: "aporte" | "retiro"; amount: number; pendingIngreso?: boolean; purpose?: InvestmentPurpose }
   ) => void;
   onDeleteMovement: (investmentId: string, movementId: string) => void;
   onConfirmRetiro: (investmentId: string, movementId: string, receivedAmount?: number) => void;
-  onEditMovement: (investmentId: string, movementId: string, updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number }) => void;
+  onEditMovement: (investmentId: string, movementId: string, updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number; purpose?: InvestmentPurpose }) => void;
 }
 
 export function InvestmentMovements({
@@ -58,6 +65,9 @@ export function InvestmentMovements({
     "aporte"
   );
   const [markPending, setMarkPending] = useState(false);
+  const [selectedPurpose, setSelectedPurpose] = useState<InvestmentPurpose>(
+    getInvestmentPurpose(investment)
+  );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [confirmingMovement, setConfirmingMovement] = useState<string | null>(null);
   const [adjustedAmount, setAdjustedAmount] = useState<number>(0);
@@ -65,6 +75,13 @@ export function InvestmentMovements({
   const [editAmount, setEditAmount] = useState<number>(0);
   const [editPending, setEditPending] = useState<boolean>(false);
   const [editReceivedAmount, setEditReceivedAmount] = useState<number>(0);
+  const [editPurpose, setEditPurpose] = useState<InvestmentPurpose>("ahorro");
+  const [showBuckets, setShowBuckets] = useState(false);
+
+  const editingMov = editingMovement
+    ? investment.movements.find((m) => m.id === editingMovement)
+    : undefined;
+  const editingIsRetiro = editingMov?.type === "retiro";
 
   const handleConfirmDelete = () => {
     if (deleteTarget) {
@@ -94,12 +111,14 @@ export function InvestmentMovements({
       date,
       type: movementType,
       amount,
+      purpose: selectedPurpose,
       ...(movementType === "retiro" && markPending ? { pendingIngreso: true } : {}),
     });
 
     e.currentTarget.reset();
     setMovementType("aporte");
     setMarkPending(false);
+    setSelectedPurpose(getInvestmentPurpose(investment));
   };
 
   return (
@@ -143,6 +162,24 @@ export function InvestmentMovements({
               <SelectContent>
                 <SelectItem value="aporte">Aporte</SelectItem>
                 <SelectItem value="retiro">Retiro</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground">Propósito</label>
+            <Select
+              value={selectedPurpose}
+              onValueChange={(v) => setSelectedPurpose(v as InvestmentPurpose)}
+            >
+              <SelectTrigger className="h-8 w-32 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {INVESTMENT_PURPOSE_ORDER.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {INVESTMENT_PURPOSE_LABELS[p]}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -202,6 +239,9 @@ export function InvestmentMovements({
                       Pendiente
                     </Badge>
                   )}
+                  <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 text-[10px] px-1.5 py-0">
+                    {INVESTMENT_PURPOSE_LABELS[getMovementPurpose(movement, investment)]}
+                  </Badge>
                   <span className="tabular-nums font-medium">
                     {currencySymbol(investment.currencyType)}{movement.amount.toLocaleString()}
                     {movement.receivedAmount !== undefined && movement.receivedAmount !== movement.amount && (
@@ -212,7 +252,7 @@ export function InvestmentMovements({
                   </span>
                 </div>
                 <div className="flex items-center gap-0.5">
-                  {movement.type === "retiro" && !movement.isInitial && (
+                  {!movement.isInitial && (movement.type === "retiro" || movement.type === "aporte") && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -222,8 +262,9 @@ export function InvestmentMovements({
                         setEditAmount(movement.amount);
                         setEditPending(!!movement.pendingIngreso);
                         setEditReceivedAmount(movement.receivedAmount ?? movement.amount);
+                        setEditPurpose(getMovementPurpose(movement, investment));
                       }}
-                      title="Editar retiro"
+                      title={movement.type === "retiro" ? "Editar retiro" : "Editar propósito"}
                     >
                       <Pencil className="h-3 w-3" />
                     </Button>
@@ -273,6 +314,72 @@ export function InvestmentMovements({
           Ver menos
         </button>
       )}
+
+      {/* Buckets por propósito (D18/D19) */}
+      <div className="pt-3 border-t">
+        <button
+          type="button"
+          onClick={() => setShowBuckets((s) => !s)}
+          className="flex items-center gap-1 text-xs text-primary hover:underline"
+        >
+          {showBuckets ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          Buckets por propósito (saldo aproximado)
+        </button>
+        {showBuckets && (() => {
+          const breakdown = computeBuckets(investment);
+          const sym = currencySymbol(investment.currencyType);
+          const rows = breakdown.buckets.filter((b) => b.amount !== 0 || b.negative);
+          return (
+            <div className="mt-2 space-y-1 text-sm">
+              {rows.length === 0 && (
+                <p className="text-xs text-muted-foreground">Sin movimientos con propósito asignado.</p>
+              )}
+              {rows.map((b) => (
+                <div key={b.purpose} className="flex items-center justify-between">
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    {b.negative && (
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                    )}
+                    {INVESTMENT_PURPOSE_LABELS[b.purpose]}
+                  </span>
+                  <span
+                    className={
+                      "tabular-nums " +
+                      (b.negative ? "text-amber-600 dark:text-amber-400 font-medium" : "")
+                    }
+                    title={
+                      b.negative
+                        ? "Bucket negativo: retiraste más de lo aportado con este propósito. Considerá dividir el retiro en dos movimientos con propósitos distintos."
+                        : undefined
+                    }
+                  >
+                    {sym}
+                    {b.amount.toLocaleString()}
+                  </span>
+                </div>
+              ))}
+              {Math.abs(breakdown.sinAsignar) > 0.5 && (
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>
+                    Sin asignar <span className="text-xs">(rendimientos)</span>
+                  </span>
+                  <span className="tabular-nums">
+                    {sym}
+                    {breakdown.sinAsignar.toLocaleString()}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center justify-between border-t pt-1 font-medium">
+                <span>Total</span>
+                <span className="tabular-nums">
+                  {sym}
+                  {breakdown.total.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
     </div>
 
     <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
@@ -341,36 +448,55 @@ export function InvestmentMovements({
     <Dialog open={!!editingMovement} onOpenChange={(open) => { if (!open) setEditingMovement(null); }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar retiro</DialogTitle>
+          <DialogTitle>{editingIsRetiro ? "Editar retiro" : "Editar propósito"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-muted-foreground">Monto del retiro</label>
-            <CurrencyInput
-              value={editAmount}
-              onValueChange={(val) => setEditAmount(val)}
-              className="h-8 w-full"
-            />
-          </div>
-          <label className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={editPending}
-              onChange={(e) => setEditPending(e.target.checked)}
-              className="rounded border-gray-300 h-3.5 w-3.5 accent-amber-500"
-            />
-            Pendiente de ingreso
-          </label>
-          {!editPending && (
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-muted-foreground">Monto recibido</label>
-              <CurrencyInput
-                value={editReceivedAmount}
-                onValueChange={(val) => setEditReceivedAmount(val)}
-                className="h-8 w-full"
-              />
-            </div>
+          {editingIsRetiro && (
+            <>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-muted-foreground">Monto del retiro</label>
+                <CurrencyInput
+                  value={editAmount}
+                  onValueChange={(val) => setEditAmount(val)}
+                  className="h-8 w-full"
+                />
+              </div>
+              <label className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={editPending}
+                  onChange={(e) => setEditPending(e.target.checked)}
+                  className="rounded border-gray-300 h-3.5 w-3.5 accent-amber-500"
+                />
+                Pendiente de ingreso
+              </label>
+              {!editPending && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm text-muted-foreground">Monto recibido</label>
+                  <CurrencyInput
+                    value={editReceivedAmount}
+                    onValueChange={(val) => setEditReceivedAmount(val)}
+                    className="h-8 w-full"
+                  />
+                </div>
+              )}
+            </>
           )}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-muted-foreground">Propósito</label>
+            <Select value={editPurpose} onValueChange={(v) => setEditPurpose(v as InvestmentPurpose)}>
+              <SelectTrigger className="h-8 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {INVESTMENT_PURPOSE_ORDER.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {INVESTMENT_PURPOSE_LABELS[p]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setEditingMovement(null)}>
@@ -382,31 +508,38 @@ export function InvestmentMovements({
               const originalMov = investment.movements.find((m) => m.id === editingMovement);
               if (!originalMov) return;
 
-              const updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number } = {};
+              const updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number; purpose?: InvestmentPurpose } = {};
 
-              if (editAmount !== originalMov.amount) {
-                updates.amount = editAmount;
+              // Purpose applies to both aportes and retiros
+              if (editPurpose !== getMovementPurpose(originalMov, investment)) {
+                updates.purpose = editPurpose;
               }
 
-              const wasPending = !!originalMov.pendingIngreso;
-              if (editPending !== wasPending) {
-                updates.pendingIngreso = editPending;
-              }
-
-              if (editPending) {
-                // When pending, clear receivedAmount
-                if (originalMov.receivedAmount !== undefined) {
-                  updates.receivedAmount = undefined;
+              if (originalMov.type === "retiro") {
+                if (editAmount !== originalMov.amount) {
+                  updates.amount = editAmount;
                 }
-              } else {
-                // When confirmed, check if receivedAmount changed
-                const effectiveAmount = updates.amount !== undefined ? updates.amount : originalMov.amount;
-                if (editReceivedAmount !== (originalMov.receivedAmount ?? originalMov.amount)) {
-                  if (editReceivedAmount !== effectiveAmount) {
-                    updates.receivedAmount = editReceivedAmount;
-                  } else if (originalMov.receivedAmount !== undefined) {
-                    // receivedAmount equals amount now, clear it
+
+                const wasPending = !!originalMov.pendingIngreso;
+                if (editPending !== wasPending) {
+                  updates.pendingIngreso = editPending;
+                }
+
+                if (editPending) {
+                  // When pending, clear receivedAmount
+                  if (originalMov.receivedAmount !== undefined) {
                     updates.receivedAmount = undefined;
+                  }
+                } else {
+                  // When confirmed, check if receivedAmount changed
+                  const effectiveAmount = updates.amount !== undefined ? updates.amount : originalMov.amount;
+                  if (editReceivedAmount !== (originalMov.receivedAmount ?? originalMov.amount)) {
+                    if (editReceivedAmount !== effectiveAmount) {
+                      updates.receivedAmount = editReceivedAmount;
+                    } else if (originalMov.receivedAmount !== undefined) {
+                      // receivedAmount equals amount now, clear it
+                      updates.receivedAmount = undefined;
+                    }
                   }
                 }
               }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { CurrencyType } from "@/constants/investments";
-import type { Investment, InvestmentMovement, InvestmentPurpose } from "@/hooks/useMoneyTracker";
+import type { Investment, InvestmentMovement } from "@/hooks/useMoneyTracker";
 import { computeMonthMetrics, sumAportes, type MonthMetricsInput } from "./month-metrics";
 
 let movCounter = 0;

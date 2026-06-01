@@ -25,6 +25,7 @@ import type { Investment, InvestmentPurpose } from "@/hooks/useMoneyTracker";
 import { getInvestmentPurpose } from "@/hooks/useMoneyTracker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { currencySymbol } from "@/constants/investments";
+import { INVESTMENT_PURPOSE_LABELS, INVESTMENT_PURPOSE_ORDER } from "@/constants/investment-purpose";
 
 interface InvestmentRowProps {
   investment: Investment;
@@ -32,11 +33,11 @@ interface InvestmentRowProps {
   onToggleExpand: () => void;
   onAddMovement: (
     investmentId: string,
-    movement: { date: string; type: "aporte" | "retiro"; amount: number; pendingIngreso?: boolean }
+    movement: { date: string; type: "aporte" | "retiro"; amount: number; pendingIngreso?: boolean; purpose?: InvestmentPurpose }
   ) => void;
   onDeleteMovement: (investmentId: string, movementId: string) => void;
   onConfirmRetiro: (investmentId: string, movementId: string, receivedAmount?: number) => void;
-  onEditMovement: (investmentId: string, movementId: string, updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number }) => void;
+  onEditMovement: (investmentId: string, movementId: string, updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number; purpose?: InvestmentPurpose }) => void;
   onUpdateValue: (investmentId: string, newValue: number) => void;
   onUpdatePFFields: (
     investmentId: string,
@@ -77,6 +78,17 @@ export function InvestmentRow({
     (m) => m.type === "retiro" && m.pendingIngreso
   );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [pendingPurpose, setPendingPurpose] = useState<InvestmentPurpose | null>(null);
+
+  const uncategorizedCount = investment.movements.filter((m) => !m.purpose).length;
+
+  const handlePurposeChange = (val: InvestmentPurpose) => {
+    if (uncategorizedCount > 0) {
+      setPendingPurpose(val);
+    } else {
+      onUpdatePurpose(investment.id, val);
+    }
+  };
 
   const handleConfirmDelete = () => {
     if (deleteTarget) {
@@ -131,17 +143,18 @@ export function InvestmentRow({
         <TableCell onClick={(e) => e.stopPropagation()}>
           <Select
             value={getInvestmentPurpose(investment)}
-            onValueChange={(val) => onUpdatePurpose(investment.id, val as InvestmentPurpose)}
+            onValueChange={(val) => handlePurposeChange(val as InvestmentPurpose)}
             disabled={isFinalized}
           >
             <SelectTrigger className="h-7 w-[120px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ahorro">Ahorro</SelectItem>
-              <SelectItem value="objetivo">Objetivo</SelectItem>
-              <SelectItem value="tarjeta">Tarjeta</SelectItem>
-              <SelectItem value="especulacion">Especulación</SelectItem>
+              {INVESTMENT_PURPOSE_ORDER.map((p) => (
+                <SelectItem key={p} value={p}>
+                  {INVESTMENT_PURPOSE_LABELS[p]}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </TableCell>
@@ -222,6 +235,30 @@ export function InvestmentRow({
           </TableCell>
         </TableRow>
       )}
+
+      <AlertDialog open={!!pendingPurpose} onOpenChange={(open) => !open && setPendingPurpose(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cambiar propósito por defecto</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cambiar el default afecta a {uncategorizedCount} movimiento{uncategorizedCount === 1 ? "" : "s"} sin propósito específico. ¿Continuar?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingPurpose) {
+                  onUpdatePurpose(investment.id, pendingPurpose);
+                  setPendingPurpose(null);
+                }
+              }}
+            >
+              Continuar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
