@@ -43,6 +43,45 @@ function iterateMonths(start: string, end: string): string[] {
   return months;
 }
 
+/**
+ * Forward projection horizon for recurring expenses, in months ahead of the
+ * current month. With a horizon of 3, instances span the current month plus the
+ * next 3 months (4 months total, inclusive).
+ */
+export const RECURRING_PROJECTION_MONTHS = 3;
+
+/**
+ * Compute the inclusive [startMonth, endMonth] window (yyyy-MM) for which a
+ * recurring expense should be projected, given its createdAt and the current
+ * month.
+ *
+ * Rules:
+ * - startMonth = max(currentMonth, createdAt) — recurring expenses are NEVER
+ *   projected into months before the current month, but a future createdAt is
+ *   honored.
+ * - endMonth = currentMonth + RECURRING_PROJECTION_MONTHS months.
+ * - Returns null when startMonth is after endMonth (createdAt is further in the
+ *   future than the horizon), meaning nothing should be generated.
+ */
+export function computeProjectionWindow(
+  createdAt: string,
+  currentMonth: string
+): { startMonth: string; endMonth: string } | null {
+  const startMonth = monthIsBeforeOrEqual(createdAt, currentMonth)
+    ? currentMonth
+    : createdAt;
+  const endMonth = format(
+    addMonths(parseMonth(currentMonth), RECURRING_PROJECTION_MONTHS),
+    "yyyy-MM"
+  );
+
+  if (!monthIsBeforeOrEqual(startMonth, endMonth)) {
+    return null;
+  }
+
+  return { startMonth, endMonth };
+}
+
 export function useRecurringExpenses() {
   const [recurringExpenses, setRecurringExpenses] = useLocalStorage<RecurringExpense[]>(
     "recurringExpenses",
