@@ -8,8 +8,11 @@
  *   ingresosMes       = ingresoFijo + otrosIngresos + aguinaldo
  *   egresosMes        = totalGastos + aportesNoNeutros
  *
- * aportesNoNeutros = aportes to investments whose purpose ∈ {"ahorro","especulacion"}
+ * aportesNoNeutros = aportes whose EFFECTIVE purpose ∈ {"ahorro","especulacion"}
  * (tarjeta/objetivo aportes are NEUTRAL — they don't reduce either metric).
+ *
+ * Purpose is resolved PER-MOVEMENT (D14): movement.purpose override →
+ * investment.purpose default → "ahorro" fallback. See getMovementPurpose.
  *
  * Retiros never add to Resultado del mes (D2), and are NOT included here for Disponible
  * either — Disponible is a sobrante+income-out-expenses formula; investment withdrawals
@@ -22,8 +25,8 @@ import { CurrencyType } from "@/constants/investments";
 import {
   type Investment,
   type InvestmentPurpose,
-  getInvestmentPurpose,
 } from "@/hooks/useMoneyTracker";
+import { getMovementPurpose } from "@/constants/investment-purpose";
 
 export interface MonthMetricsInput {
   monthKey: string;
@@ -67,12 +70,13 @@ export function sumAportes(
   let sum = 0;
   for (const inv of investments) {
     if (inv.currencyType !== currency) continue;
-    if (onlyNonNeutros && !isNonNeutroPurpose(getInvestmentPurpose(inv))) continue;
     for (const mov of inv.movements) {
       if (mov.isInitial) continue;
       if (mov.pendingIngreso) continue;
       if (mov.type !== "aporte") continue;
       if (!isInRange(mov.date)) continue;
+      // Purpose resolved per-movement (movement override → investment default → "ahorro").
+      if (onlyNonNeutros && !isNonNeutroPurpose(getMovementPurpose(mov, inv))) continue;
       sum += mov.amount;
     }
   }
