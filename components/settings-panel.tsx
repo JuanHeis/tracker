@@ -20,6 +20,9 @@ import { useTheme } from "next-themes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { STORAGE_KEYS } from "@/hooks/useDataPersistence";
 import { SAVINGS_RATE_KEY } from "@/lib/projection/savings-rate";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { RESUMEN_CONFIG_KEY, DEFAULT_RESUMEN_CONFIG, type ResumenConfig } from "@/lib/resumen/resumen-config";
+import { Slider } from "@/components/ui/slider";
 import { format, parse } from "date-fns";
 import { es } from "date-fns/locale";
 import type { SalaryEntry, IncomeConfig } from "@/hooks/useSalaryHistory";
@@ -66,6 +69,12 @@ export function SettingsPanel({
   const { theme, setTheme } = useTheme();
   const [themeMounted, setThemeMounted] = useState(false);
   useEffect(() => { setThemeMounted(true); }, []);
+
+  // Resumen config (deficit threshold)
+  const [resumenConfig, setResumenConfig] = useLocalStorage<ResumenConfig>(
+    RESUMEN_CONFIG_KEY,
+    DEFAULT_RESUMEN_CONFIG,
+  );
 
   // Employment config editing
   const [editingEmploymentType, setEditingEmploymentType] = useState(false);
@@ -679,6 +688,30 @@ export function SettingsPanel({
               </Button>
             </>
           )}
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium">Alerta de déficit</h4>
+            <p className="text-xs text-muted-foreground">
+              Umbral del déficit acumulado que dispara el banner de &ldquo;Déficit recurrente&rdquo;,
+              como porcentaje del último sueldo.
+            </p>
+            <div className="space-y-3 pt-1">
+              <Slider
+                value={[resumenConfig.deficitThresholdPercent]}
+                onValueChange={([val]) =>
+                  setResumenConfig({ ...resumenConfig, deficitThresholdPercent: val })
+                }
+                min={10}
+                max={100}
+                step={10}
+              />
+              <p className="text-sm text-muted-foreground">
+                Umbral: <span className="font-medium">{resumenConfig.deficitThresholdPercent}%</span> del último sueldo
+              </p>
+            </div>
+          </div>
+
+          <hr className="border-border" />
+
           <Button
             variant="outline"
             size="sm"
@@ -690,6 +723,7 @@ export function SettingsPanel({
               if (!confirmed) return;
               STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
               localStorage.removeItem(SAVINGS_RATE_KEY);
+              localStorage.removeItem(RESUMEN_CONFIG_KEY);
               window.location.reload();
             }}
           >

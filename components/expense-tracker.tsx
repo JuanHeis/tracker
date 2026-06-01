@@ -629,6 +629,7 @@ export function ExpenseTracker() {
     localStorage.removeItem("budgetData");
     localStorage.removeItem("globalUsdRate");
     localStorage.removeItem(SAVINGS_RATE_KEY);
+    localStorage.removeItem(RESUMEN_CONFIG_KEY);
     window.location.reload();
   };
 
