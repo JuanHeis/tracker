@@ -4,14 +4,14 @@ milestone: v1.3
 milestone_name: Flujo Mensual Panel Unificado
 status: executing
 stopped_at: Phase 21 execution complete, human verification pending
-last_updated: "2026-04-11T22:27:40.372Z"
-last_activity: 2026-06-01 -- Completed quick task 260601-eo4: fix aguinaldo month offset, add previous month surplus to resumen, fix investment category in flujo mensual and resumen del mes bug
+last_updated: "2026-06-01T17:26:00.463Z"
+last_activity: 2026-06-01 -- Phase 22 execution started
 progress:
-  total_phases: 23
+  total_phases: 24
   completed_phases: 21
-  total_plans: 52
+  total_plans: 56
   completed_plans: 52
-  percent: 100
+  percent: 93
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-07)
 
 **Core value:** Reflejar la realidad financiera exacta del usuario en todo momento -- nunca perderse un peso ni un dolar.
-**Current focus:** Phase 21 — Monthly Flow Panel Assembly
+**Current focus:** Phase 22 — Resumen del Mes — Rediseño conceptual de cash flow
 
 ## Current Position
 
-Phase: 21 (Monthly Flow Panel Assembly) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 21
-Last activity: 2026-04-11 -- Phase 21 execution started
+Phase: 22 (Resumen del Mes — Rediseño conceptual de cash flow) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 22
+Last activity: 2026-06-01 -- Phase 22 execution started
 
 Progress: [█████████████████████░░░░░░░░░] 78/92 plans (v1.0-v1.2 complete, v1.3: 2/2 phase 18)
 
@@ -68,6 +68,10 @@ Recent decisions affecting current work:
 - [v1.3 Roadmap]: Only new dependency: @radix-ui/react-slider for savings rate slider
 - [v1.3 Roadmap]: Phase 19 and 20 can run in parallel (both depend on 18, independent of each other)
 - [Phase 18]: SavingsRateSelector placed in sidebar below ExchangeSummary (temporary, Phase 21 relocates)
+
+### Roadmap Evolution
+
+- Phase 22 added: Resumen del Mes — Rediseño conceptual de cash flow
 
 ### Pending Todos
 

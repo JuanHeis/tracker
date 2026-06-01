@@ -5,7 +5,7 @@
 - ✅ **v1.0 MVP** - Phases 1-10 (shipped 2026-04-02)
 - ✅ **v1.1 Setup Wizard & Manual** - Phases 11-13 (shipped 2026-04-03)
 - ✅ **v1.2 Graficos Predictivos** - Phases 14-17 (shipped 2026-04-06)
-- 🚧 **v1.3 Flujo Mensual Panel Unificado** - Phases 18-21 (in progress)
+- 🚧 **v1.3 Flujo Mensual Panel Unificado** - Phases 18-22 (in progress)
 
 ## Phases
 
@@ -436,3 +436,26 @@ Plans:
 | 19. Projection Engine Refactor | v1.3 | 1/1 | Complete | 2026-04-10 |
 | 20. Waterfall Chart | v1.3 | 2/2 | Complete | 2026-04-11 |
 | 21. Monthly Flow Panel Assembly | v1.3 | 2/2 | Complete   | 2026-04-11 |
+| 22. Resumen del Mes — Rediseño conceptual de cash flow | v1.3 | 0/4 | Not started | — |
+
+### Phase 22: Resumen del Mes — Rediseño conceptual de cash flow
+
+**Goal**: Hacer que la card 'Resumen del Mes' sea un termómetro confiable de cash disponible al cierre del mes, con métrica secundaria de performance ('Resultado del mes'), etiquetas de propósito por inversión (ahorro/objetivo/tarjeta/especulación) para evitar doble conteo, banners de déficit anterior/recurrente, y toggle USD paralelo.
+**Requirements**: D1-D13 (per .planning/quick/260601-rdm-resumen-del-mes-redesign/260601-rdm-SPEC.md)
+**Depends on:** Phase 21
+**Plans:** 4 plans
+**Success Criteria** (what must be TRUE):
+  1. Disponible suma sobrante anterior (signed) y el tooltip refleja la fórmula real
+  2. Línea 'Resultado del mes' siempre visible en muted, con +/- explícito, sin color por signo
+  3. Inversiones tienen campo purpose con 4 etiquetas; aportes a tarjeta/objetivo son neutros para Resultado y Disponible
+  4. Wizard one-shot al primer load para clasificar inversiones existentes (con heurísticas y override individual)
+  5. Banner 'Déficit anterior' cuando sobrante_anterior < 0; banner 'Déficit recurrente' cuando 2 meses negativos consecutivos O cumulative > N% sueldo
+  6. Toggle USD/ARS en header de la card, default ARS; misma fórmula para ambos
+  7. Slider de umbral configurable (10-100%, paso 10, default 25%) persistido en localStorage key 'resumenConfig'
+  8. Factory reset limpia 'resumenConfig'; nuevas inversiones default purpose='ahorro'
+
+Plans:
+- [ ] 22-01-PLAN.md — Foundation: InvestmentPurpose type + Investment.purpose field + resumen-config localStorage module (D3, D10, D13)
+- [ ] 22-02-PLAN.md — Pure logic: month-metrics.computeMonthMetrics + deficit-detector.evaluateDeficitState + purpose-suggestion (D1, D2, D5, D6, D7, D9, D11)
+- [ ] 22-03-PLAN.md — ResumenCard redesign + expense-tracker.tsx orchestrator wiring (D1, D2, D5, D6, D7, D8, D9, D11, D12)
+- [ ] 22-04-PLAN.md — Inline purpose Select + migration wizard modal + settings slider + factory-reset clear (D3, D10, D13)
