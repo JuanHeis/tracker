@@ -82,6 +82,7 @@ import type { CustomAnnualRates } from "@/lib/projection/types";
 import { reconstructHistoricalPatrimony } from "@/lib/projection/patrimony-history";
 import { calculateMonthlyNetFlow, averageMonthlyNetFlow } from "@/lib/projection/net-flow";
 import { SetupWizard } from "@/components/setup-wizard/setup-wizard";
+import { InvestmentPurposeWizard } from "@/components/investment-purpose-wizard/investment-purpose-wizard";
 import { useSavingsRate } from "@/hooks/useSavingsRate";
 import { useMonthlyFlowData } from "@/hooks/useMonthlyFlowData";
 import { useProjectionEngine } from "@/hooks/useProjectionEngine";
@@ -188,6 +189,8 @@ export function ExpenseTracker() {
     handleUpdateValue,
     handleFinalizeInvestment,
     handleUpdatePFFields,
+    handleUpdatePurpose,
+    setMonthlyData,
     // Aguinaldo operations
     setAguinaldoOverride,
     clearAguinaldoOverride,
@@ -447,7 +450,7 @@ export function ExpenseTracker() {
   const savingsRate = useSavingsRate(currentMonthSalary.amount, historicalNetFlow);
 
   // Phase 22: Resumen del mes redesign — config persistence and UI state
-  const [resumenConfig] = useLocalStorage<ResumenConfig>(
+  const [resumenConfig, setResumenConfig] = useLocalStorage<ResumenConfig>(
     RESUMEN_CONFIG_KEY,
     DEFAULT_RESUMEN_CONFIG,
   );
@@ -469,6 +472,14 @@ export function ExpenseTracker() {
       resumenConfig.deficitThresholdPercent,
     );
   }, [resumenCurrency, resultadoHistoryArs, resultadoHistoryUsd, sobranteAnteriorRawArs, sobranteAnteriorRawUsd, currentMonthSalary.amount, resumenConfig.deficitThresholdPercent]);
+
+  // Phase 22 D3 + D10: wizard gate — auto-shows when investments lack purpose AND wizard not yet completed
+  const needsPurposeWizard = useMemo(() => {
+    if (resumenConfig.wizardCompletedAt) return false;
+    const list = monthlyData.investments || [];
+    if (list.length === 0) return false;
+    return list.some((inv) => inv.purpose === undefined);
+  }, [resumenConfig.wizardCompletedAt, monthlyData.investments]);
 
   // Waterfall data for MonthlyFlowPanel
   const waterfallData = useMonthlyFlowData(
@@ -829,6 +840,7 @@ export function ExpenseTracker() {
                     onUpdateValue={handleUpdateValue}
                     onFinalize={handleFinalizeInvestment}
                     onUpdatePFFields={handleUpdatePFFields}
+                    onUpdatePurpose={handleUpdatePurpose}
                   />
                 </CardContent>
               </Card>
@@ -1284,6 +1296,23 @@ export function ExpenseTracker() {
         globalUsdRate={globalUsdRate}
         investments={monthlyData.investments.filter(i => i.status === "Activa" && !i.isLiquid)}
         customAnnualRates={customAnnualRates}
+      />
+      <InvestmentPurposeWizard
+        open={needsPurposeWizard}
+        investments={monthlyData.investments || []}
+        onComplete={(assignments) => {
+          const updated = (monthlyData.investments || []).map((inv) => ({
+            ...inv,
+            purpose: assignments[inv.id] ?? inv.purpose ?? "ahorro",
+          }));
+          // Batch-update all investment purposes at once (avoids multiple re-renders)
+          setMonthlyData({ ...monthlyData, investments: updated });
+          setResumenConfig({ ...resumenConfig, wizardCompletedAt: new Date().toISOString() });
+        }}
+        onDismiss={() => {
+          // D10: no red de seguridad — set the timestamp on dismiss too so it doesn't reopen
+          setResumenConfig({ ...resumenConfig, wizardCompletedAt: new Date().toISOString() });
+        }}
       />
     </div>
   );
