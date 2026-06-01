@@ -68,13 +68,14 @@ export function useInvestmentsTracker(
     });
   };
 
-  const handleAddMovement = (investmentId: string, movement: { date: string; type: "aporte" | "retiro"; amount: number; pendingIngreso?: boolean }) => {
+  const handleAddMovement = (investmentId: string, movement: { date: string; type: "aporte" | "retiro"; amount: number; pendingIngreso?: boolean; purpose?: InvestmentPurpose }) => {
     const newMovement: InvestmentMovement = {
       id: crypto.randomUUID(),
       date: movement.date,
       type: movement.type,
       amount: movement.amount,
       ...(movement.pendingIngreso && { pendingIngreso: true }),
+      ...(movement.purpose && { purpose: movement.purpose }),
     };
     updateInvestment(investmentId, (inv) => {
       const valueAdjustment = movement.type === "aporte" ? movement.amount : -movement.amount;
@@ -132,11 +133,24 @@ export function useInvestmentsTracker(
   const handleEditMovement = (
     investmentId: string,
     movementId: string,
-    updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number }
+    updates: { amount?: number; pendingIngreso?: boolean; receivedAmount?: number; purpose?: InvestmentPurpose }
   ) => {
     updateInvestment(investmentId, (inv) => {
       const mov = inv.movements.find((m) => m.id === movementId);
-      if (!mov || mov.type !== "retiro") return inv;
+      if (!mov) return inv;
+
+      // Purpose edits are allowed for BOTH aportes and retiros. The amount/pending/received
+      // and currentValue logic below is retiro-specific.
+      if (mov.type !== "retiro") {
+        // Aporte: only a purpose update is supported here (no value/currentValue changes).
+        if (updates.purpose === undefined) return inv;
+        const updatedMovement: typeof mov = { ...mov, purpose: updates.purpose };
+        return {
+          ...inv,
+          movements: inv.movements.map((m) => (m.id === movementId ? updatedMovement : m)),
+          // intentionally NOT updating lastUpdated — purpose is metadata, not a value change
+        };
+      }
 
       // Validate amount if provided
       if (updates.amount !== undefined && updates.amount <= 0) return inv;
@@ -169,6 +183,7 @@ export function useInvestmentsTracker(
         ...(updates.pendingIngreso !== undefined && {
           pendingIngreso: updates.pendingIngreso || undefined,
         }),
+        ...(updates.purpose !== undefined && { purpose: updates.purpose }),
       };
 
       // Handle receivedAmount

@@ -68,6 +68,7 @@ export interface InvestmentMovement {
   isInitial?: boolean;   // true for wizard-loaded patrimony (not counted as monthly outflow)
   pendingIngreso?: boolean;   // true = retiro requested but funds not yet received
   receivedAmount?: number;    // actual amount received (may differ from amount due to exchange rate)
+  purpose?: InvestmentPurpose;   // per-movement purpose (D14); inherits from Investment when absent
 }
 
 export type InvestmentPurpose = "ahorro" | "objetivo" | "tarjeta" | "especulacion";
