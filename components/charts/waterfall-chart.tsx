@@ -81,9 +81,8 @@ export function WaterfallChart({ data }: WaterfallChartProps) {
     const libre = data.find((b) => b.name === "Libre");
 
     const egresosAmount =
-      (gastosFijos?.amount ?? 0) +
-      (gastosVariables?.amount ?? 0) +
-      (inversiones?.amount ?? 0);
+      (gastosFijos?.amount ?? 0) + (gastosVariables?.amount ?? 0);
+    const inversionesAmount = inversiones?.amount ?? 0;
     const ahorroAmount = ahorro?.amount ?? 0;
     const libreAmount = libre?.amount ?? 0;
 
@@ -92,8 +91,6 @@ export function WaterfallChart({ data }: WaterfallChartProps) {
       egresosBreakdown.push({ name: "Gastos Fijos", amount: gastosFijos.amount });
     if (gastosVariables && gastosVariables.amount > 0)
       egresosBreakdown.push({ name: "Gastos Variables", amount: gastosVariables.amount });
-    if (inversiones && inversiones.amount > 0)
-      egresosBreakdown.push({ name: "Inversiones", amount: inversiones.amount });
 
     const bars: SimplifiedBar[] = [
       {
@@ -109,6 +106,15 @@ export function WaterfallChart({ data }: WaterfallChartProps) {
         breakdown: egresosBreakdown,
       },
     ];
+
+    if (inversionesAmount !== 0) {
+      bars.push({
+        name: "Inversiones",
+        amount: inversionesAmount,
+        fill: "#3b82f6",
+        breakdown: inversiones?.subcategories ?? [],
+      });
+    }
 
     if (ahorroAmount > 0) {
       bars.push({
