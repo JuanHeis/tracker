@@ -155,15 +155,7 @@ export function ResumenCard({
   const showDeficitRecurrente = deficitState.recurrente && !deficitRecurrenteDismissed;
 
   return (
-    <Card className="relative h-fit overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 select-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='120'%3E%3Ctext x='0' y='60' font-family='Arial' font-size='11' font-weight='bold' fill='rgba(239,68,68,0.15)' transform='rotate(-35,170,60)' text-anchor='middle' letter-spacing='4'%3EDEVELOPMENT DEVELOPMENT DEVELOPMENT DEVELOPMENT%3C/text%3E%3C/svg%3E")`,
-          backgroundRepeat: "repeat",
-        }}
-      />
+    <Card className="h-fit">
       <TooltipProvider>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle>Resumen del Mes</CardTitle>
