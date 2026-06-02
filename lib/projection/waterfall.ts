@@ -7,6 +7,7 @@ import type {
   Transfer,
 } from "@/hooks/useMoneyTracker";
 import { CurrencyType } from "@/constants/investments";
+import { getMovementPurpose } from "@/constants/investment-purpose";
 import { parseISO, isWithinInterval } from "date-fns";
 
 // ---------------------------------------------------------------------------
@@ -170,34 +171,46 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
   const ingresosTotal = salaryAmount + extraIncomesTotal + initialBalanceArs;
 
   // --- Investment movements (filtered by date, exclude isInitial) ---
-  let investmentNet = 0;
+  //
+  // The "Ahorro" bar must match the Resumen card's "Aportes inversión": only
+  // APORTES whose effective purpose is ahorro/especulación count. Aportes with
+  // purpose tarjeta/objetivo are NEUTRAL (not savings, not an egreso) and are
+  // excluded entirely. RETIROS are cash that came BACK to the wallet — they are
+  // not savings, so they don't belong in the Ahorro bar; instead they flow into
+  // "Libre" (added back to running below). This keeps the waterfall faithful and
+  // makes Ahorro agree with the Resumen card. See quick (purpose-aware waterfall).
+  let ahorroAportes = 0; // savings aportes only — the Ahorro bar amount
+  let retirosCashBack = 0; // all retiros (any purpose) — return to Libre as cash
   const investmentByName = new Map<string, number>();
 
   for (const inv of investments) {
-    let invNet = 0;
+    let invAhorro = 0;
     for (const mov of inv.movements) {
       if (mov.isInitial) continue;
       if (mov.pendingIngreso) continue;
       if (!isInRange(mov.date, dateRange)) continue;
 
+      const purpose = getMovementPurpose(mov, inv);
+
       // Movement amounts are stored in the investment's base currency.
-      // For ARS investments, use directly. For USD investments, the raw
-      // amount is used (no per-movement usdRate available on movements).
       if (mov.type === "aporte") {
-        invNet += mov.amount;
+        // Only ahorro/especulación aportes are "savings"; tarjeta/objetivo are neutral.
+        if (purpose === "ahorro" || purpose === "especulacion") {
+          invAhorro += mov.amount;
+        }
       } else {
         // Use receivedAmount when available (actual cash received may differ
-        // from withdrawal amount due to exchange rate at settlement time)
-        invNet -= mov.receivedAmount ?? mov.amount;
+        // from withdrawal amount due to exchange rate at settlement time).
+        retirosCashBack += mov.receivedAmount ?? mov.amount;
       }
     }
 
-    if (invNet !== 0) {
+    if (invAhorro !== 0) {
       investmentByName.set(
         inv.name,
-        (investmentByName.get(inv.name) ?? 0) + invNet,
+        (investmentByName.get(inv.name) ?? 0) + invAhorro,
       );
-      investmentNet += invNet;
+      ahorroAportes += invAhorro;
     }
   }
 
@@ -237,8 +250,13 @@ export function computeWaterfallData(input: WaterfallInput): WaterfallBar[] {
     subcategories: buildSubcategories(variable, (e) => e.name, toArs),
   };
 
-  // --- Ahorro bar: investment contributions + savings target ---
-  const ahorroAmount = investmentNet + Math.max(0, savingsEstimate);
+  // --- Retiros return as cash to "Libre" ---
+  // Withdrawals are money that came back to the wallet this period, so they
+  // increase what's free to use. Add them to running BEFORE carving out Ahorro.
+  running += retirosCashBack;
+
+  // --- Ahorro bar: savings aportes (ahorro/especulación) + savings target ---
+  const ahorroAmount = ahorroAportes + Math.max(0, savingsEstimate);
   running -= ahorroAmount;
   const ahorroBar: WaterfallBar = {
     name: "Ahorro",

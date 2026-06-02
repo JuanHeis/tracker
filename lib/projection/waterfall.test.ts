@@ -255,7 +255,7 @@ describe("computeWaterfallData", () => {
 
   // Investment filtering
   describe("investment movement filtering", () => {
-    it("excludes isInitial movements and merges investment net into Ahorro bar", () => {
+    it("Ahorro = ahorro aportes only (retiros return to Libre, isInitial excluded)", () => {
       const investmentA = makeInvestment({
         movements: [
           { id: "m1", date: "2026-03-05", type: "aporte", amount: 50000, isInitial: false },
@@ -274,10 +274,65 @@ describe("computeWaterfallData", () => {
       });
       const result = computeWaterfallData(input);
 
-      // Net: 50000 + 20000 - 10000 = 60000 (isInitial excluded), merged into Ahorro
+      // Ahorro counts only ahorro/especulación APORTES (default purpose = ahorro):
+      // 50000 + 20000 = 70000 (isInitial excluded). The retiro (10000) is NOT
+      // netted against Ahorro — it returns to the wallet as cash and lifts Libre.
       const ahorro = result.find((b) => b.name === "Ahorro")!;
-      expect(ahorro.amount).toBe(60000);
+      expect(ahorro.amount).toBe(70000);
       expect(result.map((b) => b.name)).not.toContain("Inversiones");
+
+      // Libre = Ingresos(500000) − Ahorro(70000) + retiro(10000) = 440000
+      const libre = result.find((b) => b.name === "Libre")!;
+      expect(libre.amount).toBe(440000);
+    });
+
+    it("excludes tarjeta/objetivo aportes from Ahorro (neutral, like the Resumen card)", () => {
+      const ahorroInv = makeInvestment({
+        name: "FCI Ahorro",
+        purpose: "ahorro",
+        movements: [{ id: "a1", date: "2026-03-05", type: "aporte", amount: 100000 }],
+      });
+      const tarjetaInv = makeInvestment({
+        name: "Fondo Tarjeta",
+        purpose: "tarjeta",
+        movements: [{ id: "t1", date: "2026-03-06", type: "aporte", amount: 80000 }],
+      });
+      const objetivoInv = makeInvestment({
+        name: "Fondo Objetivo",
+        purpose: "objetivo",
+        movements: [{ id: "o1", date: "2026-03-07", type: "aporte", amount: 40000 }],
+      });
+      const input = baseInput({
+        salaryAmount: 500000,
+        investments: [ahorroInv, tarjetaInv, objetivoInv],
+      });
+      const result = computeWaterfallData(input);
+
+      // Only the ahorro aporte (100000) counts. tarjeta + objetivo are neutral.
+      const ahorro = result.find((b) => b.name === "Ahorro")!;
+      expect(ahorro.amount).toBe(100000);
+      // Breakdown shows only the ahorro investment, not tarjeta/objetivo.
+      expect(ahorro.subcategories).toEqual([{ name: "FCI Ahorro", amount: 100000 }]);
+      // Neutral aportes don't reduce Libre either: 500000 − 100000 = 400000.
+      const libre = result.find((b) => b.name === "Libre")!;
+      expect(libre.amount).toBe(400000);
+    });
+
+    it("respects per-movement purpose override (movement.purpose beats investment.purpose)", () => {
+      const inv = makeInvestment({
+        name: "Mixto",
+        purpose: "ahorro",
+        movements: [
+          { id: "p1", date: "2026-03-05", type: "aporte", amount: 100000 },
+          // override to tarjeta → neutral, excluded from Ahorro
+          { id: "p2", date: "2026-03-06", type: "aporte", amount: 60000, purpose: "tarjeta" },
+        ],
+      });
+      const input = baseInput({ salaryAmount: 500000, investments: [inv] });
+      const result = computeWaterfallData(input);
+
+      const ahorro = result.find((b) => b.name === "Ahorro")!;
+      expect(ahorro.amount).toBe(100000);
     });
 
     it("converts USD investment movements using investment currencyType and a default rate", () => {
@@ -362,7 +417,7 @@ describe("computeWaterfallData", () => {
       expect(libre.amount).toBe(250000);
     });
 
-    it("Ahorro amount equals investmentNet + savingsEstimate", () => {
+    it("Ahorro amount equals ahorro aportes + savingsEstimate", () => {
       const inv = makeInvestment({
         name: "FCI",
         movements: [
