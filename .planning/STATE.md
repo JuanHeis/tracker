@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 23-01-PLAN.md
-last_updated: "2026-07-01T14:52:49.190Z"
+stopped_at: Completed 23-02-PLAN.md
+last_updated: "2026-07-01T15:07:16.379Z"
 last_activity: 2026-07-01
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-07)
 ## Current Position
 
 Phase: 23 (Reconciliar Disponible del Resumen con saldo liquido) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-07-01
 
@@ -71,6 +71,9 @@ Recent decisions affecting current work:
 - [Phase 23]: Q3: computeCashEffect EXCLUDES adjustment_ars/adjustment_usd (cuadre/seed artifacts, not real cash flow)
 - [Phase 23]: Q2: computeCashEffect INCLUDES investment aporte(-)/retiro(+) as cash, skipping isInitial/pendingIngreso
 - [Phase 23]: Q1: balance-core extraction deferred to Plan 03; cash fn is already pure/testable
+- [Phase 23]: disponible = sobrante + ingresos - totalGastos + cashEffect (aportes not double-subtracted); resultadoDelMes keeps D2
+- [Phase 23]: computeDualBalancesCore scoped to PERIOD cash block; in-range adjustments added separately to stay byte-identical (arsBalancePeriod 3420058.73 / usdBalancePeriod 1.69)
+- [Phase 23]: wizard-month guard re-adds seed adjustment_ars locally in calculateAvailableForMonth so wizard display preserved (6331.53)
 
 ### Roadmap Evolution
 
@@ -96,9 +99,10 @@ None. All patterns confirmed HIGH confidence from research.
 | 260601-nuv | los gastos recurrentes no deberian agregarse a meses pasados, solo al mes presente y futuro (3 meses adelante) | 2026-06-01 | ec7dd36 | [260601-nuv-los-gastos-recurrentes-no-deberian-agreg](./quick/260601-nuv-los-gastos-recurrentes-no-deberian-agreg/) |
 | 260601-otj | Fix sobrante anterior y deficit anterior: usar flujo encadenado (ARS y USD) | 2026-06-01 | 6cf66f1 | [260601-otj-fix-sobrante-anterior-y-deficit-anterior](./quick/260601-otj-fix-sobrante-anterior-y-deficit-anterior/) |
 | Phase 23 P01 | 3 min | 2 tasks | 2 files |
+| Phase 23 P02 | ~11 min | 2 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-07-01T14:52:34.989Z
-Stopped at: Completed 23-01-PLAN.md
+Last session: 2026-07-01T15:07:16.375Z
+Stopped at: Completed 23-02-PLAN.md
 Resume file: None
