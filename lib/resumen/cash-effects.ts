@@ -50,8 +50,8 @@ export function computeCashEffect(input: CashEffectInput): number {
   for (const t of transfers) {
     if (!isInRange(t.date)) continue;
     switch (t.type) {
-      case "currency_ars_to_usd": delta += isUsd ? t.usdAmount! : -t.arsAmount!; break;
-      case "currency_usd_to_ars": delta += isUsd ? -t.usdAmount! : t.arsAmount!; break;
+      case "currency_ars_to_usd": delta += isUsd ? (t.usdAmount ?? 0) : -(t.arsAmount ?? 0); break;
+      case "currency_usd_to_ars": delta += isUsd ? -(t.usdAmount ?? 0) : (t.arsAmount ?? 0); break;
       case "cash_out": if ((t.currency === "USD") === isUsd) delta -= t.amount!; break;
       case "cash_in":  if ((t.currency === "USD") === isUsd) delta += t.amount!; break;
       // adjustment_ars / adjustment_usd intentionally EXCLUDED (Q3)
