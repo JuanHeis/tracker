@@ -47,8 +47,8 @@ export function computeDualBalancesCore(input: DualBalancesCoreInput): DualBalan
   let usdAdjustmentInRange = 0;
   for (const t of transfers) {
     if (!isInRange(t.date)) continue;
-    if (t.type === "adjustment_ars") arsAdjustmentInRange += t.amount!;
-    else if (t.type === "adjustment_usd") usdAdjustmentInRange += t.amount!;
+    if (t.type === "adjustment_ars") arsAdjustmentInRange += t.amount ?? 0;
+    else if (t.type === "adjustment_usd") usdAdjustmentInRange += t.amount ?? 0;
   }
 
   const arsPeriodCash =
