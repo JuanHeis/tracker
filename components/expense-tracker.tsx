@@ -1086,6 +1086,7 @@ export function ExpenseTracker() {
               totalGastos={arsMetrics.totalGastos}
               aportesNoNeutros={arsMetrics.aportesNoNeutros}
               aportesAll={arsMetrics.aportesAll}
+              cashEffect={arsMetrics.cashEffect}
               porPagarArs={porPagarArs}
               porPagarUsd={porPagarUsd}
               disponible={arsMetrics.disponible}
@@ -1096,6 +1097,7 @@ export function ExpenseTracker() {
                 totalGastos: usdMetrics.totalGastos,
                 aportesNoNeutros: usdMetrics.aportesNoNeutros,
                 aportesAll: usdMetrics.aportesAll,
+                cashEffect: usdMetrics.cashEffect,
                 disponible: usdMetrics.disponible,
                 resultadoDelMes: usdMetrics.resultadoDelMes,
               }}

@@ -39,6 +39,7 @@ interface ResumenCardProps {
   totalGastos: number;
   aportesNoNeutros: number;         // counts as egreso
   aportesAll: number;               // for tooltip
+  cashEffect: number;               // SIGNED net cash effect folded into disponible (aportes+USD+loans)
   porPagarArs: number;
   porPagarUsd: number;
   disponible: number;
@@ -51,6 +52,7 @@ interface ResumenCardProps {
     totalGastos: number;
     aportesNoNeutros: number;
     aportesAll: number;
+    cashEffect: number;
     disponible: number;
     resultadoDelMes: number;
   };
@@ -81,6 +83,7 @@ export function ResumenCard({
   totalGastos,
   aportesNoNeutros,
   aportesAll,
+  cashEffect,
   porPagarArs,
   porPagarUsd,
   disponible,
@@ -133,6 +136,7 @@ export function ResumenCard({
         totalGastos: usdMetrics.totalGastos,
         aportesNoNeutros: usdMetrics.aportesNoNeutros,
         aportesAll: usdMetrics.aportesAll,
+        cashEffect: usdMetrics.cashEffect,
         disponible: usdMetrics.disponible,
         resultadoDelMes: usdMetrics.resultadoDelMes,
       }
@@ -144,6 +148,7 @@ export function ResumenCard({
         totalGastos,
         aportesNoNeutros,
         aportesAll,
+        cashEffect,
         disponible,
         resultadoDelMes,
       };
@@ -429,14 +434,16 @@ export function ResumenCard({
                 </div>
               </TooltipTrigger>
               <TooltipContent className="max-w-sm">
-                <p className="font-bold mb-1">Disponible = Sobrante anterior + Ingresos − Egresos</p>
+                <p className="font-bold mb-1">Disponible = Sobrante anterior + Ingresos − Gastos + Movimientos de caja</p>
                 <p>Sobrante anterior: <FormattedAmount value={active.sobranteRaw} currency="$" /></p>
                 {showSalaryLine && <p>+ Ingreso fijo: <FormattedAmount value={active.ingresoFijo} currency="$" /></p>}
                 <p>+ Otros ingresos: <FormattedAmount value={active.otrosIngresos} currency="$" /></p>
                 {showAguinaldoLine && <p>+ Aguinaldo: <FormattedAmount value={active.aguinaldo} currency="$" /></p>}
                 <p className="text-red-400">− Gastos: <FormattedAmount value={active.totalGastos} currency="$" /></p>
-                {active.aportesNoNeutros > 0 && (
-                  <p className="text-blue-400">− Aportes inv. (no neutros): <FormattedAmount value={active.aportesNoNeutros} currency="$" /></p>
+                {active.cashEffect !== 0 && (
+                  <p className="text-blue-400">
+                    Movimientos de caja (aportes, USD, préstamos): <FormattedAmount value={active.cashEffect} currency="$" />
+                  </p>
                 )}
                 <hr className="my-1 border-border" />
                 <p className="font-bold">= <FormattedAmount value={active.disponible} currency="$" /></p>
