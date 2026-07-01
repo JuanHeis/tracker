@@ -54,7 +54,17 @@ export function computeCashEffect(input: CashEffectInput): number {
       case "currency_usd_to_ars": delta += isUsd ? -(t.usdAmount ?? 0) : (t.arsAmount ?? 0); break;
       case "cash_out": if ((t.currency === "USD") === isUsd) delta -= t.amount!; break;
       case "cash_in":  if ((t.currency === "USD") === isUsd) delta += t.amount!; break;
-      // adjustment_ars / adjustment_usd intentionally EXCLUDED (Q3)
+      case "adjustment_ars":
+      case "adjustment_usd":
+        // Intentional no-op: adjustments are cuadre/seed artifacts, not real cash flow (Q3).
+        break;
+      default: {
+        // Exhaustiveness guard: adding a new TransferType makes this a compile error
+        // instead of a silent zero cash effect across all engines consuming this fn.
+        const _exhaustive: never = t.type;
+        void _exhaustive;
+        break;
+      }
     }
   }
 
