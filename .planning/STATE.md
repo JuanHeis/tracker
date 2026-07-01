@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 23-02-PLAN.md
-last_updated: "2026-07-01T15:07:16.379Z"
+status: verifying
+stopped_at: Completed 23-03-PLAN.md
+last_updated: "2026-07-01T15:16:45.139Z"
 last_activity: 2026-07-01
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-07)
 
 Phase: 23 (Reconciliar Disponible del Resumen con saldo liquido) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-07-01
 
 Progress: [█████████████████████░░░░░░░░░] 78/92 plans (v1.0-v1.2 complete, v1.3: 2/2 phase 18)
@@ -74,6 +74,8 @@ Recent decisions affecting current work:
 - [Phase 23]: disponible = sobrante + ingresos - totalGastos + cashEffect (aportes not double-subtracted); resultadoDelMes keeps D2
 - [Phase 23]: computeDualBalancesCore scoped to PERIOD cash block; in-range adjustments added separately to stay byte-identical (arsBalancePeriod 3420058.73 / usdBalancePeriod 1.69)
 - [Phase 23]: wizard-month guard re-adds seed adjustment_ars locally in calculateAvailableForMonth so wizard display preserved (6331.53)
+- [Phase 23]: 23-03: computeLiquidFlowForMonth kept test-only (live engines already delegate to computeCashEffect)
+- [Phase 23]: 23-03: June anchor corrected to billetera-derived -691171.40 ARS / 26.82 USD (stale $28.168,76 assumed only the conversion; fix also folds préstamo + investment aportes)
 
 ### Roadmap Evolution
 
@@ -100,9 +102,10 @@ None. All patterns confirmed HIGH confidence from research.
 | 260601-otj | Fix sobrante anterior y deficit anterior: usar flujo encadenado (ARS y USD) | 2026-06-01 | 6cf66f1 | [260601-otj-fix-sobrante-anterior-y-deficit-anterior](./quick/260601-otj-fix-sobrante-anterior-y-deficit-anterior/) |
 | Phase 23 P01 | 3 min | 2 tasks | 2 files |
 | Phase 23 P02 | ~11 min | 2 tasks | 6 files |
+| Phase 23 P03 | ~9 min | 2 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-07-01T15:07:16.375Z
-Stopped at: Completed 23-02-PLAN.md
+Last session: 2026-07-01T15:16:33.850Z
+Stopped at: Completed 23-03-PLAN.md
 Resume file: None
