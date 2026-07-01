@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { CurrencyType } from "@/constants/investments";
-import type { Transfer, Loan, UsdPurchase, Investment } from "@/hooks/useMoneyTracker";
+import type { Transfer, Loan, LoanPayment, UsdPurchase, Investment } from "@/hooks/useMoneyTracker";
 // Module does not exist yet — this import is the expected RED failure (Task 2 implements it).
 import { computeCashEffect, type CashEffectInput } from "@/lib/resumen/cash-effects";
 
@@ -39,6 +39,16 @@ function makeUsdPurchase(overrides: Partial<UsdPurchase> = {}): UsdPurchase {
     usdAmount: 0,
     purchaseRate: 1450,
     origin: "tracked",
+    ...overrides,
+  };
+}
+
+function makePayment(overrides: Partial<LoanPayment> = {}): LoanPayment {
+  return {
+    id: `pay-${Math.random()}`,
+    date: "2026-06-15",
+    amount: 0,
+    createdAt: "2026-06-15",
     ...overrides,
   };
 }
@@ -140,7 +150,7 @@ describe("computeCashEffect sign table (source of truth: calculateDualBalances L
       type: "preste",
       currencyType: CurrencyType.ARS,
       amount: 50000,
-      payments: [{ date: "2026-06-15", amount: 20000 }],
+      payments: [makePayment({ date: "2026-06-15", amount: 20000 })],
     });
     // -50000 + 20000 = -30000
     expect(computeCashEffect(makeInput({ currency: CurrencyType.ARS, loans: [loan] }))).toBe(-30000);
@@ -152,7 +162,7 @@ describe("computeCashEffect sign table (source of truth: calculateDualBalances L
       type: "debo",
       currencyType: CurrencyType.ARS,
       amount: 50000, // principal must NOT move liquid
-      payments: [{ date: "2026-06-15", amount: 12000 }],
+      payments: [makePayment({ date: "2026-06-15", amount: 12000 })],
     });
     expect(computeCashEffect(makeInput({ currency: CurrencyType.ARS, loans: [loan] }))).toBe(-12000);
   });
@@ -221,7 +231,7 @@ describe("computeCashEffect sign table (source of truth: calculateDualBalances L
   it("out-of-range movements contribute 0 across all types", () => {
     const t = makeTransfer({ type: "currency_ars_to_usd", arsAmount: 362500, usdAmount: 250 });
     const p = makeUsdPurchase({ origin: "tracked", arsAmount: 145000, usdAmount: 100 });
-    const loan = makeLoan({ type: "preste", currencyType: CurrencyType.ARS, amount: 50000, payments: [{ date: "2026-06-15", amount: 20000 }] });
+    const loan = makeLoan({ type: "preste", currencyType: CurrencyType.ARS, amount: 50000, payments: [makePayment({ date: "2026-06-15", amount: 20000 })] });
     const inv = makeInvestment({ currencyType: CurrencyType.ARS, movements: [{ id: "m7", date: "2026-06-10", type: "aporte", amount: 30000 }] });
     const input = makeInput({ currency: CurrencyType.ARS, isInRange: outOfRange, transfers: [t], usdPurchases: [p], loans: [loan], investments: [inv] });
     // loan principal/payments and inv movements are gated by isInRange too
