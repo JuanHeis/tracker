@@ -436,14 +436,14 @@ Plans:
 | 19. Projection Engine Refactor | v1.3 | 1/1 | Complete | 2026-04-10 |
 | 20. Waterfall Chart | v1.3 | 2/2 | Complete | 2026-04-11 |
 | 21. Monthly Flow Panel Assembly | v1.3 | 2/2 | Complete   | 2026-04-11 |
-| 22. Resumen del Mes — Rediseño conceptual de cash flow | v1.3 | 0/4 | Not started | — |
+| 22. Resumen del Mes — Rediseño conceptual de cash flow | v1.3 | 3/4 | In Progress|  |
 
 ### Phase 22: Resumen del Mes — Rediseño conceptual de cash flow
 
 **Goal**: Hacer que la card 'Resumen del Mes' sea un termómetro confiable de cash disponible al cierre del mes, con métrica secundaria de performance ('Resultado del mes'), etiquetas de propósito por inversión (ahorro/objetivo/tarjeta/especulación) para evitar doble conteo, banners de déficit anterior/recurrente, y toggle USD paralelo.
 **Requirements**: D1-D13 (per .planning/quick/260601-rdm-resumen-del-mes-redesign/260601-rdm-SPEC.md)
 **Depends on:** Phase 21
-**Plans:** 4 plans
+**Plans:** 3/4 plans executed
 **Success Criteria** (what must be TRUE):
   1. Disponible suma sobrante anterior (signed) y el tooltip refleja la fórmula real
   2. Línea 'Resultado del mes' siempre visible en muted, con +/- explícito, sin color por signo
@@ -455,7 +455,17 @@ Plans:
   8. Factory reset limpia 'resumenConfig'; nuevas inversiones default purpose='ahorro'
 
 Plans:
-- [ ] 22-01-PLAN.md — Foundation: InvestmentPurpose type + Investment.purpose field + resumen-config localStorage module (D3, D10, D13)
+- [x] 22-01-PLAN.md — Foundation: InvestmentPurpose type + Investment.purpose field + resumen-config localStorage module (D3, D10, D13)
 - [ ] 22-02-PLAN.md — Pure logic: month-metrics.computeMonthMetrics + deficit-detector.evaluateDeficitState + purpose-suggestion (D1, D2, D5, D6, D7, D9, D11)
-- [ ] 22-03-PLAN.md — ResumenCard redesign + expense-tracker.tsx orchestrator wiring (D1, D2, D5, D6, D7, D8, D9, D11, D12)
-- [ ] 22-04-PLAN.md — Inline purpose Select + migration wizard modal + settings slider + factory-reset clear (D3, D10, D13)
+- [x] 22-03-PLAN.md — ResumenCard redesign + expense-tracker.tsx orchestrator wiring (D1, D2, D5, D6, D7, D8, D9, D11, D12)
+- [x] 22-04-PLAN.md — Inline purpose Select + migration wizard modal + settings slider + factory-reset clear (D3, D10, D13)
+
+### Phase 23: Reconciliar Disponible del Resumen con saldo liquido (calculateDualBalances como fuente de verdad de caja) + resolver timing mes vencido
+
+**Goal:** El "Disponible" del Resumen reconcilia con el saldo líquido de `calculateDualBalances` para cualquier moneda + período. `computeMonthMetrics` deja de ignorar los movimientos que mueven caja (conversiones de moneda, cash_in/out, usdPurchases tracked, préstamos/deudas) y `expense-tracker.tsx` le pasa `transfers`/`loans`/`usdPurchases`. Se resuelve el timing "mes vencido" con un criterio único compartido por ambos motores, volviendo innecesario el `adjustment_ars` de cuadre. Cambio de cálculo, sin migración de schema. Ver `PROMPT.md` para el brief completo.
+**Requirements**: TBD
+**Depends on:** Phase 22
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 23 to break down)

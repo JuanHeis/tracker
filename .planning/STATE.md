@@ -72,6 +72,7 @@ Recent decisions affecting current work:
 ### Roadmap Evolution
 
 - Phase 22 added: Resumen del Mes — Rediseño conceptual de cash flow
+- Phase 23 added: Reconciliar Disponible del Resumen con saldo líquido (calculateDualBalances como fuente de verdad de caja) + resolver timing mes vencido
 
 ### Pending Todos
 
