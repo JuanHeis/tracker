@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.3
-milestone_name: Flujo Mensual Panel Unificado
+milestone: v1.0
+milestone_name: milestone
 status: executing
-stopped_at: Phase 21 execution complete, human verification pending
-last_updated: "2026-06-01T17:26:00.463Z"
-last_activity: 2026-06-01 -- Completed quick task 260601-otj: fix sobrante/deficit anterior usan flujo encadenado (ARS y USD)
+stopped_at: Completed 23-01-PLAN.md
+last_updated: "2026-07-01T14:52:49.190Z"
+last_activity: 2026-07-01
 progress:
-  total_phases: 24
-  completed_phases: 21
-  total_plans: 56
-  completed_plans: 52
-  percent: 93
+  total_phases: 1
+  completed_phases: 0
+  total_plans: 3
+  completed_plans: 1
+  percent: 33
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-07)
 
 **Core value:** Reflejar la realidad financiera exacta del usuario en todo momento -- nunca perderse un peso ni un dolar.
-**Current focus:** Phase 22 — Resumen del Mes — Rediseño conceptual de cash flow
+**Current focus:** Phase 23 — Reconciliar Disponible del Resumen con saldo liquido
 
 ## Current Position
 
-Phase: 22 (Resumen del Mes — Rediseño conceptual de cash flow) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 22
-Last activity: 2026-06-01 -- Completed quick task 260601-otj: fix sobrante/deficit anterior usan flujo encadenado (ARS y USD)
+Phase: 23 (Reconciliar Disponible del Resumen con saldo liquido) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-07-01
 
 Progress: [█████████████████████░░░░░░░░░] 78/92 plans (v1.0-v1.2 complete, v1.3: 2/2 phase 18)
 
@@ -68,6 +68,9 @@ Recent decisions affecting current work:
 - [v1.3 Roadmap]: Only new dependency: @radix-ui/react-slider for savings rate slider
 - [v1.3 Roadmap]: Phase 19 and 20 can run in parallel (both depend on 18, independent of each other)
 - [Phase 18]: SavingsRateSelector placed in sidebar below ExchangeSummary (temporary, Phase 21 relocates)
+- [Phase 23]: Q3: computeCashEffect EXCLUDES adjustment_ars/adjustment_usd (cuadre/seed artifacts, not real cash flow)
+- [Phase 23]: Q2: computeCashEffect INCLUDES investment aporte(-)/retiro(+) as cash, skipping isInitial/pendingIngreso
+- [Phase 23]: Q1: balance-core extraction deferred to Plan 03; cash fn is already pure/testable
 
 ### Roadmap Evolution
 
@@ -92,9 +95,10 @@ None. All patterns confirmed HIGH confidence from research.
 | 260601-m3e | 260601-pmm purpose per movement | 2026-06-01 | 3b7df88 | [260601-m3e-260601-pmm-purpose-per-movement](./quick/260601-m3e-260601-pmm-purpose-per-movement/) |
 | 260601-nuv | los gastos recurrentes no deberian agregarse a meses pasados, solo al mes presente y futuro (3 meses adelante) | 2026-06-01 | ec7dd36 | [260601-nuv-los-gastos-recurrentes-no-deberian-agreg](./quick/260601-nuv-los-gastos-recurrentes-no-deberian-agreg/) |
 | 260601-otj | Fix sobrante anterior y deficit anterior: usar flujo encadenado (ARS y USD) | 2026-06-01 | 6cf66f1 | [260601-otj-fix-sobrante-anterior-y-deficit-anterior](./quick/260601-otj-fix-sobrante-anterior-y-deficit-anterior/) |
+| Phase 23 P01 | 3 min | 2 tasks | 2 files |
 
 ## Session Continuity
 
-Last session: 2026-04-11T22:27:40.365Z
-Stopped at: Phase 21 execution complete, human verification pending
-Resume file: .planning/phases/21-monthly-flow-panel-assembly/21-VERIFICATION.md
+Last session: 2026-07-01T14:52:34.989Z
+Stopped at: Completed 23-01-PLAN.md
+Resume file: None
