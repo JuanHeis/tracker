@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { CurrencyType } from "@/constants/investments";
-import type { Investment, InvestmentMovement } from "@/hooks/useMoneyTracker";
+import type { Investment, InvestmentMovement, Transfer } from "@/hooks/useMoneyTracker";
 import { computeMonthMetrics, sumAportes, type MonthMetricsInput } from "./month-metrics";
 
 let movCounter = 0;
@@ -120,5 +120,72 @@ describe("month-metrics per-movement purpose", () => {
       ],
     });
     expect(sumAportes([inv], CurrencyType.ARS, alwaysInRange, false)).toBe(3000);
+  });
+});
+
+// Phase 23-02: Disponible absorbs the FULL cash effect via computeCashEffect.
+// Resultado del mes keeps D2 semantics (retiros excluded, tarjeta/objetivo neutral).
+describe("month-metrics cash effect folded into Disponible (Phase 23-02)", () => {
+  it("a currency_ars_to_usd conversion in range drops Disponible by arsAmount but NOT Resultado", () => {
+    const transfer: Transfer = {
+      id: "t-1",
+      date: "2026-06-04",
+      type: "currency_ars_to_usd",
+      arsAmount: 362500,
+      usdAmount: 250,
+      createdAt: "2026-06-04",
+    } as Transfer;
+    const metrics = computeMonthMetrics(
+      baseInput({
+        salaryAmount: 390668.76,
+        transfers: [transfer],
+      })
+    );
+    // cashEffect (ARS) = -362500 → Disponible = 390668.76 - 362500 = 28168.76 (June anchor).
+    expect(metrics.cashEffect).toBeCloseTo(-362500, 2);
+    expect(metrics.disponible).toBeCloseTo(28168.76, 2);
+    // Resultado del mes is unchanged by cash movements (only salary here, no gastos/aportesNoNeutros).
+    expect(metrics.resultadoDelMes).toBeCloseTo(390668.76, 2);
+  });
+
+  it("USD side of the same conversion adds cash to Disponible", () => {
+    const transfer: Transfer = {
+      id: "t-1",
+      date: "2026-06-04",
+      type: "currency_ars_to_usd",
+      arsAmount: 362500,
+      usdAmount: 250,
+      createdAt: "2026-06-04",
+    } as Transfer;
+    const metrics = computeMonthMetrics(
+      baseInput({
+        currency: CurrencyType.USD,
+        transfers: [transfer],
+      })
+    );
+    expect(metrics.cashEffect).toBeCloseTo(250, 2);
+    expect(metrics.disponible).toBeCloseTo(250, 2);
+    expect(metrics.resultadoDelMes).toBeCloseTo(0, 2);
+  });
+
+  it("omitting cash arrays defaults to [] → cashEffect 0 (history-loop compat)", () => {
+    const metrics = computeMonthMetrics(baseInput({ salaryAmount: 1000 }));
+    expect(metrics.cashEffect).toBe(0);
+    expect(metrics.disponible).toBe(1000);
+  });
+
+  it("investment aporte (non-neutro) reduces Disponible via cashEffect, not double-counted", () => {
+    const inv = makeInvestment({
+      purpose: "ahorro",
+      movements: [makeMovement({ type: "aporte", amount: 2000, purpose: "ahorro" })],
+    });
+    const metrics = computeMonthMetrics(baseInput({ investments: [inv], salaryAmount: 5000 }));
+    // cashEffect (ARS) includes -2000 for the aporte.
+    expect(metrics.cashEffect).toBeCloseTo(-2000, 2);
+    // Disponible = sobrante(0) + ingresos(5000) - gastos(0) + cashEffect(-2000) = 3000.
+    // NOT 5000 - 2000 (resultado) - 2000 (cash) = 1000 — no double count.
+    expect(metrics.disponible).toBeCloseTo(3000, 2);
+    // Resultado still subtracts the non-neutro aporte once (D2 unchanged).
+    expect(metrics.resultadoDelMes).toBeCloseTo(3000, 2);
   });
 });
