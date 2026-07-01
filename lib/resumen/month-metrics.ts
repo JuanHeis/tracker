@@ -129,13 +129,15 @@ export function computeMonthMetrics(input: MonthMetricsInput): MonthMetrics {
   const aportesAll = sumAportes(investments, currency, isInRange, false);
   const aportesNoNeutros = sumAportes(investments, currency, isInRange, true);
 
-  // Phase 23-02: full signed liquid-cash delta of the period (transfers + loans +
-  // usdPurchases + ALL investment aporte(-)/retiro(+)). computeCashEffect already
-  // contains -aportes for investments, so `disponible` must NOT subtract aportes again.
+  // Option B (owner decision 2026-07): inversiones = ahorro, NO gasto. Investments do
+  // NOT reduce Disponible as raw cash — aportes ahorro/especulación reduce it via
+  // aportesNoNeutros (purpose logic); tarjeta/objetivo stay neutral. Only true CONSUMPTION
+  // cash movements fold in: conversions, cash_in/out, usdPurchases, loans. So computeCashEffect
+  // runs WITHOUT investments here. (The saldo-líquido engines still pass investments — Opción A.)
   const cashEffect = computeCashEffect({
     currency,
     isInRange,
-    investments,
+    investments: [],
     transfers: transfers ?? [],
     loans: loans ?? [],
     usdPurchases: usdPurchases ?? [],
@@ -147,9 +149,9 @@ export function computeMonthMetrics(input: MonthMetricsInput): MonthMetrics {
   const egresosMes = totalGastos + aportesNoNeutros;
   const resultadoDelMes = ingresosMes - egresosMes;
 
-  // Disponible reconciles with the liquid balance: it absorbs the FULL cash effect.
-  // cashEffect already contains -aportes, so subtract only gastos here (NOT aportesNoNeutros).
-  const disponible = sobranteAnteriorRaw + ingresosMes - totalGastos + cashEffect;
+  // Disponible (Opción B): sobrante + ingresos − gastos − aportesNoNeutros + cashEffect.
+  // cashEffect EXCLUDES investments, so aportes are counted once (via aportesNoNeutros).
+  const disponible = sobranteAnteriorRaw + ingresosMes - egresosMes + cashEffect;
 
   return {
     ingresoFijo,

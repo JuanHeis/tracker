@@ -434,15 +434,18 @@ export function ResumenCard({
                 </div>
               </TooltipTrigger>
               <TooltipContent className="max-w-sm">
-                <p className="font-bold mb-1">Disponible = Sobrante anterior + Ingresos − Gastos + Movimientos de caja</p>
+                <p className="font-bold mb-1">Disponible = Sobrante anterior + Ingresos − Gastos − Aportes + Mov. de caja</p>
                 <p>Sobrante anterior: <FormattedAmount value={active.sobranteRaw} currency="$" /></p>
                 {showSalaryLine && <p>+ Ingreso fijo: <FormattedAmount value={active.ingresoFijo} currency="$" /></p>}
                 <p>+ Otros ingresos: <FormattedAmount value={active.otrosIngresos} currency="$" /></p>
                 {showAguinaldoLine && <p>+ Aguinaldo: <FormattedAmount value={active.aguinaldo} currency="$" /></p>}
                 <p className="text-red-400">− Gastos: <FormattedAmount value={active.totalGastos} currency="$" /></p>
+                {active.aportesNoNeutros > 0 && (
+                  <p className="text-blue-400">− Aportes inv. (ahorro/especulación): <FormattedAmount value={active.aportesNoNeutros} currency="$" /></p>
+                )}
                 {active.cashEffect !== 0 && (
                   <p className="text-blue-400">
-                    Movimientos de caja (aportes, USD, préstamos): <FormattedAmount value={active.cashEffect} currency="$" />
+                    Movimientos de caja (dólares, préstamos): <FormattedAmount value={active.cashEffect} currency="$" />
                   </p>
                 )}
                 <hr className="my-1 border-border" />

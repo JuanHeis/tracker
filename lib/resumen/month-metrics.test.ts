@@ -174,18 +174,17 @@ describe("month-metrics cash effect folded into Disponible (Phase 23-02)", () =>
     expect(metrics.disponible).toBe(1000);
   });
 
-  it("investment aporte (non-neutro) reduces Disponible via cashEffect, not double-counted", () => {
+  it("Opción B: investment aporte reduces Disponible via aportesNoNeutros, NOT via cashEffect", () => {
     const inv = makeInvestment({
       purpose: "ahorro",
       movements: [makeMovement({ type: "aporte", amount: 2000, purpose: "ahorro" })],
     });
     const metrics = computeMonthMetrics(baseInput({ investments: [inv], salaryAmount: 5000 }));
-    // cashEffect (ARS) includes -2000 for the aporte.
-    expect(metrics.cashEffect).toBeCloseTo(-2000, 2);
-    // Disponible = sobrante(0) + ingresos(5000) - gastos(0) + cashEffect(-2000) = 3000.
-    // NOT 5000 - 2000 (resultado) - 2000 (cash) = 1000 — no double count.
+    // Opción B: cashEffect EXCLUDES investments (they are savings, not raw cash).
+    expect(metrics.cashEffect).toBe(0);
+    // Disponible = sobrante(0) + ingresos(5000) - gastos(0) - aportesNoNeutros(2000) + cashEffect(0) = 3000.
     expect(metrics.disponible).toBeCloseTo(3000, 2);
-    // Resultado still subtracts the non-neutro aporte once (D2 unchanged).
+    // Resultado subtracts the non-neutro aporte once (D2 unchanged).
     expect(metrics.resultadoDelMes).toBeCloseTo(3000, 2);
   });
 });
