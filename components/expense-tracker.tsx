@@ -88,6 +88,7 @@ import { useMonthlyFlowData } from "@/hooks/useMonthlyFlowData";
 import { useProjectionEngine } from "@/hooks/useProjectionEngine";
 import { SAVINGS_RATE_KEY } from "@/lib/projection/savings-rate";
 import { computeMonthMetrics, type MonthMetrics } from "@/lib/resumen/month-metrics";
+import { computeCashEffect } from "@/lib/resumen/cash-effects";
 import { evaluateDeficitState, type DeficitState } from "@/lib/resumen/deficit-detector";
 import {
   RESUMEN_CONFIG_KEY,
@@ -282,27 +283,17 @@ export function ExpenseTracker() {
     monthlyData.expenses.forEach((exp: any) => {
       if (exp.currencyType === CurrencyType.USD && isInRange(exp.date)) usd -= exp.amount;
     });
-    (monthlyData.investments || []).forEach((inv: any) => {
-      if (inv.currencyType !== CurrencyType.USD) return;
-      inv.movements
-        .filter((m: any) => !m.isInitial && !m.pendingIngreso && isInRange(m.date))
-        .forEach((m: any) => {
-          const retiro = m.receivedAmount ?? m.amount;
-          usd += m.type === "aporte" ? -m.amount : retiro;
-        });
-    });
-    (monthlyData.usdPurchases || []).forEach((p: any) => {
-      if (isInRange(p.date)) usd += p.usdAmount;
-    });
-    (monthlyData.transfers || []).forEach((t: any) => {
-      if (!isInRange(t.date)) return;
-      switch (t.type) {
-        case "currency_ars_to_usd": usd += t.usdAmount!; break;
-        case "currency_usd_to_ars": usd -= t.usdAmount!; break;
-        case "cash_out": if (t.currency === "USD") usd -= t.amount!; break;
-        case "cash_in": if (t.currency === "USD") usd += t.amount!; break;
-        case "adjustment_usd": usd += t.amount!; break;
-      }
+    // Phase 23-02: USD investment-cash + usdPurchases + transfers + loans now come from the
+    // shared computeCashEffect (single source of truth). This ADDS USD-loan handling the old
+    // inline block lacked (a correct superset) and EXCLUDES adjustment_usd (intended — makes
+    // the cuadre redundant, Plan 03 AC-3).
+    usd += computeCashEffect({
+      currency: CurrencyType.USD,
+      isInRange,
+      transfers: monthlyData.transfers || [],
+      loans: monthlyData.loans || [],
+      usdPurchases: monthlyData.usdPurchases || [],
+      investments: monthlyData.investments || [],
     });
     return usd;
   }, [monthlyData, viewMode, incomeConfig.payDay]);
@@ -366,6 +357,9 @@ export function ExpenseTracker() {
       aguinaldoAmount: aguinaldo,
       sobranteAnteriorRaw: sobranteAnterior,
       isInRange,
+      transfers: monthlyData.transfers || [],
+      loans: monthlyData.loans || [],
+      usdPurchases: monthlyData.usdPurchases || [],
     });
     return metrics.disponible;
   }, [wizardMonth, calculateAvailableForMonth, monthlyData, viewMode, incomeConfig, getSalaryForMonth, salaryHistory]);
@@ -394,6 +388,9 @@ export function ExpenseTracker() {
       aguinaldoAmount: 0,
       sobranteAnteriorRaw: sobranteAnterior,
       isInRange,
+      transfers: monthlyData.transfers || [],
+      loans: monthlyData.loans || [],
+      usdPurchases: monthlyData.usdPurchases || [],
     });
     return metrics.disponible;
   }, [wizardMonth, computeUsdAvailableForMonth, monthlyData, viewMode, incomeConfig.payDay]);
@@ -442,6 +439,9 @@ export function ExpenseTracker() {
       aguinaldoAmount: aguinaldoData?.amount ?? 0,
       sobranteAnteriorRaw: sobranteReal,
       isInRange: arsIsInRange,
+      transfers: monthlyData.transfers || [],
+      loans: monthlyData.loans || [],
+      usdPurchases: monthlyData.usdPurchases || [],
     });
     // For the wizard month, disponible = calculateAvailableForMonth (includes wizard
     // adjustment, retiros, transfers) rather than the sobrante+ingresos-egresos formula.
@@ -449,7 +449,7 @@ export function ExpenseTracker() {
       return { ...base, disponible: calculateAvailableForMonth(selectedMonth) };
     }
     return base;
-  }, [selectedMonth, wizardMonth, sobranteAnteriorChainedArs, monthlyData.investments, monthlyData.expenses, monthlyData.extraIncomes, currentMonthSalary.amount, aguinaldoData?.amount, arsIsInRange, calculateAvailableForMonth]);
+  }, [selectedMonth, wizardMonth, sobranteAnteriorChainedArs, monthlyData.investments, monthlyData.expenses, monthlyData.extraIncomes, monthlyData.transfers, monthlyData.loans, monthlyData.usdPurchases, currentMonthSalary.amount, aguinaldoData?.amount, arsIsInRange, calculateAvailableForMonth]);
 
   // USD month metrics via the Plan 02 pure engine
   const usdMetrics: MonthMetrics = useMemo(
@@ -463,8 +463,11 @@ export function ExpenseTracker() {
       aguinaldoAmount: 0,
       sobranteAnteriorRaw: sobranteAnteriorChainedUsd,
       isInRange: arsIsInRange,   // same range function — USD uses ARS pay-period per existing convention
+      transfers: monthlyData.transfers || [],
+      loans: monthlyData.loans || [],
+      usdPurchases: monthlyData.usdPurchases || [],
     }),
-    [selectedMonth, monthlyData.investments, monthlyData.expenses, monthlyData.extraIncomes, sobranteAnteriorChainedUsd, arsIsInRange],
+    [selectedMonth, monthlyData.investments, monthlyData.expenses, monthlyData.extraIncomes, monthlyData.transfers, monthlyData.loans, monthlyData.usdPurchases, sobranteAnteriorChainedUsd, arsIsInRange],
   );
 
   // ARS resultado history (last 6 months, most recent first) for deficit detection
@@ -881,7 +884,7 @@ export function ExpenseTracker() {
           </div>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-[1fr_300px]">
+        <div className="grid gap-8 md:grid-cols-[1fr_360px]">
           <Tabs value={activeTab} className="space-y-4">
             <TabsContent value="table" className="mt-0">
               <Card>

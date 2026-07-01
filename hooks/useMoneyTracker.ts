@@ -13,6 +13,8 @@ import { useRecurringExpenses } from "./useRecurringExpenses";
 import { useBudgetTracker } from "./useBudgetTracker";
 import { usePayPeriod, getFilterDateRange } from "./usePayPeriod";
 import { type InvestmentType, CurrencyType } from "@/constants/investments";
+import { computeCashEffect } from "@/lib/resumen/cash-effects";
+import { computeDualBalancesCore } from "@/lib/resumen/dual-balances-core";
 
 // Re-export CurrencyType from constants so existing consumers don't break
 export { CurrencyType } from "@/constants/investments";
@@ -414,25 +416,24 @@ export function useMoneyTracker() {
       }
     });
 
-    // USD purchases: USD cumulative + period, ARS deduction period-scoped + accumulated
+    // USD purchases: USD cumulative + accumulated ARS deduction here.
+    // The PERIOD deltas (usdBalancePeriod, arsBalance) come from computeDualBalancesCore below.
     (monthlyData.usdPurchases || []).forEach((purchase) => {
       usdBalance += purchase.usdAmount;
-      if (isInArsRange(purchase.date)) usdBalancePeriod += purchase.usdAmount;
       if (purchase.origin === "tracked") {
         arsBalanceAccumulated -= purchase.arsAmount;
-        if (isInArsRange(purchase.date)) arsBalance -= purchase.arsAmount;
       }
     });
 
-    // Investment movements: both period and accumulated for each currency
-    // Skip pending retiros — money not yet received as liquid cash
+    // Investment movements: ACCUMULATED for each currency here.
+    // The PERIOD deltas (usdBalancePeriod, arsBalance) come from computeDualBalancesCore below.
+    // Skip pending retiros — money not yet received as liquid cash.
     (monthlyData.investments || []).forEach((inv) => {
       if (inv.currencyType === CurrencyType.USD) {
         inv.movements.filter((mov) => !mov.isInitial && !mov.pendingIngreso).forEach((mov) => {
           const retiroAmount = mov.receivedAmount ?? mov.amount;
           const impact = mov.type === "aporte" ? -mov.amount : retiroAmount;
           usdBalance += impact;
-          if (isInArsRange(mov.date)) usdBalancePeriod += impact;
         });
       } else {
         inv.movements.filter((mov) => !mov.isInitial && !mov.pendingIngreso).forEach((mov) => {
@@ -440,9 +441,6 @@ export function useMoneyTracker() {
           const impact = mov.type === "aporte" ? -mov.amount : retiroAmount;
           arsBalanceAccumulated += impact;
           if (mov.type === "aporte" && isInArsRange(mov.date)) arsInvestmentContributions += mov.amount;
-          if (isInArsRange(mov.date)) {
-            arsBalance += impact;
-          }
         });
       }
     });
@@ -468,83 +466,84 @@ export function useMoneyTracker() {
         }
       });
 
-    // Transfers and adjustments: both period and accumulated for each currency
+    // Transfers and adjustments: ACCUMULATED for each currency here.
+    // The PERIOD deltas (arsBalance, usdBalancePeriod) come from computeDualBalancesCore below.
     (monthlyData.transfers || []).forEach((transfer) => {
       switch (transfer.type) {
         case "currency_ars_to_usd":
           arsBalanceAccumulated -= transfer.arsAmount!;
-          if (isInArsRange(transfer.date)) arsBalance -= transfer.arsAmount!;
           usdBalance += transfer.usdAmount!;
-          if (isInArsRange(transfer.date)) usdBalancePeriod += transfer.usdAmount!;
           break;
         case "currency_usd_to_ars":
           usdBalance -= transfer.usdAmount!;
-          if (isInArsRange(transfer.date)) usdBalancePeriod -= transfer.usdAmount!;
           arsBalanceAccumulated += transfer.arsAmount!;
-          if (isInArsRange(transfer.date)) arsBalance += transfer.arsAmount!;
           break;
         case "cash_out":
           if (transfer.currency === "ARS") {
             arsBalanceAccumulated -= transfer.amount!;
-            if (isInArsRange(transfer.date)) arsBalance -= transfer.amount!;
           } else if (transfer.currency === "USD") {
             usdBalance -= transfer.amount!;
-            if (isInArsRange(transfer.date)) usdBalancePeriod -= transfer.amount!;
           }
           break;
         case "cash_in":
           if (transfer.currency === "ARS") {
             arsBalanceAccumulated += transfer.amount!;
-            if (isInArsRange(transfer.date)) arsBalance += transfer.amount!;
           } else if (transfer.currency === "USD") {
             usdBalance += transfer.amount!;
-            if (isInArsRange(transfer.date)) usdBalancePeriod += transfer.amount!;
           }
           break;
         case "adjustment_ars":
           arsBalanceAccumulated += transfer.amount!;
-          if (isInArsRange(transfer.date)) arsBalance += transfer.amount!;
           break;
         case "adjustment_usd":
           usdBalance += transfer.amount!;
-          if (isInArsRange(transfer.date)) usdBalancePeriod += transfer.amount!;
           break;
       }
     });
 
-    // Loans: lending reduces liquid, collecting restores it
-    // Debts: paying reduces liquid (borrowing itself doesn't change liquid)
+    // Loans: lending reduces liquid, collecting restores it (ACCUMULATED here).
+    // Debts: paying reduces liquid (borrowing itself doesn't change liquid).
+    // The PERIOD deltas (arsBalance, usdBalancePeriod) come from computeDualBalancesCore below.
     (monthlyData.loans || []).forEach((loan) => {
       if (loan.type === "preste") {
         if (loan.currencyType === CurrencyType.USD) {
           usdBalance -= loan.amount;
-          if (isInArsRange(loan.date)) usdBalancePeriod -= loan.amount;
           loan.payments.forEach(p => {
             usdBalance += p.amount;
-            if (isInArsRange(p.date)) usdBalancePeriod += p.amount;
           });
         } else {
           arsBalanceAccumulated -= loan.amount;
-          if (isInArsRange(loan.date)) arsBalance -= loan.amount;
           loan.payments.forEach(p => {
             arsBalanceAccumulated += p.amount;
-            if (isInArsRange(p.date)) arsBalance += p.amount;
           });
         }
       } else {
         if (loan.currencyType === CurrencyType.USD) {
           loan.payments.forEach(p => {
             usdBalance -= p.amount;
-            if (isInArsRange(p.date)) usdBalancePeriod -= p.amount;
-          });  // USD debo: accumulated always, period only if in range
+          });  // USD debo: accumulated always
         } else {
           loan.payments.forEach(p => {
             arsBalanceAccumulated -= p.amount;
-            if (isInArsRange(p.date)) arsBalance -= p.amount;
           });
         }
       }
     });
+
+    // PERIOD cash block (B-1, locked CONTEXT decision): the transfers + loans + usdPurchases +
+    // investment-cash contribution to arsBalance / usdBalancePeriod now comes from the shared
+    // computeCashEffect via computeDualBalancesCore. Adjustments are added SEPARATELY inside the
+    // core (computeCashEffect excludes them) to stay byte-identical — proven by the numeric
+    // snapshot test in lib/resumen/dual-balances-core.test.ts.
+    const periodCash = computeDualBalancesCore({
+      isInRange: isInArsRange,
+      transfers: monthlyData.transfers || [],
+      loans: monthlyData.loans || [],
+      usdPurchases: monthlyData.usdPurchases || [],
+      investments: monthlyData.investments || [],
+    });
+    arsBalance += periodCash.arsPeriodCash;
+    usdBalancePeriod += periodCash.usdPeriodCash;
 
     // Loan values for patrimonio (separate from liquid)
     // Remaining = original - sum(payments). NEVER store remaining as a field.
@@ -598,44 +597,38 @@ export function useMoneyTracker() {
       }
     });
 
-    (monthlyData.usdPurchases || []).forEach((purchase) => {
-      if (purchase.origin === "tracked" && isInRange(purchase.date)) {
-        ars -= purchase.arsAmount;
-      }
+    // Phase 23-02: transfers + loans + usdPurchases + ARS investment-cash now come from the
+    // shared computeCashEffect (single source of truth). NOTE: computeCashEffect EXCLUDES
+    // adjustment_ars — the old inline block added it (L625). Dropping it here is the INTENDED
+    // change (Plan 01 Q3): it makes the cuadre adjustment redundant in the per-month flow
+    // (Plan 03 AC-3). The wizard month's disponible routes through this function, but its seed
+    // adjustment lives as a wizard-month artifact; the reconciliation target is the honest flow.
+    ars += computeCashEffect({
+      currency: CurrencyType.ARS,
+      isInRange,
+      transfers: monthlyData.transfers || [],
+      loans: monthlyData.loans || [],
+      usdPurchases: monthlyData.usdPurchases || [],
+      investments: monthlyData.investments || [],
     });
 
-    (monthlyData.investments || []).forEach((inv) => {
-      if (inv.currencyType !== CurrencyType.USD) {
-        inv.movements
-          .filter((mov) => !mov.isInitial && !mov.pendingIngreso && isInRange(mov.date))
-          .forEach((mov) => {
-            const retiro = mov.receivedAmount ?? mov.amount;
-            ars += mov.type === "aporte" ? -mov.amount : retiro;
-          });
-      }
-    });
-
-    (monthlyData.transfers || []).forEach((transfer) => {
-      if (!isInRange(transfer.date)) return;
-      switch (transfer.type) {
-        case "currency_ars_to_usd": ars -= transfer.arsAmount!; break;
-        case "currency_usd_to_ars": ars += transfer.arsAmount!; break;
-        case "cash_out": if (transfer.currency === "ARS") ars -= transfer.amount!; break;
-        case "cash_in": if (transfer.currency === "ARS") ars += transfer.amount!; break;
-        case "adjustment_ars": ars += transfer.amount!; break;
-      }
-    });
-
-    (monthlyData.loans || []).forEach((loan) => {
-      if (loan.currencyType !== CurrencyType.USD) {
-        if (loan.type === "preste") {
-          if (isInRange(loan.date)) ars -= loan.amount;
-          loan.payments.forEach(p => { if (isInRange(p.date)) ars += p.amount; });
-        } else {
-          loan.payments.forEach(p => { if (isInRange(p.date)) ars -= p.amount; });
-        }
-      }
-    });
+    // Wizard-month ONLY: re-add the seed adjustment_ars (initial patrimonio) that
+    // computeCashEffect intentionally excludes. The wizard month is the FIRST adjustment_ars
+    // (same detection as `wizardMonth` in expense-tracker.tsx, which uses .find()). This keeps
+    // the wizard month's disponible showing the seeded starting balance, while every OTHER
+    // month's per-month flow stays free of cuadre adjustments (Plan 03 AC-3). This local
+    // re-add is guarded to the wizard month and NOT reintroduced into the shared function.
+    const firstAdjustmentArs = (monthlyData.transfers || []).find(
+      (t) => t.type === "adjustment_ars"
+    );
+    const wizardMonthKey = firstAdjustmentArs
+      ? firstAdjustmentArs.date.slice(0, 7)
+      : null;
+    if (wizardMonthKey && monthKey === wizardMonthKey) {
+      (monthlyData.transfers || []).forEach((t) => {
+        if (t.type === "adjustment_ars" && isInRange(t.date)) ars += t.amount!;
+      });
+    }
 
     // Add aguinaldo for that month (dependiente only)
     if (salaryHistoryTracker.incomeConfig.employmentType === "dependiente") {
