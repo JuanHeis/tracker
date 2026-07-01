@@ -445,8 +445,18 @@ export function ExpenseTracker() {
     });
     // For the wizard month, disponible = calculateAvailableForMonth (includes wizard
     // adjustment, retiros, transfers) rather than the sobrante+ingresos-egresos formula.
+    // CR-01: also shift cashEffect by the SAME delta so the struct stays internally
+    // consistent — i.e. disponible === sobranteAnterior + ingresosMes - totalGastos + cashEffect
+    // still holds for the wizard month. The delta is derived from the overridden disponible
+    // itself (not re-summed) so it matches byte-for-byte whatever calculateAvailableForMonth folds in.
     if (selectedMonth === wizardMonth) {
-      return { ...base, disponible: calculateAvailableForMonth(selectedMonth) };
+      const overriddenDisponible = calculateAvailableForMonth(selectedMonth);
+      const wizardDelta = overriddenDisponible - base.disponible;
+      return {
+        ...base,
+        cashEffect: base.cashEffect + wizardDelta,
+        disponible: overriddenDisponible,
+      };
     }
     return base;
   }, [selectedMonth, wizardMonth, sobranteAnteriorChainedArs, monthlyData.investments, monthlyData.expenses, monthlyData.extraIncomes, monthlyData.transfers, monthlyData.loans, monthlyData.usdPurchases, currentMonthSalary.amount, aguinaldoData?.amount, arsIsInRange, calculateAvailableForMonth]);
