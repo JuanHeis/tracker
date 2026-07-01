@@ -25,8 +25,12 @@ import { CurrencyType } from "@/constants/investments";
 import {
   type Investment,
   type InvestmentPurpose,
+  type Transfer,
+  type Loan,
+  type UsdPurchase,
 } from "@/hooks/useMoneyTracker";
 import { getMovementPurpose } from "@/constants/investment-purpose";
+import { computeCashEffect } from "@/lib/resumen/cash-effects";
 
 export interface MonthMetricsInput {
   monthKey: string;
@@ -38,6 +42,12 @@ export interface MonthMetricsInput {
   aguinaldoAmount: number;
   sobranteAnteriorRaw: number;
   isInRange: (dateStr: string) => boolean;
+  // Phase 23-02: OPTIONAL cash movements folded into `disponible` via computeCashEffect.
+  // Default [] so the resultado-history loops (which read only resultadoDelMes) keep
+  // compiling untouched. `investments` above is already required and reused for cash.
+  transfers?: ReadonlyArray<Transfer>;
+  loans?: ReadonlyArray<Loan>;
+  usdPurchases?: ReadonlyArray<UsdPurchase>;
 }
 
 export interface MonthMetrics {
@@ -48,6 +58,7 @@ export interface MonthMetrics {
   totalGastos: number;
   aportesAll: number;
   aportesNoNeutros: number;
+  cashEffect: number;
   disponible: number;
   resultadoDelMes: number;
 }
@@ -93,6 +104,9 @@ export function computeMonthMetrics(input: MonthMetricsInput): MonthMetrics {
     aguinaldoAmount,
     sobranteAnteriorRaw,
     isInRange,
+    transfers,
+    loans,
+    usdPurchases,
   } = input;
 
   const ingresoFijo = currency === CurrencyType.ARS ? salaryAmount : 0;
@@ -115,11 +129,27 @@ export function computeMonthMetrics(input: MonthMetricsInput): MonthMetrics {
   const aportesAll = sumAportes(investments, currency, isInRange, false);
   const aportesNoNeutros = sumAportes(investments, currency, isInRange, true);
 
-  const ingresosMes = ingresoFijo + otrosIngresos + aguinaldo;
-  const egresosMes = totalGastos + aportesNoNeutros;
+  // Phase 23-02: full signed liquid-cash delta of the period (transfers + loans +
+  // usdPurchases + ALL investment aporte(-)/retiro(+)). computeCashEffect already
+  // contains -aportes for investments, so `disponible` must NOT subtract aportes again.
+  const cashEffect = computeCashEffect({
+    currency,
+    isInRange,
+    investments,
+    transfers: transfers ?? [],
+    loans: loans ?? [],
+    usdPurchases: usdPurchases ?? [],
+  });
 
-  const disponible = sobranteAnteriorRaw + ingresosMes - egresosMes;
+  const ingresosMes = ingresoFijo + otrosIngresos + aguinaldo;
+
+  // Resultado del mes keeps D2 semantics (retiros excluded, tarjeta/objetivo neutral) — UNCHANGED.
+  const egresosMes = totalGastos + aportesNoNeutros;
   const resultadoDelMes = ingresosMes - egresosMes;
+
+  // Disponible reconciles with the liquid balance: it absorbs the FULL cash effect.
+  // cashEffect already contains -aportes, so subtract only gastos here (NOT aportesNoNeutros).
+  const disponible = sobranteAnteriorRaw + ingresosMes - totalGastos + cashEffect;
 
   return {
     ingresoFijo,
@@ -129,6 +159,7 @@ export function computeMonthMetrics(input: MonthMetricsInput): MonthMetrics {
     totalGastos,
     aportesAll,
     aportesNoNeutros,
+    cashEffect,
     disponible,
     resultadoDelMes,
   };
